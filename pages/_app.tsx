@@ -86,6 +86,14 @@ const GlobalStyle = createGlobalStyle`
       }
     }
 
+    &.MuiButton-containedSizeLarge {
+      height: 33px;
+
+      &, & * {
+        font-size: 12px;
+      }
+    }
+
     // MUI BUTTONS - PRIMARY
     &.MuiButton-containedPrimary {
       background-color: ${Colors.Primary};
