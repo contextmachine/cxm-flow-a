@@ -55,6 +55,11 @@ const Thumb = styled.div`
   border-radius: 18px;
   background: white;
   position: relative;
+
+  background-color: white;
+  background-image: url("/test-thumbs/1.jpg");
+  background-repeat: no-repeat;
+  background-position: center;
 `;
 
 const Ava = styled.div<{
