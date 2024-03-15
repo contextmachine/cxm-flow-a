@@ -5,12 +5,7 @@ import { WidgetType } from "../../widgets/widget.types";
 import Widget from "../../widgets/widget";
 
 const InUseGrid = () => {
-  const todoItems: WidgetType[] = [
-    "chart-widget",
-    "statistics-widget",
-    "mapping-widget",
-    "query-widget",
-  ];
+  const todoItems: WidgetType[] = ["chart-widget", "statistics-widget"];
 
   const [todoList, todos] = useDragAndDrop<HTMLUListElement, string>(
     todoItems,

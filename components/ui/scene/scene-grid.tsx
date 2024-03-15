@@ -100,6 +100,20 @@ const ContentWrapper = styled.div`
     }
   }
 
+  & div[data-type="edit-widgets-grid"] {
+    @media (max-width: 1200px) {
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 1600px) and (max-width: 2000px) {
+      grid-template-columns: 1fr 1fr 1fr !important;
+    }
+
+    @media (min-width: 2000px) {
+      grid-template-columns: 1fr 1fr 1fr 1fr !important;
+    }
+  }
+
   & div[data-type="widgets-panel"] {
     width: 100%;
     max-width: ${LEFT_PANEL_MAXWIDTH}px;

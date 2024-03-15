@@ -14,6 +14,7 @@ const Bar = () => {
         }}
       >
         <CompanyAvatar
+          style={{ cursor: "pointer" }}
           onClick={() => {
             window.location.href = "/";
           }}

@@ -7,7 +7,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import WidgetEditPaper from "../widget-edit-paper/widget-edit-paper";
 
 const EditGrid = () => {
-  const doneItems: WidgetType[] = [];
+  const doneItems: WidgetType[] = ["mapping-widget", "query-widget"];
 
   const [doneList, dones] = useDragAndDrop<HTMLUListElement, string>(
     doneItems,
@@ -29,6 +29,7 @@ const EditGrid = () => {
         sx={{ display: "flex", width: "100%", overflowY: "scroll" }}
       >
         <Box
+          data-type="edit-widgets-grid"
           sx={{
             display: "grid",
             flexDirection: "column",
@@ -49,7 +50,13 @@ const EditGrid = () => {
       </Box>
 
       {/* Search Panel */}
-      <Box sx={{ width: "100%", maxWidth: "330px", pointerEvents: "none ! important" }}>
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: "330px",
+          pointerEvents: "none ! important",
+        }}
+      >
         <Paper
           component="form"
           sx={{
