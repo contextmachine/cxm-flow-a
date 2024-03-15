@@ -1,28 +1,33 @@
-import { Button, MenuItem, Select } from "@mui/material";
+import { Button, MenuItem } from "@mui/material";
 import WidgetPaper from "../blocks/widget-paper/widget-paper";
+import { Select } from "@mui/material";
 
-const MappingWidget = () => {
+interface MappingWidgetProps {
+  isPreview?: boolean;
+}
+
+const MappingWidget: React.FC<MappingWidgetProps> = ({ isPreview }) => {
   return (
-    <WidgetPaper title={"Change in values"}>
+    <WidgetPaper isPreview={isPreview} title={"Change in values"}>
       <div style={{ display: "flex", columnGap: "5px", width: "100%" }}>
         <Select
+          sx={{ width: "100%" }}
           data-type="select"
-          style={{ width: "100%" }}
-          value={10}
-          onChange={() => {}}
+          defaultValue={20}
+          onChange={() => true}
         >
-          <MenuItem value={10}>Material</MenuItem>
+          <MenuItem value={10}>Ten</MenuItem>
           <MenuItem value={20}>Twenty</MenuItem>
           <MenuItem value={30}>Thirty</MenuItem>
         </Select>
 
         <Select
+          sx={{ width: "100%" }}
           data-type="select"
-          style={{ width: "100%" }}
-          value={10}
-          onChange={() => {}}
+          defaultValue={10}
+          onChange={() => true}
         >
-          <MenuItem value={10}>Wood</MenuItem>
+          <MenuItem value={10}>Ten</MenuItem>
           <MenuItem value={20}>Twenty</MenuItem>
           <MenuItem value={30}>Thirty</MenuItem>
         </Select>
