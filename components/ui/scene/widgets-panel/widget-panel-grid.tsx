@@ -28,12 +28,14 @@ const WidgetPanelGrid = () => {
             position: "fixed",
             background: "rgba(205, 205, 205, .3)",
             backdropFilter: "blur(4px)",
+            pointerEvents: "all !important",
             width: "100vw",
             height: "100vh",
             zIndex: 10,
             left: "-0px",
             top: "-0px",
           }}
+          onClick={() => stateService.toogleEditWidgets(false)}
         ></Box>
       )}
 
@@ -56,6 +58,10 @@ const WidgetPanelGrid = () => {
                 rowGap: "9px",
                 overflowY: "scroll",
                 overflowX: "hidden",
+                borderRadius: "18px",
+                border: isEditWidgetsOpen
+                  ? "1px dashed #000"
+                  : "1px solid transparent",
               }}
             >
               <Widget type="bar-widget" />

@@ -34,7 +34,7 @@ const InUseGrid = () => {
         minHeight: "max-content",
         width: "100%",
         pointerEvents: "all",
-        paddingBottom: "40px",
+        paddingBottom: "9px",
       }}
       ref={todoList}
     >

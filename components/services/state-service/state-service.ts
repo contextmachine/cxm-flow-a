@@ -26,6 +26,8 @@ class StateService {
     this._isEditWidgetsOpen =
       typeof value === "boolean" ? value : !this._isEditWidgetsOpen;
 
+    if (this._isEditWidgetsOpen) this.openSection("widgets");
+
     this.$setIsEditWidgetsOpen(this._isEditWidgetsOpen && this._isWidgetsOpen);
   }
 

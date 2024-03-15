@@ -36,6 +36,9 @@ const EditGrid = () => {
             width: "100%",
             gridTemplateColumns: "1fr 1fr",
             gridAutoRows: "320px",
+            // dashed border
+            border: "1px dashed #000",
+            borderRadius: "18px",
           }}
           ref={doneList}
         >
@@ -46,7 +49,7 @@ const EditGrid = () => {
       </Box>
 
       {/* Search Panel */}
-      <Box sx={{ width: "100%", maxWidth: "330px" }}>
+      <Box sx={{ width: "100%", maxWidth: "330px", pointerEvents: "none ! important" }}>
         <Paper
           component="form"
           sx={{
@@ -54,6 +57,7 @@ const EditGrid = () => {
             display: "flex",
             alignItems: "center",
             height: "27px",
+            pointerEvents: "all",
           }}
         >
           <IconButton type="button" sx={{ p: "10px" }} aria-label="search">

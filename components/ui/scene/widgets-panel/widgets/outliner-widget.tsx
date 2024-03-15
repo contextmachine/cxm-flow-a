@@ -1,12 +1,11 @@
 import { Box, Paper } from "@mui/material";
 import SearchBar from "../blocks/search-bar/search-bar";
 import React from "react";
-import ExpandLess from "@mui/icons-material/ExpandLess";
-import ExpandMore from "@mui/icons-material/ExpandMore";
 import { TreeView } from "@mui/x-tree-view/TreeView";
 import { TreeItem } from "@mui/x-tree-view/TreeItem";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import Badge from "../../primitives/badge";
 
 const OutlinerWidget = () => {
   const renderTree = (nodes: any) => {
@@ -22,17 +21,7 @@ const OutlinerWidget = () => {
         nodeId={nodes.id}
         label={
           <Box sx={{ display: "flex", columnGap: "6px" }}>
-            <Box
-              sx={{
-                display: "flex",
-                columnGap: "3px",
-                alignItems: "center",
-                height: "21px",
-                backgroundColor: "#F3F3F3",
-                borderRadius: "9px",
-                padding: "0 3px",
-              }}
-            >
+            <Badge>
               <Box
                 sx={{
                   width: "12px",
@@ -46,7 +35,7 @@ const OutlinerWidget = () => {
               {Array.isArray(nodes.children) && (
                 <Box>{nodes.isList ? nodes.name : nodes.children.length}</Box>
               )}
-            </Box>
+            </Badge>
             {!nodes.isList && nodes.name}
           </Box>
         }

@@ -211,6 +211,10 @@ const GlobalStyle = createGlobalStyle`
 
   // MUI TREE GRID
   && .MuiTreeView-root {
+    & .Mui-selected {
+      background-color: transparent !important;
+    }
+
     & .MuiTreeItem-content {
       height: calc(21px + 6px);
       border-radius: 9px;

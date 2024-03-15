@@ -22,6 +22,7 @@ const WidgetEditPaper: React.FC<WidgetProps> = ({ type }) => {
         alignItems: "flex-start",
         backgroundColor: "rgba(255, 255, 255, 0.4)",
         padding: "18px",
+        overflow: "hidden",
       }}
     >
       <Box sx={{ display: "flex", gap: "4px", alignItems: "center" }}>
@@ -33,9 +34,9 @@ const WidgetEditPaper: React.FC<WidgetProps> = ({ type }) => {
       <Box sx={{ width: "100%", height: "100%", position: "relative" }}>
         <Box
           sx={{
-            transform: "scale(0.85) translateY(-50%)",
+            transform: "scale(0.85)",
             position: "relative",
-            top: "50%",
+            top: "0px",
           }}
         >
           <Widget type={type} isPreview />
