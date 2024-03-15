@@ -1,4 +1,4 @@
-import { Button, MenuItem } from "@mui/material";
+import { Box, Button, MenuItem } from "@mui/material";
 import WidgetPaper from "../blocks/widget-paper/widget-paper";
 import { Select } from "@mui/material";
 
@@ -9,7 +9,7 @@ interface MappingWidgetProps {
 const MappingWidget: React.FC<MappingWidgetProps> = ({ isPreview }) => {
   return (
     <WidgetPaper isPreview={isPreview} title={"Change in values"}>
-      <div style={{ display: "flex", columnGap: "5px", width: "100%" }}>
+      <div style={{ display: "flex", columnGap: "5px", width: "100%", alignItems: 'center' }}>
         <Select
           sx={{ width: "100%" }}
           data-type="select"
@@ -20,6 +20,16 @@ const MappingWidget: React.FC<MappingWidgetProps> = ({ isPreview }) => {
           <MenuItem value={20}>Twenty</MenuItem>
           <MenuItem value={30}>Thirty</MenuItem>
         </Select>
+
+        <Box
+          sx={{
+            minWidth: "18px",
+            maxWidth: "18px",
+            minHeight: "18px",
+            maxHeight: "18px",
+            backgroundImage: "url(/icons/arrow-right.svg)",
+          }}
+        />
 
         <Select
           sx={{ width: "100%" }}

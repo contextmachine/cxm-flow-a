@@ -15,11 +15,13 @@ const StatisticsWidget: React.FC<StatisticsWidgetProps> = ({ isPreview }) => {
           width: "100%",
           display: "flex",
           columnGap: "9px",
-          alignItems: "center",
+          alignItems: "flex-end",
         }}
       >
         <Title size="large-number">245,932</Title>
-        <Title size="large">Object selected</Title>
+        <Title size="large" style={{ paddingBottom: "2px" }}>
+          Object selected
+        </Title>
       </Box>
 
       <Line>
