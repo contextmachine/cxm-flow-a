@@ -1,9 +1,9 @@
 import { Box, Button, IconButton, Paper } from "@mui/material";
 import MailIcon from "@mui/icons-material/Mail";
-import { CompanyAvatar, Title, TitleWrapper } from "../../scene/bar/bar.styled";
-import { WidgetHandleIcon } from "../../icons/handle-icon";
+import { Title } from "../../scene/bar/bar.styled";
 import styled from "styled-components";
 import MarkedIcon from "../../icons/marked-icon";
+import UserProfile from "./blocks/user-profile";
 
 const LeftBar = () => {
   const menuItems = ["Personal", "Favourites", "Shared", "Recent", "Trash"];
@@ -17,15 +17,7 @@ const LeftBar = () => {
 
   return (
     <>
-      <Paper sx={{ backgroundColor: "transparent" }}>
-        <Box sx={{ display: "flex", gap: "9px", alignItems: "center" }}>
-          <AvatarCss style={{ cursor: "pointer" }} />
-
-          <TitleWrapper>
-            <Title size="large">Cucumber Pomidorov</Title>
-          </TitleWrapper>
-        </Box>
-      </Paper>
+      <UserProfile />
 
       <Paper
         title="Workspaces"
@@ -103,16 +95,6 @@ const WidgetHeader = styled.div`
   align-items: center;
 
   column-gap: 10px;
-`;
-
-export const AvatarCss = styled.div`
-  min-width: 36px;
-  width: 36px;
-  height: 100%;
-  position: relative;
-  border-radius: 13.5px;
-  background-color: #333333;
-  height: 36px;
 `;
 
 export default LeftBar;

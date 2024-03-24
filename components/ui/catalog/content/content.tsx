@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import CatalogItem from "../catalog-item/catalog-item";
 import { Box, InputBase, Paper } from "@mui/material";
-import { AvatarCss } from "../left-bar/left-bar";
+import { AvatarCss } from "../left-bar/blocks/user-profile";
 
 const Content = () => {
   return (
