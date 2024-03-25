@@ -35,6 +35,18 @@ const GlobalStyle = createGlobalStyle`
   ::-webkit-scrollbar-thumb:hover {
     background: #555; /* color when hovering over the scroll thumb */
   }
+
+  // TEXT INPUTS
+  & .MuiInputBase-root {
+    border-radius: 9px;
+
+    & input {
+      height: 33px;
+      box-sizing: border-box;
+      font-size: 12px;
+      padding: 0 9px;
+    }
+  }
   
   // Papers
   & .MuiPaper-root {

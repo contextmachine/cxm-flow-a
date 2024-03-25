@@ -7,13 +7,16 @@ import Cookie from "js-cookie";
 class AuthService {
   private _loading: boolean;
   private _session: Session | null;
+  private _isUnauthorized: boolean;
   private _userMetadata: UserMetadataResponse;
 
   private $setLoading: any;
   private $setUserMetadata: any;
+  private $setIsUnauthorized: any;
 
   constructor() {
     this._loading = true;
+    this._isUnauthorized = false;
     this._session = null;
 
     this._userMetadata = null;
@@ -31,10 +34,13 @@ class AuthService {
       if (this._session) {
         const userMetadata = await this.getUserMetadata();
         this.updateUserMetadata(userMetadata);
+        this.updateLoading(false);
+      } else {
+        this.updateUnauthorized(true);
+        this.updateLoading(false);
       }
-
-      this.updateLoading(false);
     } else {
+      this.updateUnauthorized(true);
       this.updateLoading(false);
     }
   }
@@ -74,6 +80,8 @@ class AuthService {
         password,
       });
       Cookie.set("token", data.token, { expires: 1 });
+
+      window.location.href = "/";
     } catch (err) {
       console.error(
         "Failed to sign in. Please check your credentials and try again."
@@ -86,12 +94,33 @@ class AuthService {
     window.location.reload();
   }
 
+  public async signUp(
+    username: string,
+    email: string,
+    password: string
+  ): Promise<void> {
+    try {
+      await axios.post("/api/auth/signup", {
+        username,
+        email,
+        password,
+      });
+      window.location.href = "/signin";
+    } catch (err: any) {
+      throw new Error(
+        err.response?.data?.error || "An error occurred during sign up."
+      );
+    }
+  }
+
   public provideStates(states: any) {
     this.$setLoading = states.setLoading;
     this.$setUserMetadata = states.setUserMetadata;
+    this.$setIsUnauthorized = states.setIsUnauthorized;
 
     this.$setLoading(this._loading);
     this.$setUserMetadata(this._userMetadata);
+    this.$setIsUnauthorized(this._isUnauthorized);
 
     this.checkSession();
   }
@@ -104,6 +133,11 @@ class AuthService {
   public updateLoading(loading: boolean) {
     this._loading = loading;
     this.$setLoading(loading);
+  }
+
+  public updateUnauthorized(unauthorized: boolean) {
+    this._isUnauthorized = unauthorized;
+    this.$setIsUnauthorized(unauthorized);
   }
 
   dispose() {

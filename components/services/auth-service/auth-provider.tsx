@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import AuthService from "./auth-service";
-import { UserMetadata, UserMetadataResponse } from "./auth-service.types";
-import SignIn from "@/components/ui/auth/signin/signin";
+import { UserMetadataResponse } from "./auth-service.types";
 import { useRouter } from "next/router";
+import Loader from "@/components/ui/auth/loader/loader";
 
 interface AuthProviderProps {
   authService: AuthService;
@@ -15,16 +15,27 @@ export function AuthProvider({ children }: any) {
   const [authService] = useState(() => new AuthService());
 
   const [userMetadata, setUserMetadata] = useState<UserMetadataResponse>(null);
+  const [isUnauthorized, setIsUnauthorized] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
   const router = useRouter();
 
   useEffect(() => {
-    authService.provideStates({ setLoading, setUserMetadata });
+    authService.provideStates({
+      setLoading,
+      setUserMetadata,
+      setIsUnauthorized,
+    });
   }, []);
 
   const isAuthPage =
     router.pathname === "/signin" || router.pathname === "/signup";
+
+  useEffect(() => {
+    if (!isAuthPage && isUnauthorized) {
+      router.push("/signin");
+    }
+  }, [isUnauthorized, isAuthPage, loading]);
 
   return (
     <AuthContext.Provider
@@ -33,16 +44,9 @@ export function AuthProvider({ children }: any) {
         userMetadata,
       }}
     >
-      {loading && <div>Loading...</div>}
+      {(loading || isUnauthorized) && !isAuthPage && <Loader />}
 
-      {!loading && !userMetadata && !isAuthPage && (
-        <div>
-          Redirecting to sign-in...
-          {router.push("/signin")}
-        </div>
-      )}
-
-      {(!loading && userMetadata) || isAuthPage ? children : null}
+      {children}
     </AuthContext.Provider>
   );
 }

@@ -37,11 +37,11 @@ export default async function handler(
 
   const client = getServerClient(
     process.env.HASURA_PROXY as string,
-    process.env.HASURA_ADMIN_SECRET as string
+    process.env.HASURA_PRIVAT_SECRET as string
   );
 
   try {
-    await client.mutate({
+    const { data } = await client.mutate({
       mutation: CREATE_USER_MUTATION,
       variables: {
         email,
@@ -49,6 +49,8 @@ export default async function handler(
         username,
       },
     });
+
+    console.log("data", data);
 
     // Create JWT token or handle user creation response here
     const token = jwt.sign({ email }, process.env!.JWT_SECRET as string, {
