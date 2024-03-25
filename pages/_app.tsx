@@ -4,13 +4,16 @@ import { ApolloProvider } from "@apollo/client";
 import client from "@/components/graphql/client/client";
 import { AuthProvider } from "@/components/services/auth-service/auth-provider";
 import GlobalStyle from "@/components/ui/app.styled";
+import { WorkspaceProvider } from "@/components/services/workspace-service/workspace-provider";
 
 const App = ({ Component, pageProps }: AppProps) => {
   return (
     <>
       <ApolloProvider client={client}>
         <AuthProvider>
-          <Component {...pageProps} />
+          <WorkspaceProvider>
+            <Component {...pageProps} />
+          </WorkspaceProvider>
         </AuthProvider>
       </ApolloProvider>
 

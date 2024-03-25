@@ -11,7 +11,7 @@ export const TitleWrapper = styled.div`
   }
 `;
 
-export const AvatarCss = css`
+export const AvatarCss = css<{ color?: string }>`
   min-width: 36px;
   width: 36px;
   height: 100%;
@@ -26,7 +26,7 @@ export const AvatarCss = css`
     height: 36px;
     transform: translateY(-4.5px);
     border-radius: 13.5px;
-    background-color: #333333;
+    background-color: ${({ color }) => color || "#333333"};
   }
 `;
 

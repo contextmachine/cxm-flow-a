@@ -119,7 +119,7 @@ const GlobalStyle = createGlobalStyle`
         background-color: #ECF5FF;
 
         &, & * {
-          color: ${Colors.Primary};
+          color: ${Colors.Primary} !important;
         }
       }
     }

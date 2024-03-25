@@ -4,16 +4,13 @@ import { Title } from "../../scene/bar/bar.styled";
 import styled from "styled-components";
 import MarkedIcon from "../../icons/marked-icon";
 import UserProfile from "./blocks/user-profile";
+import { useWorkspace } from "@/components/services/workspace-service/workspace-provider";
+import stc from "string-to-color";
 
 const LeftBar = () => {
-  const menuItems = ["Personal", "Favourites", "Shared", "Recent", "Trash"];
-  const workspaceIcons = [
-    "Context Machine Projects",
-    "Test Projects",
-    "Other tests",
-    "Generative workspace",
-    "API Examples",
-  ];
+  const menuItems = ["Personal", "Favourites", "Shared", "Trash"];
+
+  const { workspaces, activeWorkspace, workspaceService } = useWorkspace();
 
   return (
     <>
@@ -51,7 +48,7 @@ const LeftBar = () => {
         </WidgetHeader>
 
         <MenuWrapper>
-          {workspaceIcons.map((item, i) => (
+          {workspaces.map((item, i) => (
             <Box sx={{ width: "100%" }} key={i}>
               <Button
                 sx={{
@@ -59,9 +56,14 @@ const LeftBar = () => {
                   justifyContent: "flex-start",
                   textTransform: "none",
                 }}
-                startIcon={<MailIcon />}
+                variant="contained"
+                color="secondary"
+                size="large"
+                data-active={item.id === activeWorkspace?.id}
+                onClick={() => workspaceService.setActiveWorkspace(item.id)}
+                startIcon={<IconBullet color={stc(`${item.id}`)} />}
               >
-                {item}
+                {item?.name}
               </Button>
             </Box>
           ))}
@@ -74,6 +76,19 @@ const LeftBar = () => {
     </>
   );
 };
+
+const IconBullet = styled.div<{
+  color: string;
+}>`
+  width: 6px;
+  height: 6px;
+  min-width: 6px;
+  min-height: 6px;
+  max-width: 6px;
+  max-height: 6px;
+  border-radius: 50%;
+  background-color: ${({ color }) => color};
+`;
 
 const MenuWrapper = styled.div`
   display: flex;

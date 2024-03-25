@@ -1,8 +1,13 @@
 import { Box, Paper } from "@mui/material";
 import BarTools from "./bar-tools/bar-tools";
 import { CompanyAvatar, Title, TitleWrapper } from "./bar.styled";
+import { useAuth } from "@/components/services/auth-service/auth-provider";
+import { useScene } from "@/components/services/scene-service/scene-provider";
 
 const Bar = () => {
+  const { authService } = useAuth();
+  const { sceneMetadata } = useScene();
+
   return (
     <Paper sx={{ alignItems: "center", justifyContent: "space-between" }}>
       <Box
@@ -21,7 +26,7 @@ const Bar = () => {
         />
 
         <TitleWrapper>
-          <Title size="large">Default title</Title>
+          <Title size="large">{sceneMetadata?.name}</Title>
         </TitleWrapper>
       </Box>
 

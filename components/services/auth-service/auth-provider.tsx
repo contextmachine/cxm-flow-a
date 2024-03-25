@@ -37,6 +37,17 @@ export function AuthProvider({ children }: any) {
     }
   }, [isUnauthorized, isAuthPage, loading]);
 
+  useEffect(() => {
+    // Redirect to home if the user is authenticated and tries to access signin or signup pages
+    if (
+      !loading &&
+      !isUnauthorized &&
+      (router.pathname === "/signin" || router.pathname === "/signup")
+    ) {
+      router.push("/");
+    }
+  }, [isUnauthorized, loading, router.pathname]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -44,7 +55,9 @@ export function AuthProvider({ children }: any) {
         userMetadata,
       }}
     >
-      {(loading || isUnauthorized) && !isAuthPage && <Loader />}
+      {(loading ||
+        (!loading && isUnauthorized && !isAuthPage) ||
+        (!loading && !isUnauthorized && isAuthPage)) && <Loader />}
 
       {children}
     </AuthContext.Provider>

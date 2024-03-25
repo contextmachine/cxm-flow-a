@@ -3,6 +3,7 @@ import { gql } from "@apollo/client";
 import { UserMetadataResponse } from "./auth-service.types";
 import axios from "axios";
 import Cookie from "js-cookie";
+import WorkspaceService from "../workspace-service/workspace-service";
 
 class AuthService {
   private _loading: boolean;
@@ -14,12 +15,15 @@ class AuthService {
   private $setUserMetadata: any;
   private $setIsUnauthorized: any;
 
+  private _workspaceService: WorkspaceService;
+
   constructor() {
     this._loading = true;
     this._isUnauthorized = false;
     this._session = null;
 
     this._userMetadata = null;
+    this._workspaceService = new WorkspaceService(this);
   }
 
   public async checkSession() {
@@ -35,6 +39,8 @@ class AuthService {
         const userMetadata = await this.getUserMetadata();
         this.updateUserMetadata(userMetadata);
         this.updateLoading(false);
+
+        this._workspaceService.fetchWorkspaces();
       } else {
         this.updateUnauthorized(true);
         this.updateLoading(false);
@@ -140,9 +146,19 @@ class AuthService {
     this.$setIsUnauthorized(unauthorized);
   }
 
+  public get userMetadata() {
+    return this._userMetadata;
+  }
+
+  public get workspaceService() {
+    return this._workspaceService;
+  }
+
   dispose() {
     this.updateLoading(true);
     this.updateUserMetadata(null);
+
+    this._workspaceService.dispose();
   }
 }
 

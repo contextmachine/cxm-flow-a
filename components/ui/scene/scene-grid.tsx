@@ -4,8 +4,11 @@ import ToolsPanel from "./tools-panel/tools-panel";
 import BarUser from "./bar-users/bar-user";
 import dynamic from "next/dynamic";
 import WidgetPanelGrid from "./widgets-panel/widget-panel-grid";
+import { useAuth } from "@/components/services/auth-service/auth-provider";
 
 const SceneGrid = () => {
+  const { authService } = useAuth();
+
   return (
     <Wrapper>
       <Grid>

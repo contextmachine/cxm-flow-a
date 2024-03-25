@@ -4,9 +4,10 @@ import { Title, TitleWrapper } from "@/components/ui/scene/bar/bar.styled";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import styled from "styled-components";
 import { useAuth } from "@/components/services/auth-service/auth-provider";
+import stc from "string-to-color";
 
 const UserProfile = () => {
-  const { authService } = useAuth();
+  const { authService, userMetadata } = useAuth();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -23,23 +24,32 @@ const UserProfile = () => {
     authService.signOut();
   };
 
+  if (!userMetadata) return null;
+
   return (
-    <Paper sx={{ backgroundColor: "transparent" }}>
+    <Paper
+      sx={{
+        backgroundColor: "transparent",
+        paddingLeft: "0px !important",
+        paddingRight: "0px !important",
+      }}
+    >
       <Box
         sx={{
           display: "flex",
           gap: "9px",
           alignItems: "center",
           cursor: "pointer",
+          overflow: "hidden",
         }}
         onClick={handleClick}
       >
-        <AvatarCss />
+        <AvatarCss color={stc(userMetadata.username)} />
         <TitleWrapper>
-          <Title size="large">Cucumber Pomidorov</Title>
+          <Title size="large">{userMetadata.username}</Title>
         </TitleWrapper>
         <ArrowIcon>
-          <ArrowDropDownIcon />
+          <ArrowDropDownIcon sx={{ fontSize: 16 }} />
         </ArrowIcon>
       </Box>
       <Menu
@@ -51,7 +61,7 @@ const UserProfile = () => {
           "aria-labelledby": "basic-button",
         }}
       >
-        <MenuItem sx={{ minWidth: "225px" }} onClick={handleSignOut}>
+        <MenuItem sx={{ minWidth: "215px" }} onClick={handleSignOut}>
           Sign Out
         </MenuItem>
       </Menu>
@@ -59,13 +69,15 @@ const UserProfile = () => {
   );
 };
 
-export const AvatarCss = styled.div`
+export const AvatarCss = styled.div<{
+  color?: string;
+}>`
   min-width: 36px;
   width: 36px;
   height: 100%;
   position: relative;
   border-radius: 13.5px;
-  background-color: #333333;
+  background-color: ${({ color }) => color || "#333"};
   height: 36px;
 `;
 

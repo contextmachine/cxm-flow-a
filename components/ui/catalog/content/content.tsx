@@ -2,8 +2,11 @@ import styled from "styled-components";
 import CatalogItem from "../catalog-item/catalog-item";
 import { Box, InputBase, Paper } from "@mui/material";
 import { AvatarCss } from "../left-bar/blocks/user-profile";
+import { useWorkspace } from "@/components/services/workspace-service/workspace-provider";
 
 const Content = () => {
+  const { activeScenes, activeWorkspace } = useWorkspace();
+
   return (
     <Wrapper>
       <Paper sx={{ opacity: 0, pointerEvents: "none" }}>
@@ -38,11 +41,13 @@ const Content = () => {
       </Box>
 
       <CatalogWrapper>
-        {Array(10)
-          .fill(0)
-          .map((_, i) => (
-            <CatalogItem key={i} />
-          ))}
+        {activeScenes.map((scene, i) => (
+          <CatalogItem
+            {...scene}
+            {...{ user_workspaces: activeWorkspace!.user_workspaces }}
+            key={i}
+          />
+        ))}
       </CatalogWrapper>
     </Wrapper>
   );

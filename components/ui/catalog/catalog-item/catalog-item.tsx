@@ -1,13 +1,27 @@
 import { Box } from "@mui/material";
 import styled from "styled-components";
 import { Title } from "../../scene/bar/bar.styled";
-import Link from "next/link";
+import { SceneDto } from "@/components/services/workspace-service/workspace-service.types";
+import moment from "moment";
+import stc from "string-to-color";
+import { UserMetadata } from "@/components/services/auth-service/auth-service.types";
 
-const CatalogItem = () => {
+interface CatalogItemProps extends SceneDto {
+  user_workspaces: { user: UserMetadata }[];
+}
+
+const CatalogItem: React.FC<CatalogItemProps> = ({
+  id,
+  name,
+  created_at,
+  user_workspaces,
+}) => {
   const handleNavigate = (e: any) => {
     e.preventDefault(); // Prevent default link behavior
-    window.location.href = "/scene/1"; // Navigate with a full page reload
+    window.location.href = `/scene/${id}`; // Navigate with a full page reload
   };
+
+  const date = moment(created_at).fromNow();
 
   return (
     <Wrapper onClick={handleNavigate}>
@@ -23,15 +37,20 @@ const CatalogItem = () => {
         }}
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <Title size="large">sdfsdfsd</Title>
-          <Title>Modified 12 hours ago</Title>
+          <Title size="large">{name}</Title>
+          <Title>Modified {date}</Title>
         </Box>
 
         <Box sx={{ display: "flex" }}>
-          <Ava color={"#91C8FA"} />
-          <Ava color={"#C6BAF9"} />
-          <Ava color={"#FBFD78"} />
-          <Ava color={"#50A764"} />
+          {user_workspaces.map((user, i: number) => {
+            return (
+              <Ava
+                color={stc(user.user.username)}
+                data-userId={user.user.id}
+                key={i}
+              />
+            );
+          })}
         </Box>
       </Box>
     </Wrapper>
@@ -71,6 +90,8 @@ const Ava = styled.div<{
   max-height: 27px;
 
   border-radius: 50%;
+  border: 2px solid white;
+  filter: brightness(1.2);
 
   background-color: ${({ color }) => color};
   margin-left: -8px;
