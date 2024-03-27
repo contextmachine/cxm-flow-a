@@ -69,7 +69,12 @@ const LeftBar = () => {
           ))}
         </MenuWrapper>
 
-        <Button variant="contained" color="primary" size="large">
+        <Button
+          onClick={workspaceService.addWorkspace}
+          variant="contained"
+          color="primary"
+          size="large"
+        >
           + New workspace
         </Button>
       </Paper>

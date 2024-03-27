@@ -17,3 +17,11 @@ export interface WorkspaceDto {
   user_workspaces: { user: UserMetadata }[];
   __typename: string;
 }
+
+export interface WorkspaceUserDto {
+  user: {
+    id: number;
+    username: string;
+  };
+  role: { id: number; name: string };
+}

@@ -5,6 +5,7 @@ import { SceneDto } from "@/components/services/workspace-service/workspace-serv
 import moment from "moment";
 import stc from "string-to-color";
 import { UserMetadata } from "@/components/services/auth-service/auth-service.types";
+import { Ava } from "../styles/styles";
 
 interface CatalogItemProps extends SceneDto {
   user_workspaces: { user: UserMetadata }[];
@@ -46,7 +47,7 @@ const CatalogItem: React.FC<CatalogItemProps> = ({
             return (
               <Ava
                 color={stc(user.user.username)}
-                data-userId={user.user.id}
+                data-userid={user.user.id}
                 key={i}
               />
             );
@@ -79,22 +80,6 @@ const Thumb = styled.div`
   background-image: url("/test-thumbs/1.jpg");
   background-repeat: no-repeat;
   background-position: center;
-`;
-
-const Ava = styled.div<{
-  color: string;
-}>`
-  min-width: 27px;
-  max-width: 27px;
-  min-height: 27px;
-  max-height: 27px;
-
-  border-radius: 50%;
-  border: 2px solid white;
-  filter: brightness(1.2);
-
-  background-color: ${({ color }) => color};
-  margin-left: -8px;
 `;
 
 export default CatalogItem;
