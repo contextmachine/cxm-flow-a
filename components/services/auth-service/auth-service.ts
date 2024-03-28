@@ -14,6 +14,7 @@ class AuthService {
   private $setLoading: any;
   private $setUserMetadata: any;
   private $setIsUnauthorized: any;
+  private $setError: any;
 
   private _workspaceService: WorkspaceService;
 
@@ -88,7 +89,9 @@ class AuthService {
       Cookie.set("token", data.token, { expires: 1 });
 
       window.location.href = "/";
-    } catch (err) {
+    } catch (err: any) {
+      this.$setError(err.response?.data?.message || "An error occurred.");
+
       console.error(
         "Failed to sign in. Please check your credentials and try again."
       );
@@ -100,11 +103,15 @@ class AuthService {
     window.location.reload();
   }
 
-  public async signUp(
-    username: string,
-    email: string,
-    password: string
-  ): Promise<void> {
+  public async signUp({
+    username,
+    email,
+    password,
+  }: {
+    username: string;
+    email: string;
+    password: string;
+  }): Promise<void> {
     try {
       await axios.post("/api/auth/signup", {
         username,
@@ -113,16 +120,24 @@ class AuthService {
       });
       window.location.href = "/signin";
     } catch (err: any) {
-      throw new Error(
-        err.response?.data?.error || "An error occurred during sign up."
-      );
+      const error =
+        err.response?.data?.error || "An error occurred during sign up.";
+      this.$setError(error);
+
+      throw new Error(error);
     }
   }
 
-  public provideStates(states: any) {
+  public provideStates(states: {
+    setLoading: any;
+    setUserMetadata: any;
+    setIsUnauthorized: any;
+    setError: any;
+  }) {
     this.$setLoading = states.setLoading;
     this.$setUserMetadata = states.setUserMetadata;
     this.$setIsUnauthorized = states.setIsUnauthorized;
+    this.$setError = states.setError;
 
     this.$setLoading(this._loading);
     this.$setUserMetadata(this._userMetadata);
@@ -153,6 +168,8 @@ class AuthService {
   public get workspaceService() {
     return this._workspaceService;
   }
+
+  
 
   dispose() {
     this.updateLoading(true);

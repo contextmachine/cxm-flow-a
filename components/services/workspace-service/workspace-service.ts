@@ -6,17 +6,22 @@ import {
   WorkspaceDto,
   WorkspaceUserDto,
 } from "./workspace-service.types";
+import WorkspaceEntity from "./entities/workspace-entity";
+import SceneEntity from "./entities/scene-entity";
+import UserWorkspaceEntity from "./entities/user-workspace-entity";
 
 class WorkspaceService {
-  private _workspaces: Map<number, WorkspaceDto>;
-  private _activeWorkspace: WorkspaceDto | null;
-  private _activeWorkspaceUsers: Map<string, WorkspaceUserDto>; // Attached to active workspace
-  private _activeScenes: Map<number, SceneDto>;
+  private _workspaces: Map<number, WorkspaceEntity>;
+  private _activeWorkspace: WorkspaceEntity | null;
+  private _activeWorkspaceUsers: Map<string, UserWorkspaceEntity>; // Attached to active workspace
+  private _activeScenes: Map<number, SceneEntity>;
 
   private $setWorkspaces: any;
   private $setActiveWorkspace: any;
   private $setActiveScenes: any;
   private $setActiveWorkspaceUsers: any;
+  private $setError: any;
+  private $setWorkspaceLogId: any;
 
   constructor(private _authService: AuthService) {
     this._workspaces = new Map();
@@ -32,6 +37,10 @@ class WorkspaceService {
 
     this.addWorkspace = this.addWorkspace.bind(this);
     this.addScene = this.addScene.bind(this);
+    this.updateUserRole = this.updateUserRole.bind(this);
+    this.addUserToWorkspace = this.addUserToWorkspace.bind(this);
+    this.updateTitle = this.updateTitle.bind(this);
+    this.deleteWorkspace = this.deleteWorkspace.bind(this);
   }
 
   public async fetchWorkspaces() {
@@ -83,21 +92,29 @@ class WorkspaceService {
 
       const workspacesDto = response?.data?.appv3_user_by_pk?.user_workspaces;
       if (!workspacesDto) {
+        this.$setError("Workspaces not found.");
         throw new Error("Workspaces not found.");
       }
 
       this._workspaces.clear();
       workspacesDto.forEach((workspace: any) => {
-        this._workspaces.set(workspace.workspace.id, workspace.workspace);
+        const workspaceEntity = new WorkspaceEntity(this, workspace.workspace);
+        this._workspaces.set(workspaceEntity.id, workspaceEntity);
       });
-
-      console.log("this._workspaces", this._workspaces);
 
       this.updateWorkspaces();
 
       // get initial active workspace
       if (this._workspaces.size > 0) {
-        const workspaceId = this._workspaces.keys().next().value;
+        let workspaceId = this._workspaces.keys().next().value;
+
+        if (
+          this._activeWorkspace?.id &&
+          this._workspaces.has(this._activeWorkspace.id)
+        ) {
+          workspaceId = this._activeWorkspace.id;
+        }
+
         this.setActiveWorkspace(workspaceId);
       }
     } catch (error) {
@@ -107,17 +124,21 @@ class WorkspaceService {
 
   public updateWorkspaces() {
     const workspacesArray = Array.from(this._workspaces.values());
-    this?.$setWorkspaces([...workspacesArray]);
+    this?.$setWorkspaces([
+      ...workspacesArray.map((workspace) => workspace.data),
+    ]);
   }
 
   public updateActiveScenes() {
     const scenesArray = Array.from(this._activeScenes.values());
-    this?.$setActiveScenes([...scenesArray]);
+    this?.$setActiveScenes([...scenesArray].map((scene) => scene.data));
   }
 
   public updateActiveWorkspaceUsers() {
     const workspaceUsersArray = Array.from(this._activeWorkspaceUsers.values());
-    this?.$setActiveWorkspaceUsers([...workspaceUsersArray]);
+    this?.$setActiveWorkspaceUsers(
+      [...workspaceUsersArray].map((user) => user.data)
+    );
   }
 
   public setActiveWorkspace(workspaceId: number) {
@@ -125,11 +146,8 @@ class WorkspaceService {
     this?.$setActiveWorkspace(this._activeWorkspace);
 
     // Active workspace scenes
-    const scenes = this._activeWorkspace?.scenes || [];
-    this._activeScenes.clear();
-    scenes.forEach((scene: any) => {
-      this._activeScenes.set(scene.id, scene);
-    });
+    const scenes = this._activeWorkspace?.scenes || new Map();
+    this._activeScenes = new Map(scenes);
 
     this.updateActiveScenes();
 
@@ -188,41 +206,64 @@ class WorkspaceService {
     }
   }
 
-  public async addScene() {
+  public async deleteWorkspace() {
+    const workspaceId = this._activeWorkspace?.id;
+
     const mutation = gql`
-      mutation AddScene($scene_name: String!, $workspace_id: Int!) {
-        insert_appv3_scene(
-          objects: { name: $scene_name, workspace_id: $workspace_id }
-        ) {
-          returning {
-            id
-          }
+      mutation DeleteWorkspace($id: Int!) {
+        delete_appv3_scene(where: { workspace_id: { _eq: $_eq } }) {
+          affected_rows
+        }
+
+        delete_appv3_workspace(where: { id: { _eq: $id } }) {
+          affected_rows
         }
       }
     `;
 
-    const workspaceId = this._activeWorkspace?.id;
-
-    // Call the mutation using the Apollo client
     try {
-      const { data }: any = await client.mutate({
+      const data = await client.mutate({
         mutation,
         variables: {
-          scene_name: "New Scene",
-          workspace_id: workspaceId,
+          id: workspaceId,
         },
       });
 
-      const scene = data.insert_appv3_scene.returning[0];
-      if (!scene) {
-        throw new Error("Scene not found.");
-      }
+      this.fetchWorkspaces();
 
-      const sceneId = scene.id;
-      window.location.href = `/scene/${sceneId}`;
+      // Handle the response data here
     } catch (error) {
+      this.$setError("Error deleting workspace.");
       console.error(error);
     }
+  }
+
+  public async addScene() {
+    if (!this._activeWorkspace)
+      return this.$setError("No active workspace found.");
+
+    this._activeWorkspace?.addScene();
+  }
+
+  public updateUserRole(userId: number, roleId: number) {
+    if (!this._activeWorkspace)
+      return this.$setError("No active workspace found.");
+
+    this._activeWorkspace?.updateUserRole(userId, roleId);
+  }
+
+  public addUserToWorkspace(email: string) {
+    if (!this._activeWorkspace)
+      return this.$setError("No active workspace found.");
+
+    this._activeWorkspace?.addUserToWorkspace(email);
+  }
+
+  public updateTitle(title: string) {
+    if (!this._activeWorkspace)
+      return this.$setError("No active workspace found.");
+
+    this._activeWorkspace?.updateTitle(title);
   }
 
   public provideStates(states: any) {
@@ -230,6 +271,12 @@ class WorkspaceService {
     this.$setActiveWorkspace = states.setActiveWorkspace;
     this.$setActiveScenes = states.setActiveScenes;
     this.$setActiveWorkspaceUsers = states.setActiveWorkspaceUsers;
+    this.$setError = states.setError;
+    this.$setWorkspaceLogId = states.setWorkspaceLogId;
+  }
+
+  public get setError() {
+    return this.$setError;
   }
 
   public dispose() {

@@ -17,8 +17,6 @@ const SignUp = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const router = useRouter();
 
   const [loading, setLoading] = useState(false);
 
@@ -28,9 +26,9 @@ const SignUp = () => {
     setLoading(true);
 
     try {
-      const result = await authService.signUp(email, password, username);
+      const result = await authService.signUp({ email, password, username });
     } catch (error: any) {
-      setError(error.message);
+      console.error(error);
     }
 
     setLoading(false);
@@ -91,14 +89,6 @@ const SignUp = () => {
         >
           {loading ? <CircularProgress size={24} /> : "Sign Up"}
         </Button>
-
-        {error && (
-          <Box
-            sx={{ width: "100%", display: "flex", justifyContent: "center" }}
-          >
-            {error}
-          </Box>
-        )}
 
         <Box
           sx={{

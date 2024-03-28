@@ -21,9 +21,8 @@ export default async function handler(
     if (!user) {
       return res
         .status(401)
-        .json({ message: "Email or password is incorrect" });
+        .json({ message: "User with this email was not found" });
     }
-
     // Verify password
     const isValid = bcrypt.compareSync(password, user.password);
 
