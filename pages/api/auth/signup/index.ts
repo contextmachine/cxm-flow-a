@@ -16,6 +16,21 @@ const CREATE_USER_MUTATION = gql`
   }
 `;
 
+// Helper functions for validation
+const isValidEmail = (email: string) => {
+  const re =
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
+  return re.test(String(email).toLowerCase());
+};
+
+const isValidPassword = (password: string) => {
+  return password.length >= 8; // Just an example, consider adding more checks
+};
+
+const isValidUsername = (username: string) => {
+  return username.length >= 3 && username.length <= 20; // Example constraints
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -25,10 +40,25 @@ export default async function handler(
   }
 
   const { email, password, username } = req.body;
+
+  // Validations
   if (!email || !password || !username) {
     return res
       .status(400)
       .json({ error: "Email, password, and username are required." });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: "Invalid email format." });
+  }
+  if (!isValidPassword(password)) {
+    return res
+      .status(400)
+      .json({ error: "Password must be at least 8 characters long." });
+  }
+  if (!isValidUsername(username)) {
+    return res
+      .status(400)
+      .json({ error: "Username must be between 3 and 20 characters long." });
   }
 
   // Hash the password
@@ -49,8 +79,6 @@ export default async function handler(
         username,
       },
     });
-
-    console.log("data", data);
 
     // Create JWT token or handle user creation response here
     const token = jwt.sign({ email }, process.env!.JWT_SECRET as string, {

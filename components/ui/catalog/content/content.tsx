@@ -1,11 +1,12 @@
 import styled from "styled-components";
 import CatalogItem from "../catalog-item/catalog-item";
-import { Box, InputBase, Paper } from "@mui/material";
+import { Box, Button, InputBase, Paper, TextField } from "@mui/material";
 import { AvatarCss } from "../left-bar/blocks/user-profile";
 import { useWorkspace } from "@/components/services/workspace-service/workspace-provider";
+import EditableTitle from "../../scene/primitives/dynamic-title/dynamic-title";
 
 const Content = () => {
-  const { activeScenes, activeWorkspace } = useWorkspace();
+  const { activeScenes, activeWorkspace, workspaceService } = useWorkspace();
 
   return (
     <Wrapper>
@@ -15,39 +16,41 @@ const Content = () => {
         </Box>
       </Paper>
 
-      <Box sx={{ width: "100%" }}>
+      <Box
+        sx={{ width: "100%", display: "flex", justifyContent: "space-between" }}
+      >
         <Paper
-          component="form"
           sx={{
-            display: "flex",
             alignItems: "center",
-            p: "0px !important",
-            maxWidth: "270px",
+            height: "45px",
+            justifyContent: "space-between",
           }}
         >
-          <InputBase
-            sx={{
-              flex: 1,
-              border: "0px solid #e0e0e0",
-              borderRadius: "9px",
-              height: "33px",
-              fontSize: "12px",
-              padding: "0 10px",
-            }}
+          <Box sx={{ padding: "0 18px" }}>
+            <EditableTitle
+              title={activeWorkspace?.name || ""}
+              setTitle={workspaceService.updateTitle}
+            />
+          </Box>
+
+          <TextField
+            sx={{ minWidth: "250px", width: "100%", maxWidth: "250px" }}
             placeholder="Search..."
-            inputProps={{ "aria-label": "search google maps" }}
+            onChange={(e) => true}
           />
         </Paper>
       </Box>
 
       <CatalogWrapper>
-        {activeScenes.map((scene, i) => (
-          <CatalogItem
-            {...scene}
-            {...{ user_workspaces: activeWorkspace!.user_workspaces }}
-            key={i}
-          />
-        ))}
+        {activeScenes.map((scene, i) => {
+          return (
+            <CatalogItem
+              {...scene}
+              {...{ user_workspaces: activeWorkspace!.user_workspaces }}
+              key={i}
+            />
+          );
+        })}
       </CatalogWrapper>
     </Wrapper>
   );

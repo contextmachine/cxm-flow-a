@@ -20,8 +20,6 @@ export function SceneProvider({ children }: any) {
   const { query } = router;
   const { scene_id } = query;
 
-  console.log("sceneMetadata", sceneMetadata);
-
   useEffect(() => {
     if (typeof scene_id !== "string") return;
 

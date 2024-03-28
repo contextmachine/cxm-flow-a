@@ -1,13 +1,16 @@
 import { Box } from "@mui/material";
 import styled from "styled-components";
 import { Title } from "../../scene/bar/bar.styled";
-import { SceneDto } from "@/components/services/workspace-service/workspace-service.types";
 import moment from "moment";
 import stc from "string-to-color";
 import { UserMetadata } from "@/components/services/auth-service/auth-service.types";
 import { Ava } from "../styles/styles";
+import SceneEntity from "@/components/services/workspace-service/entities/scene-entity";
 
-interface CatalogItemProps extends SceneDto {
+interface CatalogItemProps {
+  id: number;
+  name: string;
+  created_at: string;
   user_workspaces: { user: UserMetadata }[];
 }
 
@@ -42,7 +45,7 @@ const CatalogItem: React.FC<CatalogItemProps> = ({
           <Title>Modified {date}</Title>
         </Box>
 
-        <Box sx={{ display: "flex" }}>
+        {/* <Box sx={{ display: "flex" }}>
           {user_workspaces.map((user, i: number) => {
             return (
               <Ava
@@ -52,7 +55,7 @@ const CatalogItem: React.FC<CatalogItemProps> = ({
               />
             );
           })}
-        </Box>
+        </Box> */}
       </Box>
     </Wrapper>
   );

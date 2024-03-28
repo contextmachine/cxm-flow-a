@@ -3,6 +3,7 @@ import AuthService from "./auth-service";
 import { UserMetadataResponse } from "./auth-service.types";
 import { useRouter } from "next/router";
 import Loader from "@/components/ui/auth/loader/loader";
+import { Snackbar } from "@mui/material";
 
 interface AuthProviderProps {
   authService: AuthService;
@@ -18,6 +19,8 @@ export function AuthProvider({ children }: any) {
   const [isUnauthorized, setIsUnauthorized] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const [error, setError] = useState<string>("");
+
   const router = useRouter();
 
   useEffect(() => {
@@ -25,6 +28,7 @@ export function AuthProvider({ children }: any) {
       setLoading,
       setUserMetadata,
       setIsUnauthorized,
+      setError,
     });
   }, []);
 
@@ -60,6 +64,17 @@ export function AuthProvider({ children }: any) {
         (!loading && !isUnauthorized && isAuthPage)) && <Loader />}
 
       {children}
+
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError("")}
+        message={error}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+      />
     </AuthContext.Provider>
   );
 }

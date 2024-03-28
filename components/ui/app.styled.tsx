@@ -47,6 +47,14 @@ const GlobalStyle = createGlobalStyle`
       padding: 0 9px;
     }
   }
+
+  // SNACKBARS
+  & .MuiSnackbarContent-root {
+    &, & * {
+      font-size: 12px;
+      color: white;
+    }
+  }
   
   // Papers
   & .MuiPaper-root {
@@ -185,6 +193,23 @@ const GlobalStyle = createGlobalStyle`
       &, & * {
         font-size: 12px;
       }
+    }
+  }
+
+  // SELECT MENU BADGE
+  & .MuiInputBase-root[data-type='role-badge'] {
+    &, & * {
+      font-size: 12px;
+      background-color: lightgrey;
+      border-radius: 9px;
+    }
+
+    & .MuiSelect-select {
+      padding: 0px 24px
+    }
+
+    &::before, &::after {
+      display: none;
     }
   }
 

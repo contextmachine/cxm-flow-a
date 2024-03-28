@@ -6,6 +6,8 @@ import {
   WorkspaceDto,
   WorkspaceUserDto,
 } from "./workspace-service.types";
+import { Snackbar } from "@mui/material";
+import { v4 as uuidv4 } from "uuid";
 
 interface WorkspaceProviderProps {
   workspaceService: WorkspaceService;
@@ -13,6 +15,7 @@ interface WorkspaceProviderProps {
   activeWorkspace: WorkspaceDto | null;
   activeScenes: SceneDto[];
   activeWorkspaceUsers: WorkspaceUserDto[];
+  workspaceLogId: string;
 }
 
 const WorkspaceContext = createContext<WorkspaceProviderProps | null>(null);
@@ -21,16 +24,18 @@ export function WorkspaceProvider({ children }: any) {
   const { authService } = useAuth();
   const [workspaceService] = useState(() => authService.workspaceService);
 
-  const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const [workspaces, setWorkspaces] = useState<WorkspaceDto[]>([]);
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceDto | null>(
     null
   );
   const [activeWorkspaceUsers, setActiveWorkspaceUsers] = useState<
     WorkspaceUserDto[]
   >([]);
-  const [activeScenes, setActiveScenes] = useState<SceneDto[]>([]);
 
-  console.log("workspaceService", workspaceService);
+  const [activeScenes, setActiveScenes] = useState<SceneDto[]>([]);
+  const [workspaceLogId, setWorkspaceLogId] = useState<string>(uuidv4());
+
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     workspaceService.provideStates({
@@ -38,6 +43,8 @@ export function WorkspaceProvider({ children }: any) {
       setActiveWorkspace,
       setActiveScenes,
       setActiveWorkspaceUsers,
+      setError,
+      setWorkspaceLogId,
     });
   }, []);
 
@@ -49,9 +56,21 @@ export function WorkspaceProvider({ children }: any) {
         activeWorkspace,
         activeScenes,
         activeWorkspaceUsers,
+        workspaceLogId,
       }}
     >
       {children}
+
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError("")}
+        message={error}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+      />
     </WorkspaceContext.Provider>
   );
 }
