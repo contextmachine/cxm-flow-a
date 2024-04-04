@@ -82,7 +82,7 @@ const LeftBar = () => {
   );
 };
 
-const IconBullet = styled.div<{
+export const IconBullet = styled.div<{
   color: string;
 }>`
   width: 6px;
@@ -95,7 +95,7 @@ const IconBullet = styled.div<{
   background-color: ${({ color }) => color};
 `;
 
-const MenuWrapper = styled.div`
+export const MenuWrapper = styled.div`
   display: flex;
   flex-direction: column;
 

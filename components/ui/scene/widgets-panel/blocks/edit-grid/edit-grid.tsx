@@ -53,7 +53,7 @@ const EditGrid = () => {
       <Box
         sx={{
           width: "100%",
-          maxWidth: "330px",
+          maxWidth: "180px",
           pointerEvents: "none ! important",
         }}
       >

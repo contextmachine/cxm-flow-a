@@ -3,5 +3,6 @@ export interface SceneMetadataDto {
   description: string;
   id: number;
   name: string;
+  workspace_id: number;
   __typename: string;
 }
