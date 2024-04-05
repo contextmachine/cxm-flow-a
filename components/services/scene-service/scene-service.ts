@@ -4,6 +4,8 @@ import client from "@/components/graphql/client/client";
 import { WorkspaceDto } from "../workspace-service/workspace-service.types";
 import WorkspaceService from "../workspace-service/workspace-service";
 import { SceneMetadataDto } from "./scene-service.types";
+import ProductService from "../product-service/product-service";
+import ToolsetService from "../toolset-service/toolset-service";
 
 class SceneService {
   private _workspaceService: WorkspaceService;
@@ -11,9 +13,15 @@ class SceneService {
 
   private $setSceneMetadata: any;
 
+  private _productService: ProductService;
+  private _toolsetService: ToolsetService;
+
   constructor(private _authService: AuthService) {
     this._workspaceService = this._authService.workspaceService;
     this._metadata = null;
+
+    this._productService = new ProductService(this);
+    this._toolsetService = new ToolsetService(this);
 
     this.updateTitle = this.updateTitle.bind(this);
   }
@@ -29,6 +37,7 @@ class SceneService {
           id
           description
           created_at
+          workspace_id
         }
       }
     `;
@@ -47,6 +56,8 @@ class SceneService {
       if (!scene) throw new Error("Scene not found");
 
       this.updateSceneMetadata(scene);
+
+      this._productService.init();
     } catch (error) {
       console.error("Error loading scene:", error);
     }
@@ -89,9 +100,32 @@ class SceneService {
     this.$setSceneMetadata = states.setSceneMetadata;
   }
 
+  public get productService() {
+    return this._productService;
+  }
+
+  public get authService() {
+    return this._authService;
+  }
+
+  public get workspaceId() {
+    return this._metadata?.workspace_id;
+  }
+
+  public get sceneMetadata() {
+    return this._metadata;
+  }
+
+  public get toolsetService() {
+    return this._toolsetService;
+  }
+
   public dispose() {
     this._metadata = null;
     this.$setSceneMetadata = null;
+
+    this._productService.dispose();
+    this._toolsetService.dispose();
   }
 }
 

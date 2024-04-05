@@ -11,8 +11,8 @@ interface WidgetProps {
 }
 
 const WidgetEditPaper: React.FC<WidgetProps> = ({ type }) => {
-  const title = Description[type].title;
-  const description = Description[type].description;
+  const title = Description[type]?.title || type;
+  const description = Description[type]?.description || "Description";
 
   return (
     <Paper

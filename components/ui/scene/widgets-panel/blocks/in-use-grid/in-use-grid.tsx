@@ -3,9 +3,16 @@ import { animations } from "@formkit/drag-and-drop";
 import { Box } from "@mui/material";
 import { WidgetType } from "../../widgets/widget.types";
 import Widget from "../../widgets/widget";
+import { useToolset } from "@/components/services/toolset-service/toolset-provider";
+import { useEffect, useMemo } from "react";
 
 const InUseGrid = () => {
-  const todoItems: WidgetType[] = ["chart-widget", "statistics-widget"];
+  const { activeProducts, toolsetService } = useToolset();
+
+  const todoItems: string[] = useMemo(
+    () => activeProducts.map((product) => product.name),
+    [activeProducts]
+  );
 
   const [todoList, todos] = useDragAndDrop<HTMLUListElement, string>(
     todoItems,
@@ -19,6 +26,10 @@ const InUseGrid = () => {
       dragHandle: ".kanban-handle",
     }
   );
+
+  useEffect(() => {
+    toolsetService.updateTemporaryTodos(todos);
+  }, [todos]);
 
   return (
     <Box

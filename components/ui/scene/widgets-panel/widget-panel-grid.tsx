@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import Properties from "./blocks/properties/properties";
 import Widget from "./widgets/widget";
 import OutlinerWidget from "./widgets/outliner-widget";
+import { useToolset } from "@/components/services/toolset-service/toolset-provider";
 
 const InUseGrid = dynamic(() => import("./blocks/in-use-grid/in-use-grid"), {
   ssr: false,
@@ -16,9 +17,12 @@ const EditGrid = dynamic(() => import("./blocks/edit-grid/edit-grid"), {
 });
 
 const WidgetPanelGrid = () => {
+  const { toolsetService } = useToolset();
   const { isEditWidgetsOpen, stateService } = useStates();
   const { isWidgetsOpen } = useStates();
   const { sectionType } = useStates();
+
+  const { activeToolset, activePLogId } = useToolset();
 
   return (
     <>
@@ -35,7 +39,11 @@ const WidgetPanelGrid = () => {
             left: "-0px",
             top: "-0px",
           }}
-          onClick={() => stateService.toogleEditWidgets(false)}
+          onClick={() => {
+            toolsetService.saveToolsetProducts();
+
+            stateService.toogleEditWidgets(false);
+          }}
         ></Box>
       )}
 
@@ -65,13 +73,17 @@ const WidgetPanelGrid = () => {
               }}
             >
               <Widget type="bar-widget" />
+              <Widget type="toolset-widget" />
 
-              {sectionType === "widgets" && <InUseGrid />}
-              {sectionType === "outliner" && <OutlinerWidget />}
+              {sectionType === "widgets" && <InUseGrid key={activePLogId} />}
+
+              {sectionType === "outliner" && (
+                <OutlinerWidget key={activePLogId} />
+              )}
             </Box>
 
             {/* Edit Panel */}
-            {isEditWidgetsOpen && <EditGrid />}
+            {isEditWidgetsOpen && <EditGrid key={activePLogId}/>}
           </>
         )}
 
