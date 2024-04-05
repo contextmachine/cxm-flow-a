@@ -16,12 +16,15 @@ class WorkspaceService {
   private _activeWorkspaceUsers: Map<string, UserWorkspaceEntity>; // Attached to active workspace
   private _activeScenes: Map<number, SceneEntity>;
 
+  private _isDataFetched: boolean;
+
   private $setWorkspaces: any;
   private $setActiveWorkspace: any;
   private $setActiveScenes: any;
   private $setActiveWorkspaceUsers: any;
   private $setError: any;
   private $setWorkspaceLogId: any;
+  private $setIsDataFetched: any;
 
   constructor(private _authService: AuthService) {
     this._workspaces = new Map();
@@ -34,6 +37,8 @@ class WorkspaceService {
     this.$setActiveWorkspace = null;
     this.$setActiveScenes = null;
     this.$setActiveWorkspaceUsers = null;
+
+    this._isDataFetched = false;
 
     this.addWorkspace = this.addWorkspace.bind(this);
     this.addScene = this.addScene.bind(this);
@@ -117,6 +122,9 @@ class WorkspaceService {
 
         this.setActiveWorkspace(workspaceId);
       }
+
+      this._isDataFetched = true;
+      this.$setIsDataFetched(true);
     } catch (error) {
       console.error("Error fetching workspaces:", error);
     }
@@ -266,6 +274,19 @@ class WorkspaceService {
     this._activeWorkspace?.updateTitle(title);
   }
 
+  public getUserRoleWithinWorkspace(
+    userId: number,
+    workspaceId: number
+  ): null | {
+    id: number;
+    name: string;
+  } {
+    const workspace = this._workspaces.get(workspaceId);
+    if (!workspace) return null;
+
+    return workspace.getUserRole(userId) || null;
+  }
+
   public provideStates(states: any) {
     this.$setWorkspaces = states.setWorkspaces;
     this.$setActiveWorkspace = states.setActiveWorkspace;
@@ -273,6 +294,7 @@ class WorkspaceService {
     this.$setActiveWorkspaceUsers = states.setActiveWorkspaceUsers;
     this.$setError = states.setError;
     this.$setWorkspaceLogId = states.setWorkspaceLogId;
+    this.$setIsDataFetched = states.setIsDataFetched;
   }
 
   public get setError() {
@@ -284,6 +306,8 @@ class WorkspaceService {
     this._activeWorkspace = null;
     this._activeWorkspaceUsers.clear();
     this._activeScenes.clear();
+
+    this._isDataFetched = false;
 
     this.$setWorkspaces = null;
   }

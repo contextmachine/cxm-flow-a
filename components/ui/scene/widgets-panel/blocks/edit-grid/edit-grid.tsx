@@ -5,9 +5,15 @@ import { WidgetType } from "../../widgets/widget.types";
 import { Box, IconButton, InputBase, Paper } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import WidgetEditPaper from "../widget-edit-paper/widget-edit-paper";
+import { useToolset } from "@/components/services/toolset-service/toolset-provider";
+import { useMemo } from "react";
 
 const EditGrid = () => {
-  const doneItems: WidgetType[] = ["mapping-widget", "query-widget"];
+  const { restProducts } = useToolset();
+
+  const doneItems: string[] = useMemo(() => {
+    return restProducts.map((product) => product.name);
+  }, [restProducts]);
 
   const [doneList, dones] = useDragAndDrop<HTMLUListElement, string>(
     doneItems,
@@ -26,7 +32,13 @@ const EditGrid = () => {
     <>
       <Box
         data-type="edit-widgets-panel"
-        sx={{ display: "flex", width: "100%", overflowY: "scroll" }}
+        sx={{
+          display: "flex",
+          width: "100%",
+          overflowY: "scroll",
+          border: "1px dashed #000",
+          borderRadius: "18px",
+        }}
       >
         <Box
           data-type="edit-widgets-grid"
@@ -38,7 +50,7 @@ const EditGrid = () => {
             gridTemplateColumns: "1fr 1fr",
             gridAutoRows: "320px",
             // dashed border
-            border: "1px dashed #000",
+            //border: "1px dashed #000",
             borderRadius: "18px",
           }}
           ref={doneList}

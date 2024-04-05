@@ -9,11 +9,14 @@ class ProductService {
 
   private _products: Map<number, ProductsDto>;
   private _workspaceProducts: Map<number, ProductsDto>;
-  private _roleProducts: Map<number, any>;
+  private _roleProducts: Map<number, RoleProductDto>;
+  private _outputProducts: Map<number, ProductsDto>;
 
   private $setProducts: any;
   private $setWorkspaceProducts: any;
   private $setRoleProducts: any;
+  private $setOutputProducts: any;
+  private $setError: any;
 
   constructor(private _sceneService: SceneService) {
     this._authService = this._sceneService.authService;
@@ -21,6 +24,7 @@ class ProductService {
     this._products = new Map();
     this._workspaceProducts = new Map();
     this._roleProducts = new Map();
+    this._outputProducts = new Map();
   }
 
   async fetchProducts(): Promise<ProductsDto[]> {
@@ -56,6 +60,7 @@ class ProductService {
 
       return products;
     } catch (error) {
+      this.$setError("Error fetching products");
       console.error("Error fetching products:", error);
       throw error;
     }
@@ -93,14 +98,13 @@ class ProductService {
         this._workspaceProducts.set(product.id, product);
       });
 
-      console.log("products", products);
-
       this.$setWorkspaceProducts([...products]);
 
       if (!products) throw new Error("Products not found");
 
       return products;
     } catch (error) {
+      this.$setError("Error fetching products");
       console.error("Error fetching products:", error);
       throw error;
     }
@@ -136,6 +140,7 @@ class ProductService {
 
       return roles;
     } catch (error) {
+      this.$setError("Error fetching role products");
       console.error("Error fetching role products:", error);
       throw error;
     }
@@ -168,11 +173,10 @@ class ProductService {
           },
         });
 
-        console.log("response", response);
-
         if (!response.data.insert_appv3_workspace_product.affected_rows)
           throw new Error("Error updating workspace product link");
       } catch (error) {
+        this.$setError("Error updating workspace product link");
         console.error("Error updating workspace product link:", error);
         throw error;
       }
@@ -205,6 +209,7 @@ class ProductService {
         if (!response.data.delete_appv3_workspace_product.affected_rows)
           throw new Error("Error updating workspace product link");
       } catch (error) {
+        this.$setError("Error updating workspace product link");
         console.error("Error updating workspace product link:", error);
         throw error;
       }
@@ -241,7 +246,7 @@ class ProductService {
         if (!response.data.insert_appv3_product_role.affected_rows)
           throw new Error("Error updating role product link");
       } catch (error) {
-        console.error("Error updating role product link:", error);
+        this.$setError("Error updating role product link");
         throw error;
       }
     } else {
@@ -270,7 +275,7 @@ class ProductService {
         if (!response.data.delete_appv3_product_role.affected_rows)
           throw new Error("Error updating role product link");
       } catch (error) {
-        console.error("Error updating role product link:", error);
+        this.$setError("Error updating role product link");
         throw error;
       }
     }
@@ -287,10 +292,51 @@ class ProductService {
     await this.fetchRoleProducts();
   }
 
+  public updateOutputProducts() {
+    this._outputProducts.clear();
+
+    const userId = this._authService.userMetadata?.id;
+    const workspaceId = this._sceneService.workspaceId;
+
+    const userRole =
+      this._authService.workspaceService.getUserRoleWithinWorkspace(
+        userId!,
+        workspaceId!
+      ) as { id: number; name: string };
+
+    const userRoleId = userRole!.id;
+    const relevantRoleProducts = this._roleProducts.get(userRoleId);
+
+    if (!relevantRoleProducts) return;
+
+    const { product_roles } = relevantRoleProducts;
+
+    const workspaceProducts = this._workspaceProducts;
+
+    this._products.forEach((product) => {
+      const isWorkspaceProduct = workspaceProducts.has(product.id);
+      const isRoleProduct = product_roles.some(
+        (roleProduct) => roleProduct.product_id === product.id
+      );
+
+      if (isWorkspaceProduct && isRoleProduct) {
+        this._outputProducts.set(product.id, product);
+      }
+    });
+
+    this.$setOutputProducts([...Array.from(this._outputProducts.values())]);
+  }
+
+  public get products() {
+    return this._products;
+  }
+
   public provideStates(states: any) {
     this.$setProducts = states.setProducts;
     this.$setWorkspaceProducts = states.setWorkspaceProducts;
     this.$setRoleProducts = states.setRoleProducts;
+    this.$setOutputProducts = states.setOutputProducts;
+    this.$setError = states.setError;
 
     this.init();
   }
@@ -299,6 +345,7 @@ class ProductService {
     this._products.clear();
     this._workspaceProducts.clear();
     this._roleProducts.clear();
+    this._outputProducts.clear();
   }
 }
 

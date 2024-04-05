@@ -6,6 +6,7 @@ import SceneGrid from "@/components/ui/scene/scene-grid";
 import { useAuth } from "@/components/services/auth-service/auth-provider";
 import { SceneProvider } from "@/components/services/scene-service/scene-provider";
 import { ProductProvider } from "@/components/services/product-service/product-provider";
+import { ToolsetProvider } from "@/components/services/toolset-service/toolset-provider";
 
 const ScenePage: NextPage = () => {
   const { authService } = useAuth();
@@ -13,17 +14,19 @@ const ScenePage: NextPage = () => {
   return (
     <SceneProvider>
       <ProductProvider>
-        {/* Global State Service */}
-        <StateProvider>
-          {/* Layout */}
-          <Box sx={{ width: "100vw", height: "100vh" }}>
-            {/* UI interface of panels */}
-            <SceneGrid />
+        <ToolsetProvider>
+          {/* Global State Service */}
+          <StateProvider>
+            {/* Layout */}
+            <Box sx={{ width: "100vw", height: "100vh" }}>
+              {/* UI interface of panels */}
+              <SceneGrid />
 
-            {/* Viewer 3D */}
-            <Viewer />
-          </Box>
-        </StateProvider>
+              {/* Viewer 3D */}
+              <Viewer />
+            </Box>
+          </StateProvider>
+        </ToolsetProvider>
       </ProductProvider>
     </SceneProvider>
   );

@@ -3,4 +3,5 @@ export type WidgetType =
   | "mapping-widget"
   | "query-widget"
   | "statistics-widget"
-  | "bar-widget";
+  | "bar-widget"
+  | "toolset-widget";

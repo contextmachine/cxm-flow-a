@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import SceneService from "./scene-service";
 import { useAuth } from "../auth-service/auth-provider";
 import { useRouter } from "next/router";
+import { useWorkspace } from "../workspace-service/workspace-provider";
 
 interface SceneProviderProps {
   sceneService: SceneService;
@@ -12,6 +13,7 @@ const SceneContext = createContext<SceneProviderProps | null>(null);
 
 export function SceneProvider({ children }: any) {
   const { authService } = useAuth();
+  const { workspaceService } = useWorkspace();
   const [sceneService] = useState(() => new SceneService(authService));
 
   const [sceneMetadata, setSceneMetadata] = useState<any>(null);

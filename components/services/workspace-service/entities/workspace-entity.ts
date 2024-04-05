@@ -249,6 +249,20 @@ class WorkspaceEntity {
     return this._user_workspaces;
   }
 
+  public getUserRole(userId: number) {
+    const user_workspaces = this._user_workspaces;
+    let userRole = null;
+
+    user_workspaces.forEach((userWorkspace) => {
+      const user = userWorkspace.user;
+      if (user.id === userId) {
+        userRole = userWorkspace.role;
+      }
+    });
+
+    return userRole;
+  }
+
   public get data() {
     return {
       id: this._id,

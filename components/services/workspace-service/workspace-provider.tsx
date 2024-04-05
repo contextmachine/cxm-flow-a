@@ -16,6 +16,7 @@ interface WorkspaceProviderProps {
   activeScenes: SceneDto[];
   activeWorkspaceUsers: WorkspaceUserDto[];
   workspaceLogId: string;
+  isDataFetched: boolean;
 }
 
 const WorkspaceContext = createContext<WorkspaceProviderProps | null>(null);
@@ -32,6 +33,8 @@ export function WorkspaceProvider({ children }: any) {
     WorkspaceUserDto[]
   >([]);
 
+  const [isDataFetched, setIsDataFetched] = useState<boolean>(false);
+
   const [activeScenes, setActiveScenes] = useState<SceneDto[]>([]);
   const [workspaceLogId, setWorkspaceLogId] = useState<string>(uuidv4());
 
@@ -45,6 +48,7 @@ export function WorkspaceProvider({ children }: any) {
       setActiveWorkspaceUsers,
       setError,
       setWorkspaceLogId,
+      setIsDataFetched,
     });
   }, []);
 
@@ -57,6 +61,7 @@ export function WorkspaceProvider({ children }: any) {
         activeScenes,
         activeWorkspaceUsers,
         workspaceLogId,
+        isDataFetched,
       }}
     >
       {children}
