@@ -18,6 +18,7 @@ const OutlinerWidget = () => {
     return (
       <TreeItem
         key={nodes.id}
+        // @ts-ignore
         nodeId={nodes.id}
         label={
           <Box sx={{ display: "flex", columnGap: "6px" }}>
@@ -58,6 +59,7 @@ const OutlinerWidget = () => {
       <Box>
         <Box sx={{ minHeight: "max-content" }}>
           <TreeView
+            // @ts-ignore
             defaultCollapseIcon={
               <ExpandMoreIcon sx={{ fontSize: "16px !important" }} />
             }

@@ -23,6 +23,7 @@ const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview }) => {
     return (
       <TreeItem
         key={nodes.id}
+        // @ts-ignore
         nodeId={nodes.id}
         label={
           <Box
@@ -73,7 +74,9 @@ const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview }) => {
       <TreeWrapper>
         <Box sx={{ flexGrow: 1, width: "100%" }}>
           <TreeView
+            // @ts-ignore
             defaultCollapseIcon={
+              // @ts-ignore
               <ExpandMoreIcon sx={{ fontSize: "16px !important" }} />
             }
             defaultExpanded={["1"]}
