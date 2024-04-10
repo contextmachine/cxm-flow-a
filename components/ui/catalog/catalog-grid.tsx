@@ -63,7 +63,8 @@ const BarWrapper = css`
   & {
     display: flex;
     flex-direction: column;
-    max-height: max-content;
+    max-height: 100vh;
+    overflow-y: scroll;
 
     gap: 9px;
   }

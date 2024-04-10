@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 import WorkspaceService from "../workspace-service";
-import { SceneDto, WorkspaceDto } from "../workspace-service.types";
+import { RoleTypes, SceneDto, WorkspaceDto } from "../workspace-service.types";
 import SceneEntity from "./scene-entity";
 import client from "@/components/graphql/client/client";
 import UserWorkspaceEntity from "./user-workspace-entity";
@@ -126,7 +126,7 @@ class WorkspaceEntity {
   }
 
   public async addUserToWorkspace(email: string) {
-    const roleId = 3; // Viewer
+    const roleId = RoleTypes.VIEWER; // Viewer
 
     // Find the user by email
     const findUserQuery = gql`
@@ -189,6 +189,47 @@ class WorkspaceEntity {
       this._workspaceService.fetchWorkspaces();
     } catch (error: any) {
       this._workspaceService.setError(error.message);
+      console.error(error);
+    }
+  }
+
+  public async removeUserFromWorkspace(userId: number) {
+    const mutation = gql`
+      mutation MyQuery($user_id: Int!, $workspace_id: Int!) {
+        delete_appv3_user_workspace(
+          where: {
+            user_id: { _eq: $user_id }
+            workspace_id: { _eq: $workspace_id }
+          }
+        ) {
+          affected_rows
+        }
+      }
+    `;
+
+    const workspaceId = this._id;
+
+    try {
+      // Call the mutation using the Apollo client
+      const { data: mutationData }: any = await client.mutate({
+        mutation,
+        variables: {
+          workspace_id: workspaceId,
+          user_id: userId,
+        },
+      });
+
+      const affectedRows =
+        mutationData.delete_appv3_user_workspace.affected_rows;
+      if (affectedRows === 0) {
+        throw new Error("Failed to add user to workspace.");
+      }
+
+      this._workspaceService.setError("User removed from workspace.");
+
+      this._workspaceService.fetchWorkspaces();
+    } catch (error) {
+      this._workspaceService.setError("Error removing user from workspace.");
       console.error(error);
     }
   }
