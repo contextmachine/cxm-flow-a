@@ -7,6 +7,10 @@ import UserProfile from "./blocks/user-profile";
 import { useWorkspace } from "@/components/services/workspace-service/workspace-provider";
 import stc from "string-to-color";
 
+import { TreeViewBaseItem } from "@mui/x-tree-view/models";
+import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
+import WorkspacesList from "./blocks/workspaces-list/workspaces-list";
+
 const LeftBar = () => {
   const menuItems = ["Personal", "Favourites", "Shared", "Trash"];
 
@@ -38,7 +42,10 @@ const LeftBar = () => {
         </MenuWrapper>
       </Paper>
 
-      <Paper title="Workspaces" sx={{ flexDirection: "column" }}>
+      <Paper
+        title="Workspaces"
+        sx={{ flexDirection: "column", maxHeight: "100%" }}
+      >
         <WidgetHeader>
           <IconButton>
             <MarkedIcon />
@@ -47,27 +54,7 @@ const LeftBar = () => {
           <Title style={{ fontWeight: "500" }}>Workspaces</Title>
         </WidgetHeader>
 
-        <MenuWrapper>
-          {workspaces.map((item, i) => (
-            <Box sx={{ width: "100%" }} key={i}>
-              <Button
-                sx={{
-                  width: "100%",
-                  justifyContent: "flex-start",
-                  textTransform: "none",
-                }}
-                variant="contained"
-                color="secondary"
-                size="large"
-                data-active={item.id === activeWorkspace?.id}
-                onClick={() => workspaceService.setActiveWorkspace(item.id)}
-                startIcon={<IconBullet color={stc(`${item.id}`)} />}
-              >
-                {item?.name}
-              </Button>
-            </Box>
-          ))}
-        </MenuWrapper>
+        <WorkspacesList />
 
         <Button
           onClick={workspaceService.addWorkspace}

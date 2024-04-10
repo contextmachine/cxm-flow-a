@@ -101,6 +101,12 @@ class WorkspaceService {
         throw new Error("Workspaces not found.");
       }
 
+      // If no workspaces found, add a new workspace
+      if (workspacesDto.length === 0) {
+        await this.addWorkspace();
+        return;
+      }
+
       this._workspaces.clear();
       workspacesDto.forEach((workspace: any) => {
         const workspaceEntity = new WorkspaceEntity(this, workspace.workspace);
@@ -219,11 +225,15 @@ class WorkspaceService {
 
     const mutation = gql`
       mutation DeleteWorkspace($id: Int!) {
-        delete_appv3_scene(where: { workspace_id: { _eq: $_eq } }) {
+        delete_appv3_workspace_product(where: { workspace_id: { _eq: $id } }) {
           affected_rows
         }
 
-        delete_appv3_workspace(where: { id: { _eq: $id } }) {
+        delete_appv3_user_workspace(where: { workspace_id: { _eq: $id } }) {
+          affected_rows
+        }
+
+        delete_appv3_scene(where: { workspace_id: { _eq: $id } }) {
           affected_rows
         }
       }
@@ -238,6 +248,8 @@ class WorkspaceService {
       });
 
       this.fetchWorkspaces();
+
+      this.$setError("Workspace deleted successfully.");
 
       // Handle the response data here
     } catch (error) {
@@ -265,6 +277,13 @@ class WorkspaceService {
       return this.$setError("No active workspace found.");
 
     this._activeWorkspace?.addUserToWorkspace(email);
+  }
+
+  public removeUserFromWorkspace(userId: number) {
+    if (!this._activeWorkspace)
+      return this.$setError("No active workspace found.");
+
+    this._activeWorkspace?.removeUserFromWorkspace(userId);
   }
 
   public updateTitle(title: string) {
