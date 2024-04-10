@@ -1,8 +1,12 @@
 import { useWorkspace } from "@/components/services/workspace-service/workspace-provider";
-import { WorkspaceUserDto } from "@/components/services/workspace-service/workspace-service.types";
+import {
+  RoleTypes,
+  WorkspaceUserDto,
+} from "@/components/services/workspace-service/workspace-service.types";
 import {
   Box,
   Button,
+  Divider,
   IconButton,
   MenuItem,
   Paper,
@@ -14,11 +18,19 @@ import MarkedIcon from "../../icons/marked-icon";
 import { Ava, WidgetHeader } from "../styles/styles";
 import stc from "string-to-color";
 import { useAuth } from "@/components/services/auth-service/auth-provider";
-import React from "react";
+import React, { useMemo } from "react";
 
 const RightBar = () => {
-  const { workspaceService, activeWorkspaceUsers } = useWorkspace();
+  const { workspaceService, activeWorkspaceUsers, activeWorkspace } =
+    useWorkspace();
   const { userMetadata } = useAuth();
+
+  const currentUserRole = useMemo(
+    () =>
+      activeWorkspaceUsers.find((u) => u.user.id === userMetadata?.id)?.role
+        ?.id,
+    [activeWorkspaceUsers, userMetadata]
+  );
 
   return (
     <>
@@ -81,6 +93,8 @@ const RightBar = () => {
 
         <Box sx={{ color: "#999999" }}>
           {activeWorkspaceUsers.map((workspaceUser: WorkspaceUserDto, i) => {
+            const isSelf = userMetadata?.id === workspaceUser.user.id;
+
             return (
               <Box
                 sx={{
@@ -100,29 +114,44 @@ const RightBar = () => {
                   />
 
                   <Box>
-                    {workspaceUser.user.username}{" "}
-                    {userMetadata?.id === workspaceUser.user.id && <b>(You)</b>}
+                    {workspaceUser.user.username} {isSelf && <b>(You)</b>}
                   </Box>
                 </Box>{" "}
-                {false && (
-                  <>
-                    <Box
-                      sx={{
-                        padding: "2px 8px",
-                        background: "lightgrey",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      {workspaceUser.role.name}
-                    </Box>
-                  </>
-                )}
                 <UserRole
+                  isSelf={isSelf}
+                  isDisabled={() => {
+                    if (isSelf) {
+                      // Check if there's only one admin in the workspace
+                      const adminCount = activeWorkspaceUsers.filter(
+                        (u) => u.role.id === RoleTypes.ADMIN
+                      ).length;
+
+                      const isCurrentUserTheOnlyAdmin =
+                        adminCount === 1 &&
+                        workspaceUser.role.id === RoleTypes.ADMIN;
+
+                      // Disallow role change if the current user is not an admin
+                      if (currentUserRole !== RoleTypes.ADMIN) return false;
+
+                      // Disallow role change if the current user is the only admin
+                      if (isCurrentUserTheOnlyAdmin) return true;
+                    } else {
+                      // Disallow role change if the current user is not an admin
+                      if (currentUserRole !== RoleTypes.ADMIN) return true;
+                    }
+
+                    return false;
+                  }}
                   value={workspaceUser.role.id}
                   onChange={(role_id: number) =>
                     workspaceService.updateUserRole(
                       workspaceUser.user.id,
                       role_id
+                    )
+                  }
+                  onLeave={() =>
+                    workspaceService.removeUserFromWorkspace(
+                      workspaceUser.user.id
                     )
                   }
                 />
@@ -131,9 +160,11 @@ const RightBar = () => {
           })}
         </Box>
 
-        <Box>
-          <InviteForm />
-        </Box>
+        {currentUserRole !== RoleTypes.VIEWER && (
+          <Box>
+            <InviteForm />
+          </Box>
+        )}
       </Paper>
 
       <Button
@@ -143,7 +174,7 @@ const RightBar = () => {
         size="large"
         onClick={workspaceService.deleteWorkspace}
       >
-        Delete Workspace
+        <span style={{ color: "#AA1A1A" }}>Delete Workspace</span>
       </Button>
     </>
   );
@@ -152,22 +183,66 @@ const RightBar = () => {
 const UserRole: React.FC<{
   value: number;
   onChange: (role_id: number) => void;
-}> = ({ value, onChange }) => {
+  onLeave: () => void;
+  isDisabled: () => boolean;
+  isSelf: boolean;
+}> = ({ value, onChange, onLeave, isDisabled, isSelf }) => {
+  const roles: any = {
+    1: "Admin",
+    2: "Editor",
+    3: "Viewer",
+  };
+
+  if (isDisabled())
+    return (
+      <Box
+        sx={{
+          padding: "0 24px",
+          border: "1px solid rgba(0,0,0,0)",
+          borderRadius: "100px",
+        }}
+      >
+        {roles[value]}
+      </Box>
+    );
+
   return (
     <Select
+      disabled={isDisabled()}
       value={value}
       data-type="role-badge"
       label="Age"
       variant="standard"
       onChange={(e) => {
+        if (e.target.value === "leave") {
+          onLeave();
+          return;
+        }
+
         const role_id = e.target.value as number;
 
         onChange(role_id);
       }}
     >
-      <MenuItem value={1}>Admin</MenuItem>
-      <MenuItem value={2}>Editor</MenuItem>
-      <MenuItem value={3}>Viewer</MenuItem>
+      {Object.keys(roles)
+        .filter((key) => {
+          if (!isSelf) return true;
+
+          if (isSelf) {
+            return parseInt(key) === value;
+          }
+        })
+        .map((key) => {
+          return (
+            <MenuItem key={key} value={key}>
+              {roles[key]}
+            </MenuItem>
+          );
+        })}
+      <Divider />
+      <MenuItem value={"leave"}>
+        <span style={{ color: "#AA1A1A" }}>Leave</span>
+      </MenuItem>
     </Select>
   );
 };
