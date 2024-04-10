@@ -101,6 +101,12 @@ class WorkspaceService {
         throw new Error("Workspaces not found.");
       }
 
+      // If no workspaces found, add a new workspace
+      if (workspacesDto.length === 0) {
+        await this.addWorkspace();
+        return;
+      }
+
       this._workspaces.clear();
       workspacesDto.forEach((workspace: any) => {
         const workspaceEntity = new WorkspaceEntity(this, workspace.workspace);
