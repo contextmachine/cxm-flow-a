@@ -24,9 +24,11 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/js-cookie": "^3.0.6",
     "@types/jsonwebtoken": "^9.0.6",
+    "@types/three": "^0.163.0",
     "@types/uuid": "^9.0.8",
     "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
+    "camera-controls": "^2.8.3",
     "classnames": "^2.5.1",
     "graphql": "^16.8.1",
     "js-cookie": "^3.0.5",
@@ -35,9 +37,13 @@
     "next": "14.1.0",
     "react": "^18",
     "react-dom": "^18",
+    "rxjs": "^7.8.1",
     "string-to-color": "^2.2.2",
     "styled-components": "^6.1.8",
-    "uuid": "^9.0.1"
+    "three": "^0.163.0",
+    "three-mesh-bvh": "^0.7.4",
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20",

@@ -2,6 +2,7 @@ import styled from "styled-components";
 import dynamic from "next/dynamic";
 import { Box } from "@mui/material";
 import { useStates } from "@/components/services/state-service/state-provider";
+import { ViewerComponent } from "@/src/viewer/viewer-component";
 
 const DynamicContextMenuDemo = dynamic(
   () => import("../primitives/context-menu"),
@@ -13,23 +14,10 @@ const Viewer = () => {
 
   return (
     <>
-      <ViewerBackground>
-        <Canvas>
-          <Box
-            sx={{
-              width: "80px",
-              height: "80px",
-              background: "grey",
-              borderRadius: "10px",
-              pointerEvents: "all",
-              opacity: 0.5,
-              cursor: "pointer",
-            }}
-            onClick={() => stateService.toogleProperties()}
-          ></Box>
-        </Canvas>
-        {<DynamicContextMenuDemo />}
-      </ViewerBackground>
+      <ViewerComponent>
+
+        {/* {<DynamicContextMenuDemo />} */}
+      </ViewerComponent>
     </>
   );
 };
@@ -44,6 +32,7 @@ const Canvas = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  
 `;
 
 const ViewerBackground = styled.div`
