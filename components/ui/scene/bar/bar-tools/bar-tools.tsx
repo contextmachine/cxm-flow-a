@@ -1,3 +1,4 @@
+import useSubscribe from "@/components/hooks/use-subscribe";
 import { useStates } from "@/components/services/state-service/state-provider";
 import ArrowLeftIcon from "@/components/ui/icons/arrow-left-icon";
 import ExportIcon from "@/components/ui/icons/export-icon";
@@ -9,6 +10,12 @@ import styled from "styled-components";
 const BarTools = () => {
   const { stateService, isWidgetsOpen } = useStates();
 
+  const [modalPanelType, setModalPanelType] = useSubscribe(
+    stateService.modalPanelType$
+  );
+
+  console.log("modalPanelType", modalPanelType);
+
   return (
     <Wrapper>
       <IconButton>
@@ -19,7 +26,10 @@ const BarTools = () => {
         <ExportIcon />
       </IconButton>
 
-      <IconButton>
+      <IconButton
+        data-open={`${modalPanelType === "settings" ? "true" : "false"}`}
+        onClick={() => setModalPanelType("settings")}
+      >
         <SettingsIcons />
       </IconButton>
 

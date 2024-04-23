@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import StateService from "./state-service";
 import { SectionType } from "./state-service.types";
+import { useScene } from "../scene-service/scene-provider";
 
 interface StateProviderProps {
   stateService: StateService;
@@ -13,7 +14,8 @@ interface StateProviderProps {
 const StateContext = createContext<StateProviderProps | null>(null);
 
 export function StateProvider({ children }: any) {
-  const [stateService] = useState(() => new StateService());
+  const { sceneService } = useScene();
+  const stateService = sceneService.stateService;
 
   const [isWidgetsOpen, setIsWidgetsOpen] = useState(false);
   const [isEditWidgetsOpen, setIsEditWidgetsOpen] = useState(false);

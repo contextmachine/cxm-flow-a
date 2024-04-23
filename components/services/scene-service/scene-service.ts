@@ -6,6 +6,7 @@ import WorkspaceService from "../workspace-service/workspace-service";
 import { SceneMetadataDto } from "./scene-service.types";
 import ProductService from "../product-service/product-service";
 import ToolsetService from "../toolset-service/toolset-service";
+import StateService from "../state-service/state-service";
 
 class SceneService {
   private _workspaceService: WorkspaceService;
@@ -15,6 +16,7 @@ class SceneService {
 
   private _productService: ProductService;
   private _toolsetService: ToolsetService;
+  private _stateService: StateService;
 
   constructor(private _authService: AuthService) {
     this._workspaceService = this._authService.workspaceService;
@@ -22,6 +24,7 @@ class SceneService {
 
     this._productService = new ProductService(this);
     this._toolsetService = new ToolsetService(this);
+    this._stateService = new StateService(this);
 
     this.updateTitle = this.updateTitle.bind(this);
   }
@@ -120,12 +123,17 @@ class SceneService {
     return this._toolsetService;
   }
 
+  public get stateService() {
+    return this._stateService;
+  }
+
   public dispose() {
     this._metadata = null;
     this.$setSceneMetadata = null;
 
     this._productService.dispose();
     this._toolsetService.dispose();
+    this._stateService.dispose();
   }
 }
 

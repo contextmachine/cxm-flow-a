@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  use,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import SceneService from "./scene-service";
 import { useAuth } from "../auth-service/auth-provider";
 import { useRouter } from "next/router";
@@ -14,7 +21,7 @@ const SceneContext = createContext<SceneProviderProps | null>(null);
 export function SceneProvider({ children }: any) {
   const { authService } = useAuth();
   const { workspaceService } = useWorkspace();
-  const [sceneService] = useState(() => new SceneService(authService));
+  const [sceneService, setSceneService] = useState<SceneService | null>(null);
 
   const [sceneMetadata, setSceneMetadata] = useState<any>(null);
 
@@ -22,7 +29,20 @@ export function SceneProvider({ children }: any) {
   const { query } = router;
   const { scene_id } = query;
 
+  const wasInit = useRef<boolean>(false);
   useEffect(() => {
+    if (wasInit.current) return;
+
+    console.log("Done it");
+
+    setSceneService(new SceneService(authService));
+
+    wasInit.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!sceneService) return;
+
     if (typeof scene_id !== "string") return;
 
     sceneService.setScene(scene_id);
@@ -33,16 +53,16 @@ export function SceneProvider({ children }: any) {
     return () => {
       sceneService.dispose();
     };
-  }, [scene_id]);
+  }, [scene_id, sceneService]);
 
   return (
     <SceneContext.Provider
       value={{
-        sceneService,
+        sceneService: sceneService!,
         sceneMetadata,
       }}
     >
-      {children}
+      {sceneService && children}
     </SceneContext.Provider>
   );
 }

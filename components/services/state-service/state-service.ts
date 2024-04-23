@@ -1,4 +1,6 @@
+import SceneService from "../scene-service/scene-service";
 import { SectionType } from "./state-service.types";
+import { BehaviorSubject } from "rxjs";
 
 class StateService {
   private _isWidgetsOpen = false;
@@ -6,13 +8,15 @@ class StateService {
   private _isPropertiesOpen = false;
   private _sectionType: SectionType = "widgets";
 
+  public modalPanelType$: BehaviorSubject<ModalPanelType>;
+
   private $setIsWidgetsOpen: (value: boolean) => void = () => {};
   private $setIsEditWidgetsOpen: (value: boolean) => void = () => {};
   private $setIsPropertiesOpen: (value: boolean) => void = () => {};
   private $setSectionType: (value: SectionType) => void = () => {};
 
-  constructor() {
-    return;
+  constructor(private _sceneService: SceneService) {
+    this.modalPanelType$ = new BehaviorSubject<ModalPanelType>(null);
   }
 
   public toogleWidgets(value?: boolean) {
@@ -61,6 +65,12 @@ class StateService {
     this.$setIsPropertiesOpen = setIsPropertiesOpen;
     this.$setSectionType = setSectionType;
   }
+
+  public dispose() {
+    this.modalPanelType$.complete();
+  }
 }
+
+export type ModalPanelType = "settings" | null;
 
 export default StateService;

@@ -19,13 +19,13 @@ const Bar = () => {
           alignItems: "center",
         }}
       >
+        dd55
         <CompanyAvatar
           style={{ cursor: "pointer" }}
           onClick={() => {
             window.location.href = "/";
           }}
         />
-
         <EditableTitle
           title={sceneMetadata?.name}
           setTitle={sceneService.updateTitle}
