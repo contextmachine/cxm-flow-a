@@ -1,8 +1,8 @@
-import GqlObject from "@/objects/api_objects/gql-object";
+import GqlObject from "@/src/viewer/loader/objects/gql-object";
 import * as RX from "rxjs";
-import RestObject from "@/src/objects/api_objects/rest-object";
+import RestObject from "@/src/viewer/loader/objects/rest-object";
 import Viewer from "@/viewer/viewer";
-import { ApiEntry, ApiType } from "./api-service.types";
+import { ApiEntry, ApiType } from "./objects/api-service.types";
 
 export type GqlObjectsMap = Map<string, GqlObject>;
 export type RestObjectsMap = Map<string, RestObject>;

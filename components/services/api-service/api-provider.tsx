@@ -1,11 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import ApiHandler, { ApiObjectsMap } from "./api-service";
 import { useMutation, useQuery } from "@apollo/client";
 
 import { useRouter } from "next/router";
 import { useViewer } from "@/viewer/viewer-component";
-import { ApiUseQuery } from "./api-service.types";
-import { ADD_QUERY_MUTATION, GET_QUERIES, UPDATE_QUERY_MUTATION } from "./queries";
+import ApiHandler, { ApiObjectsMap } from "@/src/viewer/loader/api-service";
+import { ApiUseQuery } from "@/src/viewer/loader/objects/api-service.types";
+import { ADD_QUERY_MUTATION, GET_QUERIES, UPDATE_QUERY_MUTATION } from "@/src/viewer/loader/queries";
 
 export const ApiHandlerContext = createContext<ApiHandler | undefined>(
   undefined
@@ -15,32 +15,9 @@ interface ApiHandlerComponentProps {
   children: React.ReactNode;
 }
 
-export const useApiHandler = () => {
-  const context = useContext(ApiHandlerContext);
-  return context!;
-};
 
-export const useApiObjects = (): ApiObjectsMap => {
-  const apiHandler = useApiHandler();
 
-  const [apiObjects, setApiObjects] = useState<ApiObjectsMap>(new Map());
 
-  useEffect(() => {
-    if (apiHandler) {
-      setApiObjects(apiHandler.apiObjects);
-
-      const apiObjectsSubscription = apiHandler.$apiObjects.subscribe(
-        (apiObjects) => setApiObjects(new Map(apiObjects))
-      );
-
-      return () => {
-        apiObjectsSubscription.unsubscribe();
-      };
-    }
-  }, [apiHandler]);
-
-  return apiObjects;
-};
 
 function ApiHandlerComponent(props: ApiHandlerComponentProps) {
   const viewer = useViewer();

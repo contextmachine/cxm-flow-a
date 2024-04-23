@@ -9,10 +9,10 @@ import {
   selectedMaterial,
   transparentMaterial,
 } from "../materials/object-materials";
-import UserdataObject from "../api_objects/userdata-object";
+import UserdataObject from "../../viewer/loader/objects/userdata-object";
 import { MeshGroup } from "./mesh-group";
 import { assertDefined } from "@/utils";
-import { UserData } from "../api_objects/user-data.types";
+import { UserData } from "../../viewer/loader/objects/user-data.types";
 
 
 

@@ -1,4 +1,4 @@
-import { ProjectObject } from "../entities/project-object";
+import { ProjectObject } from "../../../objects/entities/project-object";
 import { UserData } from "./user-data.types";
 
 class UserdataObject {

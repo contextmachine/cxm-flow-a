@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import GqlObject from "./api_objects/gql-object";
-import RestObject from "./api_objects/rest-object";
+import GqlObject from "../viewer/loader/objects/gql-object";
+import RestObject from "../viewer/loader/objects/rest-object";
 import Viewer from "@/viewer/viewer";
 import { MeshGroup } from "./entities/mesh-group";
 import { DefaultObject } from "./entities/default-object";

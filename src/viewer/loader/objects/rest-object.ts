@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
-import { ProjectModel } from "../project-model";
+import { ProjectModel } from "../../../objects/project-model";
 import GqlObject from "./gql-object";
-import ApiHandler from "@/components/services/api-service/api-service";
-import { ApiEntry, ApiEntryStatus, ApiQueryDependecy, ApiRestType } from "@/components/services/api-service/api-service.types";
+import ApiHandler from "@/src/viewer/loader/api-service";
+import { ApiEntry, ApiEntryStatus, ApiQueryDependecy, ApiRestType } from "@/src/viewer/loader/objects/api-service.types";
 import Viewer from "@/viewer/viewer";
 import { SceneJSON } from "./user-data.types";
 

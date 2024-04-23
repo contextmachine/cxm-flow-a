@@ -92,6 +92,8 @@ export class Viewer {
             this.updateViewer()
         }))
 
+        this._versionControl.testLoad()
+
 
     }
 

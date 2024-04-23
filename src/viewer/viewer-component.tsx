@@ -47,6 +47,8 @@ export class ViewerComponent extends React.Component<NewViewerComponentProps> {
         super(props)
         this._props = props
 
+        // new Viewer()
+
         this.state = {
             project: undefined,
         }

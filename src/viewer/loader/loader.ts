@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import parseJSON from "./parse-json/parse-json";
+import parseJSON from "./utils/parse-json";
 import {
   computeBoundsTree,
   disposeBoundsTree,
@@ -10,13 +10,13 @@ import axios from "axios";
 
 
 import * as RX from "rxjs";
-import { GQLControls } from "./gql-controls";
+import { EndPointControls } from "./gql-controls";
 import Viewer from "../viewer";
-import GqlObject from "@/src/objects/api_objects/gql-object";
-import RestObject from "@/src/objects/api_objects/rest-object";
+import GqlObject from "@/src/viewer/loader/objects/gql-object";
+import RestObject from "@/src/viewer/loader/objects/rest-object";
 import { ProjectModel } from "@/src/objects/project-model";
 import { ProjectObject } from "@/src/objects/entities/project-object";
-import { UserdataEntry } from "@/src/objects/api_objects/userdata-object";
+import { UserdataEntry } from "@/src/viewer/loader/objects/userdata-object";
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
@@ -29,13 +29,13 @@ export type StatusHistoryEntry = {
 };
 
 class Loader {
-  private gqlControl: GQLControls;
+  private gqlControl: EndPointControls;
 
   private _status: LoaderStatus = "idle";
   private _statusSubject = new RX.Subject<LoaderStatus>();
 
   constructor(private _viewer: Viewer) {
-    this.gqlControl = new GQLControls();
+    this.gqlControl = new EndPointControls();
 
     this._statusSubject.next(this._status);
   }
@@ -46,6 +46,17 @@ class Loader {
 
   public get $status(): RX.Observable<LoaderStatus> {
     return this._statusSubject;
+  }
+
+  public async testLoad() {
+
+    const endpoint = 'https://storage.yandexcloud.net/lahta.contextmachine.online/files/pretty_celling.json'
+
+    const response = await axios.get(endpoint);
+
+    console.log(response)
+
+
   }
 
   public async loadModel(apiObject: GqlObject | RestObject) {

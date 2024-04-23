@@ -3,8 +3,8 @@ import {
   disposeBoundsTree,
   acceleratedRaycast,
 } from "three-mesh-bvh";
-import { ObjectLoader } from "three";
-import setInstanceMaterials from "./utils/set-instance-materials";
+import * as THREE from "three";
+import setInstanceMaterials from "./set-instance-materials";
 
 const parseJSON = async (childrenJSON: any): Promise<THREE.Object3D> => {
   const removeTypename = (obj: any) => {
@@ -43,7 +43,7 @@ const parseJSON = async (childrenJSON: any): Promise<THREE.Object3D> => {
 
   return new Promise((resolve, reject) => {
     try {
-      const loader = new ObjectLoader();
+      const loader = new THREE.ObjectLoader();
 
       // Check if the provided JSON data is an object and has required properties
       if (

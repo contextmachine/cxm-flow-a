@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { ProjectObject, ProjectObjectProps, ViewerObjectType } from "./project-object";
 
 
-import UserdataObject from "../api_objects/userdata-object";
+import UserdataObject from "../../viewer/loader/objects/userdata-object";
 import { defaultMaterial } from "../materials/object-materials";
 
 

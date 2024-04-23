@@ -4,11 +4,11 @@ import { ProjectObject, ProjectObjectProps, ViewerObjectType } from "./project-o
 
 
 
-import UserdataObject from "../api_objects/userdata-object";
+import UserdataObject from "../../viewer/loader/objects/userdata-object";
 
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils";
 import { ProjectMesh } from "./project-mesh";
-import { UserData } from "../api_objects/user-data.types";
+import { UserData } from "../../viewer/loader/objects/user-data.types";
 import { defaultMaterial, lineDefaultMaterial } from "../materials/object-materials";
 
 

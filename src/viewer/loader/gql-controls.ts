@@ -1,9 +1,9 @@
-import GqlObject from "@/src/objects/api_objects/gql-object";
-import RestObject from "@/src/objects/api_objects/rest-object";
-import { SceneJSON } from "@/src/objects/api_objects/user-data.types";
+import GqlObject from "@/src/viewer/loader/objects/gql-object";
+import RestObject from "@/src/viewer/loader/objects/rest-object";
+import { SceneJSON } from "@/src/viewer/loader/objects/user-data.types";
 import axios from "axios";
 
-export class GQLControls {
+export class EndPointControls {
   constructor() { }
 
   async fetchThreeData(

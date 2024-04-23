@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { ProjectModel } from "../project-model"
 import { ProjectMesh } from "./project-mesh";
-import UserdataObject from "../api_objects/userdata-object";
+import UserdataObject from "../../viewer/loader/objects/userdata-object";
 
 export type ProjectObjectProps = Map<string, any>;
 

@@ -1,10 +1,10 @@
 
-import { ProjectModel } from "../project-model";
+import { ProjectModel } from "../../../objects/project-model";
 
 import { v4 as uuidv4 } from "uuid";
 import RestObject from "./rest-object";
-import { ApiEntry, ApiEntryStatus, ApiGqlType, ApiQueryDependecy } from "@/components/services/api-service/api-service.types";
-import ApiHandler from "@/components/services/api-service/api-service";
+import { ApiEntry, ApiEntryStatus, ApiGqlType, ApiQueryDependecy } from "@/src/viewer/loader/objects/api-service.types";
+import ApiHandler from "@/src/viewer/loader/api-service";
 import Viewer from "@/src/viewer/viewer";
 
 class GqlObject {
