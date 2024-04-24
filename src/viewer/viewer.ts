@@ -12,6 +12,7 @@ import EntityControl from "./entity-control";
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
 import { appLogicError, assertDefined } from "@/utils";
 import ProjectSettingsService from "../services/project-settings/project-settings-service";
+import { ProjectModel } from "../objects/project-model";
 
 CameraControls.install({ THREE: THREE })
 
@@ -36,7 +37,7 @@ export class Viewer {
     private _projectSettingsService: ProjectSettingsService;
     private _cameraService: CameraControl;
     private _entityControl: EntityControl;
-    private _versionControl: Loader;
+    private _loader: Loader;
     // private _selectionService: SelectionService;
     // private _taggingService: TaggingService
 
@@ -65,7 +66,7 @@ export class Viewer {
         this._composerPerspective = new ComposerPipe(this._renderer, this._cameraService.camera, this._scene)
 
         this._entityControl = new EntityControl(this)
-        this._versionControl = new Loader(this);
+        this._loader = new Loader(this);
 
         // this._selectionService = new SelectionService(this);
         // this._taggingService = new TaggingService(this)
@@ -74,14 +75,6 @@ export class Viewer {
         this._scene.background = new THREE.Color(this._projectSettingsService.settings.background_color)
         this._lights.forEach(x => this._scene.add(x))
 
-        const box = new THREE.Box3Helper(
-            new THREE.Box3(
-                new THREE.Vector3(),
-                new THREE.Vector3(50, 50, 50)),
-            'red')
-
-        this._scene.add(box)
-        this._cameraService.fitToBox(box.box)
 
 
         // Subscribe
@@ -92,7 +85,11 @@ export class Viewer {
             this.updateViewer()
         }))
 
-        this._versionControl.testLoad()
+        this._loader.testLoad().then((model) => {
+            console.log('test load done', model)
+            this.entityControl.addModel(model)
+            this._cameraService.fitToScene()
+        })
 
 
     }
@@ -106,7 +103,7 @@ export class Viewer {
     }
 
     public get versionControl(): Loader {
-        return this._versionControl;
+        return this._loader;
     }
 
     // public get taggingService(): TaggingService {

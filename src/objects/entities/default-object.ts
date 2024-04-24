@@ -1,21 +1,18 @@
 import { ProjectModel } from "../project-model";
 import * as THREE from "three";
-import { ProjectObject, ProjectObjectProps, ViewerObjectType } from "./project-object";
+import { Entity, ProjectObjectProps, ViewerObjectType } from "./entity";
+import { meshDefaultMaterial } from "../materials/object-materials";
+import { Group } from "./group";
 
 
-import UserdataObject from "../../viewer/loader/objects/userdata-object";
-import { defaultMaterial } from "../materials/object-materials";
-
-
-export class DefaultObject implements ProjectObject {
+export class DefaultObject implements Entity {
     private _id: string
     private _model: ProjectModel;
     private _object3d: THREE.Object3D
 
 
-    private _volume = 0;
     private _center = new THREE.Vector3();
-    private _type: ViewerObjectType = 'meshGroup'
+    private _type: ViewerObjectType = 'default'
 
     private _name: string;
 
@@ -34,11 +31,11 @@ export class DefaultObject implements ProjectObject {
 
     private _selectable = false;
 
-    private _childrenPO: ProjectObject[] = [];
+    private _childrenPO: Entity[] = [];
 
-    private _defaultMaterial: THREE.Material = defaultMaterial;
+    private _defaultMaterial: THREE.Material = meshDefaultMaterial;
 
-    constructor(object: THREE.Object3D, model: ProjectModel) {
+    constructor(object: THREE.Object3D, model: ProjectModel, parent?: Group) {
 
         this._id = object.uuid
         this._model = model;
@@ -82,7 +79,7 @@ export class DefaultObject implements ProjectObject {
         return this._defaultMaterial;
     }
 
-    public get children(): ProjectObject[] {
+    public get children(): Entity[] {
         return this._childrenPO;
     }
 
@@ -94,13 +91,6 @@ export class DefaultObject implements ProjectObject {
         return undefined
     }
 
-    public get userdata(): UserdataObject | undefined {
-        return undefined
-    }
-
-    public get volume(): number {
-        return this._volume;
-    }
 
     public get center(): THREE.Vector3 {
         return this._center;
@@ -126,7 +116,6 @@ export class DefaultObject implements ProjectObject {
 
         const bbox = new THREE.Box3().expandByObject(this._object3d);
         const size = bbox.getSize(new THREE.Vector3());
-        this._volume = size.x * size.y * size.z;
         bbox.getCenter(this._center);
         this._bbox.box = bbox;
         this._bbox.applyMatrix4(this._object3d.matrixWorld);

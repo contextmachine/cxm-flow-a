@@ -1,16 +1,16 @@
-import { ProjectObject } from "../objects/entities/project-object";
+import { Entity } from "../objects/entities/entity";
 import { ProjectModel } from "../objects/project-model";
 import Viewer from "./viewer";
 import * as RX from 'rxjs'
 
-export type ProjectObjectsMap = Map<string, ProjectObject>;
+export type ProjectObjectsMap = Map<string, Entity>;
 export type ProjectModelsMap = Map<string, ProjectModel>;
 
 class EntityControl {
 
     private _viewer: Viewer
 
-    private _projectObjects: ProjectObjectsMap = new Map<string, ProjectObject>();
+    private _projectObjects: ProjectObjectsMap = new Map<string, Entity>();
     private _projectObjectsObservable = new RX.Subject<ProjectObjectsMap>();
 
     private _projectModels: ProjectModelsMap = new Map<string, ProjectModel>();
@@ -46,21 +46,22 @@ class EntityControl {
         this._projectModelsObservable.next(this._projectModels)
     }
 
-    private addProjectObject(po: ProjectObject) {
+    private addProjectObject(po: Entity) {
         this._projectObjects.set(po.id, po);
-        po.children.forEach((x) => this.addProjectObject(x));
+        po.children?.forEach((x) => this.addProjectObject(x));
     }
 
-    private deleteProjectObject(po: ProjectObject) {
+    private deleteProjectObject(po: Entity) {
         this._projectObjects.delete(po.id);
-        po.children.forEach((x) => this.deleteProjectObject(x));
+        po.children?.forEach((x) => this.deleteProjectObject(x));
     }
 
     public addModel(model: ProjectModel) {
-        model.projectObject.objects.forEach((x) => this._viewer.addToScene(x));
+        console.log(model)
+        model.objects.forEach((x) => this._viewer.addToScene(x));
 
         this._projectModels.set(model.id, model);
-        this.addProjectObject(model.projectObject);
+        this.addProjectObject(model.entity);
 
         this.updateProjectModels();
         this.updateProjectObjects();
@@ -69,11 +70,11 @@ class EntityControl {
     }
 
     public removeModel(model: ProjectModel) {
-        model.projectObject.objects.forEach((x) => this._viewer.removeFromScene(x));
+        model.unionMesh?.objects.forEach((x) => this._viewer.removeFromScene(x));
 
         this._projectModels.delete(model.id);
 
-        this.deleteProjectObject(model.projectObject);
+        this.deleteProjectObject(model.entity);
 
         this.updateProjectModels();
         this.updateProjectObjects();

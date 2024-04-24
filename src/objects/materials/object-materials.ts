@@ -31,7 +31,7 @@ export const selectedMaterial = new THREE.MeshStandardMaterial({
 //     linewidth: 5,
 // });
 
-export const defaultMaterial = new THREE.MeshBasicMaterial({
+export const meshDefaultMaterial = new THREE.MeshBasicMaterial({
   color: defaultMeshColor,
   side: THREE.DoubleSide,
 });

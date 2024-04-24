@@ -66,24 +66,24 @@ const parseJSON = async (childrenJSON: any): Promise<THREE.Object3D> => {
       setInstanceMaterials(parsed);
 
       // Traverse the parsed object and compute BVH for meshes
-      parsed.traverse((object: any) => {
-        if (object.isMesh && object.geometry.isBufferGeometry) {
-          try {
-            object.geometry.computeBoundsTree = computeBoundsTree;
-            object.geometry.computeBoundsTree();
+      // parsed.traverse((object: any) => {
+      //   if (object.isMesh && object.geometry.isBufferGeometry) {
+      //     try {
+      //       object.geometry.computeBoundsTree = computeBoundsTree;
+      //       object.geometry.computeBoundsTree();
 
-            // Compute the bounding sphere for the current object
-            object.geometry.computeBoundingBox();
-            object.geometry.computeBoundingSphere();
+      //       // Compute the bounding sphere for the current object
+      //       object.geometry.computeBoundingBox();
+      //       object.geometry.computeBoundingSphere();
 
-            object.raycast = acceleratedRaycast;
-          } catch (error) {
-            console.error(
-              `#129923; Error here computing bounds tree for mesh ${object.name}: ${error}`
-            );
-          }
-        }
-      });
+      //       object.raycast = acceleratedRaycast;
+      //     } catch (error) {
+      //       console.error(
+      //         `#129923; Error here computing bounds tree for mesh ${object.name}: ${error}`
+      //       );
+      //     }
+      //   }
+      // });
       resolve(parsed);
     } catch (error) {
       console.error("#932932; Error while parsing JSON data:", error);

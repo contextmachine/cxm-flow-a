@@ -86,7 +86,7 @@ class CameraControl {
   public fitToScene() {
     this.fitToObjects(
       [...this._viewer.entityControl.projectModels.values()]
-        .map((x) => x.projectObject.bbox.box)
+        .map((x) => x.entity.bbox.box)
     );
     this._viewer.updateViewer();
   }

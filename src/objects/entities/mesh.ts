@@ -1,35 +1,31 @@
 import { ProjectModel } from "../project-model";
 import * as THREE from "three";
-import { ProjectObject, ProjectObjectProps, ViewerObjectType } from "./project-object";
+import { Entity, ProjectObjectProps, ViewerObjectType } from "./entity";
 
 import {
-  defaultMaterial,
+  meshDefaultMaterial,
   lineDefaultMaterial,
   lineSelectedMaterial,
   selectedMaterial,
   transparentMaterial,
 } from "../materials/object-materials";
-import UserdataObject from "../../viewer/loader/objects/userdata-object";
-import { MeshGroup } from "./mesh-group";
+import { Group } from "./group";
 import { assertDefined } from "@/utils";
-import { UserData } from "../../viewer/loader/objects/user-data.types";
 
 
 
 
-export class ProjectMesh implements ProjectObject {
+export class Mesh implements Entity {
   private _id: string
   private _model: ProjectModel;
   private _object3d: THREE.Mesh
 
-
-  private _volume = 0;
   private _center = new THREE.Vector3();
-  private _type: ViewerObjectType = 'projectMesh'
+  private _type: ViewerObjectType = 'mesh'
 
   private _name: string;
 
-  private _meshGroup: MeshGroup | undefined
+  private _parent: Group | undefined
 
   // private _lineEdges: THREE.LineSegments | undefined;
   private _bbox = new THREE.Box3Helper(
@@ -44,17 +40,12 @@ export class ProjectMesh implements ProjectObject {
 
   private _selectable = true;
 
-  private _childrenPO: ProjectObject[] = [];
-
   private _props: ProjectObjectProps | undefined;
-  private _userdata: UserdataObject | undefined;
 
-  private _defaultMaterial: THREE.Material = defaultMaterial;
+  private _defaultMaterial: THREE.Material = meshDefaultMaterial;
   private _overrideMaterial: THREE.Material | undefined;
 
-  private _groupIndex: number | undefined;
-
-  constructor(object: THREE.Mesh, model: ProjectModel) {
+  constructor(object: THREE.Mesh, model: ProjectModel, parent?: Group) {
 
     this._id = object.uuid
     this._model = model;
@@ -62,7 +53,6 @@ export class ProjectMesh implements ProjectObject {
 
     this._name = object.name;
 
-    this.initUserdata();
     this.initProperties();
     this.initBoundingBox();
     this.initMaterial()
@@ -97,10 +87,6 @@ export class ProjectMesh implements ProjectObject {
     return this._defaultMaterial;
   }
 
-  public get children(): ProjectObject[] {
-    return this._childrenPO;
-  }
-
   public get visibility(): boolean {
     return this._visibility;
   }
@@ -109,9 +95,6 @@ export class ProjectMesh implements ProjectObject {
     return this._props;
   }
 
-  public get userdata(): UserdataObject | undefined {
-    return this._userdata;
-  }
 
   public get center(): THREE.Vector3 {
     return this._center;
@@ -121,27 +104,12 @@ export class ProjectMesh implements ProjectObject {
     return this._selectable;
   }
 
-  public setMeshGroup(meshGroup: MeshGroup) {
-    this._meshGroup = meshGroup;
-  }
-
-  public setGroupIndex(index: number) {
-    this._groupIndex = index;
+  public setMeshGroup(meshGroup: Group) {
+    this._parent = meshGroup;
   }
 
   public setSelectable(enabled: boolean) {
     this._selectable = enabled;
-  }
-
-  public initChildren(projectObjectsMap: Map<string, ProjectObject>) {
-    this._childrenPO = [];
-
-    this._object3d.children.forEach((child) => {
-      const po = projectObjectsMap.get(child.uuid);
-
-      if (po) this._childrenPO.push(po);
-    });
-
   }
 
   private initProperties() {
@@ -150,11 +118,6 @@ export class ProjectMesh implements ProjectObject {
         Object.entries(this._object3d.userData.properties) as [string, any][]
       ) as ProjectObjectProps;
     }
-  }
-
-  private initUserdata() {
-    this._userdata = new UserdataObject(this._object3d.userData as UserData);
-    this._userdata.supplyEntries(this._model.projectObject);
   }
 
   private initMaterial() {
@@ -173,8 +136,6 @@ export class ProjectMesh implements ProjectObject {
 
   public initBoundingBox() {
     const bbox = new THREE.Box3().expandByObject(this._object3d);
-    const size = bbox.getSize(new THREE.Vector3());
-    this._volume = size.x * size.y * size.z;
     bbox.getCenter(this._center);
     this._bbox.box = bbox;
     this._bbox.applyMatrix4(this._object3d.matrixWorld);
@@ -212,37 +173,34 @@ export class ProjectMesh implements ProjectObject {
 
   private updateMeshMaterial() {
 
-    const visible = this._visibility && this._meshGroup?.visibility
+    const visible = this._visibility && this._parent?.visibility
 
-    if (this._groupIndex !== undefined) {
-      const newMaterial = !visible
-        ? transparentMaterial
-        : this._selected
-          ? selectedMaterial
-          : this._overrideMaterial
-            ? this._overrideMaterial
-            : this._defaultMaterial;
+    const newMaterial = !visible
+      ? transparentMaterial
+      : this._selected
+        ? selectedMaterial
+        : this._overrideMaterial
+          ? this._overrideMaterial
+          : this._defaultMaterial;
 
-      if (newMaterial) {
-        assertDefined(this._meshGroup).setMeshGroupMaterial(this._groupIndex, newMaterial)
-      }
+    if (newMaterial) {
+      this.setMeshMaterial(newMaterial)
+
     }
   }
 
   private updateLineMaterial(material?: THREE.LineBasicMaterial) {
 
-    if (this._groupIndex !== undefined) {
-      const newMaterial = !this._visibility && !this._linesVisibility
-        ? transparentMaterial
-        : this._selected
-          ? lineSelectedMaterial
-          : material
-            ? material
-            : lineDefaultMaterial;
+    const newMaterial = !this._visibility && !this._linesVisibility
+      ? transparentMaterial
+      : this._selected
+        ? lineSelectedMaterial
+        : material
+          ? material
+          : lineDefaultMaterial;
 
-      if (newMaterial) {
-        assertDefined(this._meshGroup).setMeshLineGroupMaterial(this._groupIndex, newMaterial);
-      }
+    if (newMaterial) {
+      this.setLineMaterial(newMaterial)
     }
   }
 
@@ -268,6 +226,17 @@ export class ProjectMesh implements ProjectObject {
   }
 
 
+  private setMeshMaterial(material: THREE.Material) {
+    if (this.model.unionMesh) {
+      this.model.unionMesh.setMeshMaterialToFragment(this.id, material)
+    }
+  }
+
+  private setLineMaterial(material: THREE.Material) {
+    if (this.model.unionMesh) {
+      this.model.unionMesh.setLineMaterialToFragment(this.id, material)
+    }
+  }
 
   public select() {
     this._selected = true;
