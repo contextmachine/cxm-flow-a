@@ -5,6 +5,8 @@ import BarUser from "./bar-users/bar-user";
 import dynamic from "next/dynamic";
 import WidgetPanelGrid from "./widgets-panel/widget-panel-grid";
 import { useAuth } from "@/components/services/auth-service/auth-provider";
+import { Box } from "@mui/material";
+import OptionsPanel from "./options-panel/options-panel";
 
 const SceneGrid = () => {
   const { authService } = useAuth();
@@ -24,7 +26,13 @@ const SceneGrid = () => {
       </Grid>
 
       <FooterWrapper>
-        <ToolsPanel />
+        <OptionsWrapper>
+          <OptionsPanel />
+        </OptionsWrapper>
+
+        <Box>
+          <ToolsPanel />
+        </Box>
       </FooterWrapper>
     </Wrapper>
   );
@@ -137,6 +145,12 @@ const ContentWrapper = styled.div`
   & > * {
     width: 100%;
   }
+`;
+
+const OptionsWrapper = styled.div`
+  position: absolute;
+  transform: translate(-50%, -100%);
+  left: 50%;
 `;
 
 const FooterWrapper = styled.div`

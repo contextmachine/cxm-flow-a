@@ -6,12 +6,15 @@ import WorkspaceService from "../workspace-service/workspace-service";
 import { SceneMetadataDto } from "./scene-service.types";
 import ProductService from "../product-service/product-service";
 import ToolsetService from "../toolset-service/toolset-service";
+import Viewer from "@/src/viewer/viewer";
 
 class SceneService {
   private _workspaceService: WorkspaceService;
   private _metadata: SceneMetadataDto | null;
 
   private $setSceneMetadata: any;
+
+  private _viewer: Viewer | null;
 
   private _productService: ProductService;
   private _toolsetService: ToolsetService;
@@ -22,6 +25,8 @@ class SceneService {
 
     this._productService = new ProductService(this);
     this._toolsetService = new ToolsetService(this);
+
+    this._viewer = null;
 
     this.updateTitle = this.updateTitle.bind(this);
   }
@@ -119,6 +124,14 @@ class SceneService {
   public get toolsetService() {
     return this._toolsetService;
   }
+
+  public get viewer() {
+    return this._viewer;
+  }
+
+  public addServices = (services: Record<"Viewer", Viewer>) => {
+    this._viewer = services.Viewer;
+  };
 
   public dispose() {
     this._metadata = null;
