@@ -16,6 +16,7 @@ class CameraViewsExtensions
 
   private _panel: HTMLElement | null;
   private _cameraViewsContainer: HTMLElement | null;
+  private _addButton: HTMLElement | null;
 
   constructor() {
     super();
@@ -26,6 +27,7 @@ class CameraViewsExtensions
 
     this._panel = null;
     this._cameraViewsContainer = null;
+    this._addButton = null;
   }
 
   public load() {
@@ -75,6 +77,20 @@ class CameraViewsExtensions
     }
 
     cameraViewsContainer.appendChild(cameraView);
+
+    if (type === "view") {
+      if (this._addButton) {
+        try {
+          cameraViewsContainer.removeChild(this._addButton);
+        } catch (e) {
+          console.log(e);
+        }
+      }
+
+      this._addButton = this._addCameraViewUI("add");
+    }
+
+    return cameraView;
   }
 
   private async _playForward(duration: number = 2000, delay: number = 500) {
@@ -84,11 +100,7 @@ class CameraViewsExtensions
     let cameraViewIndex = 0;
 
     for (const viewState of this._viewStates) {
-      await cameraControls.restoreState(
-        viewState,
-        cameraViewIndex === 0 ? false : true,
-        duration
-      ); // Animate the transition
+      await cameraControls.restoreState(viewState, true, duration); // Animate the transition
 
       if (cameraViewIndex) {
         await this._delay(delay); // Wait before transitioning to the next state
@@ -106,15 +118,13 @@ class CameraViewsExtensions
     let cameraViewIndex = 0;
 
     for (const viewState of this._viewStates.slice().reverse()) {
-      await cameraControls.restoreState(
-        viewState,
-        cameraViewIndex === 0 ? false : true,
-        duration
-      ); // Animate the transition
+      await cameraControls.restoreState(viewState, true, duration); // Animate the transition
 
       if (cameraViewIndex) {
         await this._delay(delay); // Wait before transitioning to the next state
       }
+
+      cameraViewIndex++;
     }
   }
 
@@ -136,9 +146,6 @@ class CameraViewsExtensions
 
     this._viewStates.forEach((view) => this._addCameraViewUI("view", view));
 
-    // Add the '+' button to add a new camera view
-    this._addCameraViewUI("add");
-
     uiContainer.appendChild(cameraViewsContainer);
 
     // Add decorative icons (white circles)
@@ -148,8 +155,12 @@ class CameraViewsExtensions
       const circle = createNavigationButton();
 
       if (i === 0) {
+        circle.textContent = "< Play";
+
         circle.addEventListener("click", () => this._playBackward());
       } else {
+        circle.textContent = "Play >";
+
         circle.addEventListener("click", () => this._playForward());
       }
 
@@ -216,11 +227,17 @@ function createNavigation(): HTMLElement {
 
 function createNavigationButton(): HTMLElement {
   const circle = document.createElement("div");
-  circle.style.width = "20px";
+  circle.style.width = "max-content";
+  circle.style.padding = "0px 5px";
   circle.style.height = "20px";
   circle.style.backgroundColor = "white";
   circle.style.borderRadius = "2px";
   circle.style.border = "1px solid black";
+
+  circle.style.cursor = "pointer";
+  circle.style.display = "flex";
+  circle.style.justifyContent = "center";
+  circle.style.alignItems = "center";
 
   return circle;
 }
@@ -238,7 +255,10 @@ function createCameraView(type: "add" | "view") {
   cameraView.style.cursor = "pointer";
 
   if (type === "add") {
-    cameraView.style.backgroundColor = "blue";
+    cameraView.style.backgroundColor = "#51A1FF";
+    cameraView.style.color = "white";
+    cameraView.style.fontSize = "18px";
+    cameraView.style.border = "none";
     // add content '+'
     cameraView.textContent = "+";
   }
