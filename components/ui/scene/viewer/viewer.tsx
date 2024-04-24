@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import { Box } from "@mui/material";
 import { useStates } from "@/components/services/state-service/state-provider";
 import { ViewerComponent } from "@/src/viewer/viewer-component";
+import { useScene } from "@/components/services/scene-service/scene-provider";
 
 const DynamicContextMenuDemo = dynamic(
   () => import("../primitives/context-menu"),
@@ -10,12 +11,12 @@ const DynamicContextMenuDemo = dynamic(
 );
 
 const Viewer = () => {
+  const { sceneService } = useScene();
   const { stateService } = useStates();
 
   return (
     <>
-      <ViewerComponent>
-
+      <ViewerComponent sceneService={sceneService}>
         {/* {<DynamicContextMenuDemo />} */}
       </ViewerComponent>
     </>
@@ -32,7 +33,6 @@ const Canvas = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  
 `;
 
 const ViewerBackground = styled.div`
