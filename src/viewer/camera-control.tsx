@@ -169,8 +169,12 @@ class CameraControl {
   }
 
   private _renderIfTweenRunning() {
+    console.log("");
+
     if (this._tweenRunning) {
       requestAnimationFrame(() => {
+        console.log("Render if tween running");
+
         TWEEN.update();
         this._viewer.updateViewer(); // Render the scene
         this._renderIfTweenRunning(); // Keep checking if the tween is still running
@@ -181,15 +185,13 @@ class CameraControl {
   public restoreState(
     viewState: ViewState,
     animate: boolean = false,
-    duration: number = 2000
+    duration: number = 400
   ) {
     if (animate) {
       // Animate from the current camera state to the new state
       const currentPosition = this.camera.position.clone();
       const currentQuaternion = this.camera.quaternion.clone();
-
-      // Assume the camera's current position is currentPosition
-      // Assume the camera's quaternion/orientation is currentQuaternion
+      const currentFieldOfView = (this.camera as THREE.PerspectiveCamera).fov;
 
       // Start with a forward direction vector
       const forwardDirection = new THREE.Vector3(0, 0, -1);
@@ -203,22 +205,28 @@ class CameraControl {
       const lookAtPoint = currentPosition.clone().add(lookAtDirection);
       const currentZoom = currentPosition.distanceTo(lookAtPoint);
 
+      const currentLookAt = currentPosition
+        .clone()
+        .add(forwardDirection.clone().applyQuaternion(currentQuaternion));
+
       // Now you can use currentZoom to simulate the dolly distance or camera zoom level
 
       const start = {
         position: currentPosition,
         quaternion: currentQuaternion,
+        lookAt: currentLookAt,
         zoom: currentZoom,
       };
 
       const end = {
         position: viewState.position,
-        quaternion: viewState.quaternion,
+        quaternion: getShortestQuaternion(
+          normalizeQuaternion(start.quaternion),
+          normalizeQuaternion(viewState.quaternion)
+        ),
+        lookAt: viewState.lookAt,
         zoom: viewState.zoom,
       };
-
-      console.log("Start", start);
-      console.log("End", end);
 
       const tween = new TWEEN.Tween(start)
         .to(end, duration)
@@ -228,17 +236,22 @@ class CameraControl {
           this._renderIfTweenRunning(); // Start the rendering loop if not running already
         })
         .onUpdate(() => {
-          console.log("Tween update", start);
+          const a = {
+            position: start.position.clone(),
+            quaternion: start.quaternion.clone(),
+            zoom: start.zoom,
+          };
 
           this.camera.position.copy(start.position);
           this.camera.quaternion.copy(start.quaternion);
 
           if (viewState.cameraType === "perspective") {
+            (this.camera as THREE.PerspectiveCamera).fov = currentFieldOfView;
             this.camera.updateProjectionMatrix();
           }
 
           if (typeof start.zoom === "number") {
-            const lookAtPoint = viewState.lookAt;
+            const lookAtPoint = start.lookAt;
             const targetX = lookAtPoint.x;
             const targetY = lookAtPoint.y;
             const targetZ = lookAtPoint.z;
@@ -255,7 +268,7 @@ class CameraControl {
             this.controls.dollyTo(start.zoom, false);
           }
 
-          this.controls.update(1 / 60); // Default delta for smooth update
+          // this.controls.update(1 / 60); // Default delta for smooth update
           this._viewer.updateViewer(); // Ensure the scene is refreshed
         })
         .onComplete(() => {
@@ -263,7 +276,9 @@ class CameraControl {
           this._viewer.updateViewer(); // Ensure the scene is refreshed
         });
 
-      tween.start(); // Start the animation
+      this._tweenRunning = true; // Mark that the tween is running
+      this._renderIfTweenRunning();
+      tween.start();
     } else {
       // Instantly restore the state without animation
       this.camera.position.copy(viewState.position);
@@ -288,8 +303,6 @@ class CameraControl {
         this.controls.dollyTo(viewState.zoom, false);
       }
 
-      this.controls.update(1 / 60); // Default delta
-
       this._viewer.updateViewer(); // Ensure the scene is refreshed
     }
   }
@@ -298,6 +311,26 @@ class CameraControl {
     this._subscriptions.forEach((x) => x.unsubscribe());
     this._controls.dispose();
   }
+}
+
+function normalizeQuaternion(q: any) {
+  return q.normalize();
+}
+
+function getShortestQuaternion(start: any, end: any) {
+  const dot = start.dot(end);
+  if (dot < 0.0) {
+    end = new THREE.Quaternion(-end.x, -end.y, -end.z, -end.w); // Ensure shortest path
+  }
+  return end.normalize(); // Always normalize quaternions
+}
+
+function getCurrentZoom(camera: any, lookAt: any) {
+  const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(
+    camera.quaternion
+  );
+  const point = camera.position.clone().add(direction);
+  return camera.position.distanceTo(point);
 }
 
 export default CameraControl;

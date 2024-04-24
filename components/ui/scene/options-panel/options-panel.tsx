@@ -42,7 +42,7 @@ const OptionsPanel = () => {
                 const viewer = sceneService.viewer;
                 const cameraControls = viewer.controls;
 
-                cameraControls.restoreState(view, true);
+                cameraControls.restoreState(view, false);
               }}
             ></Box>
           );
