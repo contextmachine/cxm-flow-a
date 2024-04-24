@@ -7,10 +7,14 @@ import { SceneMetadataDto } from "./scene-service.types";
 import ProductService from "../product-service/product-service";
 import ToolsetService from "../toolset-service/toolset-service";
 import Viewer from "@/src/viewer/viewer";
+import { ExtensionEntityInterface } from "../extension-service/entity/extension-entity.types";
+import CameraViewsExtensions from "../extension-service/extensions/camera-views-extension";
 
 class SceneService {
   private _workspaceService: WorkspaceService;
   private _metadata: SceneMetadataDto | null;
+
+  private _extensions: Map<string, any>;
 
   private $setSceneMetadata: any;
 
@@ -23,12 +27,16 @@ class SceneService {
     this._workspaceService = this._authService.workspaceService;
     this._metadata = null;
 
+    this._extensions = new Map<string, any>();
+
     this._productService = new ProductService(this);
     this._toolsetService = new ToolsetService(this);
 
     this._viewer = null;
 
     this.updateTitle = this.updateTitle.bind(this);
+
+    this.addExtension(new CameraViewsExtensions());
   }
 
   public async setScene(_sceneId: string) {
@@ -131,6 +139,34 @@ class SceneService {
 
   public addServices = (services: Record<"Viewer", Viewer>) => {
     this._viewer = services.Viewer;
+
+    this.updateExtensions();
+  };
+
+  public addExtension = (extension: ExtensionEntityInterface) => {
+    if (this._extensions.has(extension.name))
+      throw new Error(`Extension with name ${extension.name} already exists`);
+
+    this._extensions.set(extension.name, extension);
+
+    this.updateExtensions();
+  };
+
+  public updateExtensions = () => {
+    if (!this._viewer) return;
+
+    this._extensions.forEach((extension) => {
+      if (extension.isInitialized) return;
+
+      extension.provideStates({
+        sceneService: this,
+        viewer: this._viewer,
+      });
+
+      extension.isInitialized = true;
+
+      extension.load();
+    });
   };
 
   public dispose() {
