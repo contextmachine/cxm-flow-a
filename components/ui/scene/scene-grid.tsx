@@ -7,6 +7,7 @@ import WidgetPanelGrid from "./widgets-panel/widget-panel-grid";
 import { useAuth } from "@/components/services/auth-service/auth-provider";
 import { Box } from "@mui/material";
 import OptionsPanel from "./options-panel/options-panel";
+import { useRef } from "react";
 
 const SceneGrid = () => {
   const { authService } = useAuth();
@@ -26,9 +27,7 @@ const SceneGrid = () => {
       </Grid>
 
       <FooterWrapper>
-        <OptionsWrapper>
-          <OptionsPanel />
-        </OptionsWrapper>
+        <OptionsWrapper id="footer-options-panel"></OptionsWrapper>
 
         <Box>
           <ToolsPanel />
@@ -151,6 +150,10 @@ const OptionsWrapper = styled.div`
   position: absolute;
   transform: translate(-50%, -100%);
   left: 50%;
+
+  & > * {
+    pointer-events: all;
+  }
 `;
 
 const FooterWrapper = styled.div`

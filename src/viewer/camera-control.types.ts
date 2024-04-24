@@ -16,4 +16,5 @@ export interface DetailedViewState extends ViewState {
   name: string; // Name of the view state
   description?: string; // Optional description for the view state
   thumbnail?: string; // Optional thumbnail or image representing the view state
+  pinPosition: THREE.Vector3; // Position of the pin in 3D space
 }

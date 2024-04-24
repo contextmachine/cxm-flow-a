@@ -2,15 +2,16 @@ import { useScene } from "@/components/services/scene-service/scene-provider";
 import { DetailedViewState } from "@/src/viewer/camera-control.types";
 import { useViewer } from "@/src/viewer/viewer-component";
 import { Box, Button } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const OptionsPanel = () => {
   const { sceneService } = useScene();
 
   const [cameraViews, setCameraViews] = useState<DetailedViewState[]>([]);
 
-  /* const viewer = useViewer();
-  const cameraControls = viewer.controls; */
+  useEffect(() => {
+    console.log("cameraViews", cameraViews);
+  }, [cameraViews]);
 
   return (
     <Box
@@ -80,6 +81,7 @@ const OptionsPanel = () => {
             ...viewState,
             id: `${cameraViews.length + 1}`,
             name: `View ${cameraViews.length + 1}`,
+            pinPosition: viewState.position,
           };
 
           setCameraViews([...cameraViews, detailedViewState]);
