@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 
-export const selectedColor = '#AFD6EC'
+export const selectedColor = '#C0E8FF'
 export const defaultMeshColor = '#888888'
 export const lineSelectedColor = "#279EFF"
 export const transparentColor = "#000000"

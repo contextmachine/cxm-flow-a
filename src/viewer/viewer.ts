@@ -10,7 +10,7 @@ import EntityControl from "./entity-control";
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
 import { appLogicError, assertDefined } from "@/utils";
 import ProjectSettingsService from "../services/project-settings/project-settings-service";
-import SelectionTool from "./selection/selection-tool";
+import SelectionControl from "./selection/selection-tool";
 
 CameraControls.install({ THREE: THREE });
 
@@ -34,8 +34,8 @@ export class Viewer {
     private _projectSettingsService: ProjectSettingsService;
     private _cameraService: CameraControl;
     private _entityControl: EntityControl;
+    private _selectionControl: SelectionControl;
     private _loader: Loader;
-    private _selectionService: SelectionTool;
     // private _taggingService: TaggingService
 
     private _lights = [
@@ -75,7 +75,7 @@ export class Viewer {
         this._loader = new Loader(this);
 
 
-        this._selectionService = new SelectionTool(this);
+        this._selectionControl = new SelectionControl(this);
 
         // Subscribe
         this._subscriptions.push(
@@ -112,14 +112,13 @@ export class Viewer {
     //     return this._taggingService;
     // }
 
-    public get selectionTool(): SelectionTool {
-        return this._selectionService;
+    public get selectionTool(): SelectionControl {
+        return this._selectionControl;
     }
 
     public get entityControl(): EntityControl {
         return this._entityControl;
     }
-
 
     public get controls(): CameraControl {
         return this._cameraService;

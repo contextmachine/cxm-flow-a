@@ -18,7 +18,7 @@ class SceneService {
 
   private $setSceneMetadata: any;
 
-  private _viewer: Viewer | null;
+  private _viewer: Viewer | undefined;
 
   private _productService: ProductService;
   private _toolsetService: ToolsetService;
@@ -32,13 +32,14 @@ class SceneService {
     this._productService = new ProductService(this);
     this._toolsetService = new ToolsetService(this);
 
-    this._viewer = null;
-
-    console.log('scene service constructor')
-
     this.updateTitle = this.updateTitle.bind(this);
 
     this.addExtension(new CameraViewsExtensions());
+  }
+
+  public initViewer(root: HTMLDivElement) {
+    this._viewer = new Viewer()
+    this._viewer.init(root)
   }
 
   public async setScene(_sceneId: string) {
@@ -138,12 +139,6 @@ class SceneService {
   public get viewer() {
     return this._viewer;
   }
-
-  public addServices = (services: Record<"Viewer", Viewer>) => {
-    this._viewer = services.Viewer;
-
-    this.updateExtensions();
-  };
 
   public addExtension = (extension: ExtensionEntityInterface) => {
     if (this._extensions.has(extension.name))

@@ -1,8 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import SceneService from "./scene-service";
 import { useAuth } from "../auth-service/auth-provider";
 import { useRouter } from "next/router";
 import { useWorkspace } from "../workspace-service/workspace-provider";
+import styled from "styled-components";
+import { Box } from "@mui/material";
 
 interface SceneProviderProps {
   sceneService: SceneService;
@@ -10,6 +12,20 @@ interface SceneProviderProps {
 }
 
 const SceneContext = createContext<SceneProviderProps | null>(null);
+
+const CanvasWrapper = styled.div`
+  canvas:focus {
+    border-top: 2px solid rgb(0, 153, 255);
+  }
+
+  canvas {
+    border-top: 2px solid transparent;
+  }
+
+  width: 100%;
+  height: 100vh;
+  position: relative;
+`;
 
 export function SceneProvider({ children }: any) {
   const { authService } = useAuth();
@@ -21,6 +37,13 @@ export function SceneProvider({ children }: any) {
   const router = useRouter();
   const { query } = router;
   const { scene_id } = query;
+  const canvas = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (canvas !== null) {
+      sceneService.initViewer(canvas.current as HTMLDivElement)
+    }
+  }, [canvas])
 
   useEffect(() => {
     if (typeof scene_id !== "string") return;
@@ -36,14 +59,22 @@ export function SceneProvider({ children }: any) {
   }, [scene_id]);
 
   return (
-    <SceneContext.Provider
-      value={{
-        sceneService,
-        sceneMetadata,
-      }}
-    >
-      {children}
-    </SceneContext.Provider>
+    <div>
+
+      <SceneContext.Provider
+        value={{
+          sceneService,
+          sceneMetadata,
+        }}
+      >
+        <Box sx={{ width: "100vw", height: "100vh" }}>
+          <CanvasWrapper ref={canvas}>
+            {children}
+          </CanvasWrapper>
+        </Box>
+      </SceneContext.Provider>
+    </div>
+
   );
 }
 

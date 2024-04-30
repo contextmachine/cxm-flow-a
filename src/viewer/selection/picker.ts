@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as RX from "rxjs";
 import { getMeshUuidByPointIndex2, getPointer } from "./utils";
-import SelectionTool from "./selection-tool";
+import SelectionControl from "./selection-tool";
 import Viewer from "../viewer";
 import { Entity, isGroup } from "@/src/objects/entities/entity";
 import UnionMesh from "@/src/objects/entities/utility/union-mesh";
@@ -20,7 +20,7 @@ class Picker {
 
   constructor(
     private _viewer: Viewer,
-    private _selectionService: SelectionTool
+    private _selectionControl: SelectionControl
   ) {
     this._domElement = this._viewer.canvas;
     this._camera = this._viewer.camera;
@@ -126,18 +126,18 @@ class Picker {
 
         if (objectId) {
           if (!event.shiftKey && !event.ctrlKey) {
-            this._selectionService.clearSelection();
-            this._selectionService.addToSelection([objectId]);
+            this._selectionControl.clearSelection();
+            this._selectionControl.addToSelection([objectId]);
           } else if (event.shiftKey) {
-            this._selectionService.addToSelection([objectId]);
+            this._selectionControl.addToSelection([objectId]);
           } else if (event.ctrlKey) {
-            this._selectionService.removeFromSelection([objectId]);
+            this._selectionControl.removeFromSelection([objectId]);
           }
         }
 
       } else {
 
-        this._selectionService.clearSelection()
+        this._selectionControl.clearSelection()
 
       }
     }
@@ -151,16 +151,16 @@ class Picker {
 
       if (entity && isGroup(entity)) {
         // если двойной клик по группе, переключаем группу на которую кликнули
-        this._selectionService.setCurrentGroup(entity)
+        this._selectionControl.setCurrentGroup(entity)
 
       } else if (entity === undefined) {
         // если двойной клик по пустому месту, перекулючаемся на уровень выше
-        const parent = this._selectionService.currentGroup?.parent
+        const parent = this._selectionControl.currentGroup?.parent
         if (parent && isGroup(parent)) {
-          this._selectionService.setCurrentGroup(parent)
+          this._selectionControl.setCurrentGroup(parent)
         } else {
           // если группы нет, то переключаемся на уровень сцены
-          this._selectionService.setCurrentGroup(undefined)
+          this._selectionControl.setCurrentGroup(undefined)
         }
       }
     }

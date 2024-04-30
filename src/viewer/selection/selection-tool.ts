@@ -7,7 +7,7 @@ import { Group } from "@/src/objects/entities/group";
 
 
 
-class SelectionTool {
+class SelectionControl {
   private _subscriptions: RX.Subscription[] = [];
   private _entitiesMap: Map<string, Entity> = new Map();
 
@@ -161,4 +161,4 @@ class SelectionTool {
   }
 }
 
-export default SelectionTool;
+export default SelectionControl;
