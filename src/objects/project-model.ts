@@ -16,7 +16,6 @@ export class ProjectModel {
 
   private _viewer: Viewer
 
-
   constructor(
     viewer: Viewer,
     object3d: THREE.Object3D,
@@ -41,6 +40,10 @@ export class ProjectModel {
     } else {
       return []
     }
+  }
+
+  public get collisionMesh() {
+    return this._unionMesh?.collisionMesh
   }
 
   public get viewer(): Viewer {
@@ -69,16 +72,6 @@ export class ProjectModel {
     const entity = initEntity(object3d, this)
 
     return entity
-
   }
 
 }
-
-
-
-
-
-
-
-
-

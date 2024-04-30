@@ -22,12 +22,14 @@ export class Group implements Entity {
 		new THREE.Color("lightblue")
 	);
 
-	private _selected = false;
 	private _visibility = true;
 	private _bboxVisibility = false;
 	private _linesVisibility = false;
 
 	private _selectable = true;
+	private _selected = false;
+	private _parentSelected = false
+	private _disable = false
 
 	private _children: Entity[] = [];
 	private _parent: Entity | undefined
@@ -37,13 +39,13 @@ export class Group implements Entity {
 	private _defaultMaterial: THREE.Material = meshDefaultMaterial;
 	private _overrideMaterial: THREE.Material | undefined;
 
-	private _unionMesh: UnionMesh | undefined
 
-	constructor(object: THREE.Group, model: ProjectModel, parent?: Group) {
+	constructor(object: THREE.Group, model: ProjectModel, parent: Entity | undefined) {
 
 		this._id = object.uuid
 		this._model = model;
 		this._object3d = object
+		this._parent = parent
 
 		this._name = object.name;
 
@@ -75,10 +77,6 @@ export class Group implements Entity {
 		return this._name;
 	}
 
-	public get unionMesh(): UnionMesh | undefined {
-		return this._unionMesh
-	}
-
 	public get model(): ProjectModel {
 		return this._model;
 	}
@@ -95,6 +93,10 @@ export class Group implements Entity {
 		return this._defaultMaterial;
 	}
 
+	public get parent() {
+		return this._parent;
+	}
+
 	public get children(): Entity[] {
 		return this._children;
 	}
@@ -103,23 +105,17 @@ export class Group implements Entity {
 		return this._visibility;
 	}
 
-	public get props(): ProjectObjectProps | undefined {
-		return this._props;
-	}
-
-
-	public get center(): THREE.Vector3 {
-		return this._center;
-	}
-
 	public get isSelectable(): boolean {
 		return this._selectable;
 	}
 
-	public setSelectable(enabled: boolean) {
-		this._selectable = enabled;
+	public get props(): ProjectObjectProps | undefined {
+		return this._props;
 	}
 
+	public get center(): THREE.Vector3 {
+		return this._center;
+	}
 
 	private initProperties() {
 		if (this._object3d.userData.properties) {
@@ -138,7 +134,6 @@ export class Group implements Entity {
 
 	public setVisibility(visible: boolean) {
 		this._visibility = visible;
-
 		this.updateBbox()
 	}
 
@@ -159,18 +154,36 @@ export class Group implements Entity {
 		this.updateBbox()
 	}
 
-	private setMaterial(meshMaterial?: THREE.MeshStandardMaterial, lineMaterial?: THREE.LineBasicMaterial) {
-		// this._children.forEach(x => x.setMaterial(meshMaterial, lineMaterial))
-	}
-
-	public select() {
+	public onSelect() {
 		this._selected = true;
-		this.setMaterial(selectedMaterial, lineSelectedMaterial)
+		this._children.forEach(x => x.onParentSelect())
 	}
 
-	public deselect() {
+	public onDeselect() {
 		this._selected = false;
+		this._children.forEach(x => x.onParentDeselect())
 	}
+
+	public onParentSelect() {
+		this._parentSelected = true;
+		this._children.forEach(x => x.onParentSelect())
+	}
+
+	public onParentDeselect() {
+		this._parentSelected = false;
+		this._children.forEach(x => x.onParentDeselect())
+	}
+
+	public onDisable() {
+		this._disable = true;
+		this._children.forEach(x => x.onDisable())
+	}
+
+	public onEnable() {
+		this._disable = false;
+		this._children.forEach(x => x.onEnable())
+	}
+
 }
 
 

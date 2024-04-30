@@ -21,21 +21,25 @@ export interface Entity {
     bbox: THREE.Box3Helper
     center: THREE.Vector3
 
-    parent?: Group
-    children?: Entity[]
+    parent: Entity | undefined
+    children: Entity[] | undefined
 
     visibility: boolean
     isSelectable: boolean
 
     props: ProjectObjectProps | undefined
 
-    setSelectable: (enabled: boolean) => void
     initBoundingBox: () => void
     setVisibility: (visible: boolean) => void
     showLineEdges: (show: boolean) => void
     setBboxVisibilty: (show: boolean) => void
-    select: () => void
-    deselect: () => void
+
+    onSelect: () => void
+    onDeselect: () => void
+    onParentSelect: () => void
+    onParentDeselect: () => void
+    onDisable: () => void
+    onEnable: () => void
 }
 
 
@@ -47,7 +51,7 @@ export const isProjectMesh = (obj: any): obj is Mesh => {
     return isProjectObject(obj) && obj.type === 'mesh'
 }
 
-export const isGroup = (obj: any): obj is Mesh => {
+export const isGroup = (obj: any): obj is Group => {
     return isProjectObject(obj) && obj.type === 'group'
 }
 

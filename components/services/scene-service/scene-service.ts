@@ -34,6 +34,8 @@ class SceneService {
 
     this._viewer = null;
 
+    console.log('scene service constructor')
+
     this.updateTitle = this.updateTitle.bind(this);
 
     this.addExtension(new CameraViewsExtensions());

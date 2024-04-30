@@ -24,14 +24,14 @@ export class DefaultObject implements Entity {
         new THREE.Color("lightblue")
     );
 
-    private _selected = false;
     private _visibility = true;
     private _bboxVisibility = false;
     private _linesVisibility = false;
 
     private _selectable = false;
-
-    private _childrenPO: Entity[] = [];
+    private _selected = false;
+    private _parentSelected = false
+    private _disable = false
 
     private _defaultMaterial: THREE.Material = meshDefaultMaterial;
 
@@ -79,8 +79,12 @@ export class DefaultObject implements Entity {
         return this._defaultMaterial;
     }
 
-    public get children(): Entity[] {
-        return this._childrenPO;
+    public get parent() {
+        return undefined
+    }
+
+    public get children() {
+        return undefined
     }
 
     public get visibility(): boolean {
@@ -91,17 +95,12 @@ export class DefaultObject implements Entity {
         return undefined
     }
 
-
     public get center(): THREE.Vector3 {
         return this._center;
     }
 
     public get isSelectable(): boolean {
         return this._selectable;
-    }
-
-    public setSelectable(enabled: boolean) {
-        this._selectable = enabled;
     }
 
     public get collisionMesh(): THREE.Mesh | undefined {
@@ -145,12 +144,27 @@ export class DefaultObject implements Entity {
         this.updateBbox()
     }
 
-    public select() {
+    public onSelect() {
         this._selected = true;
     }
 
-    public deselect() {
+    public onDeselect() {
         this._selected = false;
+    }
 
+    public onParentSelect() {
+        this._parentSelected = true
+    }
+
+    public onParentDeselect() {
+        this._parentSelected = false
+    }
+
+    public onDisable() {
+        this._disable = true;
+    }
+
+    public onEnable() {
+        this._disable = false;
     }
 }

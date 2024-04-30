@@ -6,12 +6,11 @@ import Stats from "three/examples/jsm/libs/stats.module";
 import ComposerPipe from "./composer-pipe";
 import CameraControl from "./camera-control";
 import Loader from "./loader/loader";
-// import SelectionService from "../shared/services/PROJECT/THREE/selection/selection-service";
 import EntityControl from "./entity-control";
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
 import { appLogicError, assertDefined } from "@/utils";
 import ProjectSettingsService from "../services/project-settings/project-settings-service";
-import { ProjectModel } from "../objects/project-model";
+import SelectionTool from "./selection/selection-tool";
 
 CameraControls.install({ THREE: THREE });
 
@@ -36,12 +35,12 @@ export class Viewer {
     private _cameraService: CameraControl;
     private _entityControl: EntityControl;
     private _loader: Loader;
-    // private _selectionService: SelectionService;
+    private _selectionService: SelectionTool;
     // private _taggingService: TaggingService
 
     private _lights = [
-        new THREE.DirectionalLight(0x666666, 1),
-        new THREE.AmbientLight(0x666666, 2),
+        new THREE.DirectionalLight(0xeeeeee, 1),
+        new THREE.AmbientLight(0xffffff, 3),
     ];
 
     private _client: ApolloClient<NormalizedCacheObject> | undefined;
@@ -65,7 +64,6 @@ export class Viewer {
         this._entityControl = new EntityControl(this);
         this._loader = new Loader(this);
 
-        // this._selectionService = new SelectionService(this);
         // this._taggingService = new TaggingService(this)
 
         this._scene.background = new THREE.Color(
@@ -73,13 +71,13 @@ export class Viewer {
         );
         this._lights.forEach((x) => this._scene.add(x));
 
-
-
-
-        // Subscribe
         this._entityControl = new EntityControl(this)
         this._loader = new Loader(this);
 
+
+        this._selectionService = new SelectionTool(this);
+
+        // Subscribe
         this._subscriptions.push(
             RX.fromEvent(window, "resize").subscribe(() => this.resize())
         );
@@ -114,9 +112,9 @@ export class Viewer {
     //     return this._taggingService;
     // }
 
-    // public get selectionService(): SelectionService {
-    //     return this._selectionService;
-    // }
+    public get selectionTool(): SelectionTool {
+        return this._selectionService;
+    }
 
     public get entityControl(): EntityControl {
         return this._entityControl;

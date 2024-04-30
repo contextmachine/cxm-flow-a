@@ -1,10 +1,12 @@
 import * as THREE from "three";
 
 
-export const selectedColor = '#ffffff'
+export const selectedColor = '#AFD6EC'
 export const defaultMeshColor = '#888888'
 export const lineSelectedColor = "#279EFF"
 export const transparentColor = "#000000"
+export const disabledColor = '#ffffff'
+export const lineDisabledColor = '#767676'
 
 
 
@@ -15,37 +17,54 @@ export const wireframeMaterial = new THREE.MeshBasicMaterial({
   opacity: 0.006,
 });
 
-export const grayLineMaterial = new THREE.LineBasicMaterial({
-  color: 0x767676,
-  opacity: 0.5,
-});
-
 
 export const selectedMaterial = new THREE.MeshStandardMaterial({
   color: selectedColor,
   side: THREE.DoubleSide,
 });
 
-// export const selectedLineMaterial = new THREE.LineBasicMaterial({
-//     color: "#279EFF",
-//     linewidth: 5,
-// });
+export const lineSelectedMaterial = new THREE.LineBasicMaterial({
+  color: lineSelectedColor,
+} as any);
+
+
+
+
 
 export const meshDefaultMaterial = new THREE.MeshBasicMaterial({
   color: defaultMeshColor,
   side: THREE.DoubleSide,
 });
 
+export const lineDefaultMaterial = new THREE.LineBasicMaterial({
+  lineWidth: 0.1,
+  color: 0x000000,
+} as any);
+
+
+
+export const disabledMaterial = new THREE.MeshStandardMaterial({
+  color: disabledColor,
+  side: THREE.DoubleSide,
+});
+
+export const lineDisabledMaterial = new THREE.LineBasicMaterial({
+  color: lineDisabledColor,
+} as any);
+
+
+
+
 const vertexShader = /*glsl*/ `
-void main() {
-  
-}
+  void main() {
+    
+  }
 `;
 
 const fragmentShader = /*glsl*/ `
-void main() {
-    discard;
-}
+  void main() {
+      discard;
+  }
 `;
 
 export const transparentMaterial = new THREE.ShaderMaterial({
@@ -62,17 +81,9 @@ export const transparentMaterial = new THREE.ShaderMaterial({
 //     resolution: new THREE.Vector2(1, 1)
 // })
 
-export const lineDefaultMaterial = new THREE.LineBasicMaterial({
-  lineWidth: 0.1,
-  color: 0x000000,
-  // resolution: new THREE.Vector2(1000, 1000),
-} as any);
 
-export const lineSelectedMaterial = new THREE.LineBasicMaterial({
-  color: lineSelectedColor,
-  lineWidth: 0.1,
-  // resolution: new THREE.Vector2(1000, 1000),
-} as any);
+
+
 
 // const lineVertexShader = /*glsl*/`
 // attribute vec3 center;

@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils";
-import { Mesh } from "../mesh";
 import { meshDefaultMaterial, lineDefaultMaterial } from "../../materials/object-materials";
 import { ProjectModel } from "../../project-model";
 import { Entity } from "../entity";
@@ -29,11 +28,22 @@ class UnionMesh {
         this._meshLines = lineSegments
         this._indiciesMap = indiciesMap
 
-
     }
 
     public get objects(): THREE.Object3D[] {
         return [this._unionMesh, this._meshLines]
+    }
+
+    public get collisionMesh() {
+        return this._collisionMesh
+    }
+
+    public get meshIdMap() {
+        return this._meshIdMap
+    }
+
+    public initMaterials() {
+
     }
 
     public setMeshMaterialToFragment(entityId: string, meshMaterial: THREE.Material) {
