@@ -46,9 +46,10 @@ export function ToolsetProvider({ children }: any) {
   }, [userMetadata, sceneMetadata]);
 
   useEffect(() => {
-    const ts_sub = toolsetService.toolsets$.subscribe((toolsets) =>
-      setToolsets(toolsets)
-    );
+    const ts_sub = toolsetService.toolsets$.subscribe((toolsets) => {
+      console.log("Subscription was init");
+      setToolsets(toolsets);
+    });
     const at_sub = toolsetService.activeToolset$.subscribe((toolset) => {
       setActiveToolset(toolset);
     });
@@ -71,7 +72,7 @@ export function ToolsetProvider({ children }: any) {
       aplog_sub.unsubscribe();
       err_sub.unsubscribe();
     };
-  });
+  }, []);
 
   useEffect(() => {
     toolsetService.updateActiveToolsetProducts(outputProducts);
@@ -104,6 +105,28 @@ export function ToolsetProvider({ children }: any) {
       />
     </ToolsetContext.Provider>
   );
+}
+
+export function useToolsetSubscriptions() {
+  const { sceneService } = useScene();
+
+  const toolsetService = sceneService.toolsetService;
+  const [toolset, setToolsets] = useState<ToolsetDto[]>([]);
+
+  useEffect(() => {
+    const sub = toolsetService.toolsets$.subscribe((toolsets) => {
+      console.log("toolsetSubscription was init");
+      setToolsets(toolsets);
+    });
+
+    return () => {
+      sub.unsubscribe();
+    };
+  }, []);
+
+  return {
+    toolset,
+  };
 }
 
 export function useToolset() {
