@@ -45,7 +45,7 @@ class ProjectSettings
     super();
 
     // Initialize project settings with default values
-    this.camera_near = 1;
+    this.camera_near = 0.001;
     this.camera_far = 100;
     this.camera_fov = 75;
     this.tag_labels_max_count = 100;

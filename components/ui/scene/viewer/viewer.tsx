@@ -35,12 +35,6 @@ const Canvas = styled.div`
   align-items: center;
 `;
 
-const ViewerBackground = styled.div`
-  background-color: #eeeeee;
-  height: 100%;
-  width: 100%;
 
-  position: absolute;
-`;
 
 export default Viewer;

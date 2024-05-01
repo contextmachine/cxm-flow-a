@@ -63,8 +63,8 @@ export class ViewerComponent extends React.Component<NewViewerComponentProps> {
     console.log("did mount");
 
     this._viewer = new Viewer();
-    this._sceneService.addServices({ Viewer: this._viewer });
-    this._viewer.init(assertDefined(this._rootRef));
+    // this._sceneService.addServices({ Viewer: this._viewer });
+    // this._viewer.init(assertDefined(this._rootRef));
   }
 
   componentWillUnmount() {
@@ -73,7 +73,7 @@ export class ViewerComponent extends React.Component<NewViewerComponentProps> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  componentDidUpdate() {}
+  componentDidUpdate() { }
 
   render() {
     return (

@@ -1,33 +1,33 @@
-import { ProjectObject } from "../objects/entities/project-object";
+import { Entity } from "../objects/entities/entity";
+import { Group } from "../objects/entities/group";
 import { ProjectModel } from "../objects/project-model";
 import Viewer from "./viewer";
 import * as RX from 'rxjs'
 
-export type ProjectObjectsMap = Map<string, ProjectObject>;
+export type EntitiesMap = Map<string, Entity>;
 export type ProjectModelsMap = Map<string, ProjectModel>;
 
 class EntityControl {
 
     private _viewer: Viewer
 
-    private _projectObjects: ProjectObjectsMap = new Map<string, ProjectObject>();
-    private _projectObjectsObservable = new RX.Subject<ProjectObjectsMap>();
+
+    private _entities: EntitiesMap = new Map<string, Entity>();
+    private _entitiesObservable = new RX.Subject<EntitiesMap>();
 
     private _projectModels: ProjectModelsMap = new Map<string, ProjectModel>();
     private _projectModelsObservable = new RX.Subject<ProjectModelsMap>();
 
     constructor(viewer: Viewer) {
-
         this._viewer = viewer
-
     }
 
-    public get projectObjects(): ProjectObjectsMap {
-        return this._projectObjects;
+    public get entities(): EntitiesMap {
+        return this._entities;
     }
 
-    public get $projectObjects(): RX.Observable<ProjectObjectsMap> {
-        return this._projectObjectsObservable;
+    public get $entities(): RX.Observable<EntitiesMap> {
+        return this._entitiesObservable;
     }
 
     public get projectModels(): ProjectModelsMap {
@@ -38,29 +38,41 @@ class EntityControl {
         return this._projectModelsObservable;
     }
 
+    public get objectsOnCurrentLevel(): Entity[] {
+        const currentGroup = this._viewer.selectionTool.currentGroup
+        if (currentGroup) {
+            return currentGroup.children
+        } else {
+            return [...this._projectModels.values()].map(x => x.entity)
+        }
+    }
+
+
+
     private updateProjectObjects() {
-        this._projectObjectsObservable.next(this._projectObjects)
+        this._entitiesObservable.next(this._entities)
     }
 
     private updateProjectModels() {
         this._projectModelsObservable.next(this._projectModels)
     }
 
-    private addProjectObject(po: ProjectObject) {
-        this._projectObjects.set(po.id, po);
-        po.children.forEach((x) => this.addProjectObject(x));
+    private addProjectObject(po: Entity) {
+        this._entities.set(po.id, po);
+        po.children?.forEach((x) => this.addProjectObject(x));
     }
 
-    private deleteProjectObject(po: ProjectObject) {
-        this._projectObjects.delete(po.id);
-        po.children.forEach((x) => this.deleteProjectObject(x));
+    private deleteProjectObject(po: Entity) {
+        this._entities.delete(po.id);
+        po.children?.forEach((x) => this.deleteProjectObject(x));
     }
 
     public addModel(model: ProjectModel) {
-        model.projectObject.objects.forEach((x) => this._viewer.addToScene(x));
+        console.log(model)
+        model.objects.forEach((x) => this._viewer.addToScene(x));
 
         this._projectModels.set(model.id, model);
-        this.addProjectObject(model.projectObject);
+        this.addProjectObject(model.entity);
 
         this.updateProjectModels();
         this.updateProjectObjects();
@@ -69,11 +81,11 @@ class EntityControl {
     }
 
     public removeModel(model: ProjectModel) {
-        model.projectObject.objects.forEach((x) => this._viewer.removeFromScene(x));
+        model.unionMesh?.objects.forEach((x) => this._viewer.removeFromScene(x));
 
         this._projectModels.delete(model.id);
 
-        this.deleteProjectObject(model.projectObject);
+        this.deleteProjectObject(model.entity);
 
         this.updateProjectModels();
         this.updateProjectObjects();

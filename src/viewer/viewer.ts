@@ -1,16 +1,16 @@
-import * as THREE from "three";
-import * as RX from "rxjs";
-import CameraControls from "camera-controls";
-import Stats from "three/examples/jsm/libs/stats.module";
+import * as THREE from 'three';
+import * as RX from 'rxjs';
+import CameraControls from 'camera-controls';
+import Stats from 'three/examples/jsm/libs/stats.module';
 
-import ComposerPipe from "./composer-pipe";
-import CameraControl from "./camera-control";
-import Loader from "./loader/loader";
-// import SelectionService from "../shared/services/PROJECT/THREE/selection/selection-service";
-import EntityControl from "./entity-control";
-import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
-import { appLogicError, assertDefined } from "@/utils";
-import ProjectSettingsService from "../services/project-settings/project-settings-service";
+import ComposerPipe from './composer-pipe';
+import CameraControl from './camera-control';
+import Loader from './loader/loader';
+import EntityControl from './entity-control';
+import { ApolloClient, NormalizedCacheObject } from '@apollo/client';
+import { appLogicError, assertDefined } from '@/utils';
+import ProjectSettingsService from '../services/project-settings/project-settings-service';
+import SelectionControl from './selection/selection-tool';
 
 CameraControls.install({ THREE: THREE });
 
@@ -34,23 +34,21 @@ export class Viewer {
   private _projectSettingsService: ProjectSettingsService;
   private _cameraService: CameraControl;
   private _entityControl: EntityControl;
-  private _versionControl: Loader;
-  // private _selectionService: SelectionService;
+  private _selectionControl: SelectionControl;
+  private _loader: Loader;
   // private _taggingService: TaggingService
 
   private _lights = [
-    new THREE.DirectionalLight(0x666666, 1),
-    new THREE.AmbientLight(0x666666, 2),
+    new THREE.DirectionalLight(0xeeeeee, 1),
+    new THREE.AmbientLight(0xffffff, 3),
   ];
 
   private _client: ApolloClient<NormalizedCacheObject> | undefined;
 
   constructor() {
-    console.log("viewer constructor");
-
     this._renderer = new THREE.WebGLRenderer({
       antialias: true,
-      powerPreference: "high-performance",
+      powerPreference: 'high-performance',
     });
 
     this._stats = new Stats();
@@ -64,9 +62,8 @@ export class Viewer {
     );
 
     this._entityControl = new EntityControl(this);
-    this._versionControl = new Loader(this);
+    this._loader = new Loader(this);
 
-    // this._selectionService = new SelectionService(this);
     // this._taggingService = new TaggingService(this)
 
     this._scene.background = new THREE.Color(
@@ -74,19 +71,14 @@ export class Viewer {
     );
     this._lights.forEach((x) => this._scene.add(x));
 
-    const box = new THREE.Box3Helper(
-      new THREE.Box3(new THREE.Vector3(), new THREE.Vector3(50, 50, 50)),
-      "red"
-    );
+    this._entityControl = new EntityControl(this);
+    this._loader = new Loader(this);
 
-    this._scene.add(box);
-
-    this._cameraService.fitToBox(box.box);
+    this._selectionControl = new SelectionControl(this);
 
     // Subscribe
-
     this._subscriptions.push(
-      RX.fromEvent(window, "resize").subscribe(() => this.resize())
+      RX.fromEvent(window, 'resize').subscribe(() => this.resize())
     );
     this._subscriptions.push(
       this._projectSettingsService.$settings.subscribe((settings) => {
@@ -95,7 +87,11 @@ export class Viewer {
       })
     );
 
-    this._versionControl.testLoad();
+    this._loader.testLoad().then((model) => {
+      console.log('test load done', model);
+      this.entityControl.addModel(model);
+      this._cameraService.fitToScene();
+    });
   }
 
   public get scene(): THREE.Scene {
@@ -107,16 +103,16 @@ export class Viewer {
   }
 
   public get versionControl(): Loader {
-    return this._versionControl;
+    return this._loader;
   }
 
   // public get taggingService(): TaggingService {
   //     return this._taggingService;
   // }
 
-  // public get selectionService(): SelectionService {
-  //     return this._selectionService;
-  // }
+  public get selectionTool(): SelectionControl {
+    return this._selectionControl;
+  }
 
   public get entityControl(): EntityControl {
     return this._entityControl;
@@ -148,8 +144,8 @@ export class Viewer {
   }
 
   public init(rootElement: HTMLDivElement) {
-    console.log("init");
-    if (this._isInitialized) throw appLogicError("Viewer already initialized");
+    console.log('init');
+    if (this._isInitialized) throw appLogicError('Viewer already initialized');
 
     console.log(this._isInitialized);
 
@@ -169,9 +165,9 @@ export class Viewer {
     if (this._stats) {
       this._stats.showPanel(0);
       document.body.appendChild(this._stats.dom);
-      this._stats.dom.style.right = "0";
-      this._stats.dom.style.left = "";
-      this._stats.dom.style.marginRight = "300px";
+      this._stats.dom.style.right = '0';
+      this._stats.dom.style.left = '';
+      this._stats.dom.style.marginRight = '300px';
       this._stats.begin();
     }
 
@@ -222,7 +218,7 @@ export class Viewer {
   };
 
   public dispose(): void {
-    console.log("dispose viewer");
+    console.log('dispose viewer');
 
     this.versionControl.dispose();
     document.body.removeChild(this._stats.dom);
