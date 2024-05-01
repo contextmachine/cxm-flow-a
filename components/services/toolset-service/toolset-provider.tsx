@@ -42,18 +42,36 @@ export function ToolsetProvider({ children }: any) {
 
   useEffect(() => {
     if (!userMetadata) return;
-
-    toolsetService.provideStates({
-      setToolsets,
-      setActiveToolset,
-      setRestProducts,
-      setActiveProducts,
-      setActivePLogId,
-      setError,
-    });
-
     toolsetService.fetchUserToolsets();
   }, [userMetadata, sceneMetadata]);
+
+  useEffect(() => {
+    const ts_sub = toolsetService.toolsets$.subscribe((toolsets) =>
+      setToolsets(toolsets)
+    );
+    const at_sub = toolsetService.activeToolset$.subscribe((toolset) => {
+      setActiveToolset(toolset);
+    });
+    const ap_sub = toolsetService.activeProducts$.subscribe((products) =>
+      setActiveProducts(products)
+    );
+    const rp_sub = toolsetService.restProducts$.subscribe((products) =>
+      setRestProducts(products)
+    );
+    const aplog_sub = toolsetService.activePLogId$.subscribe((id) =>
+      setActivePLogId(id)
+    );
+    const err_sub = toolsetService.error$.subscribe((error) => setError(error));
+
+    return () => {
+      ts_sub.unsubscribe();
+      at_sub.unsubscribe();
+      ap_sub.unsubscribe();
+      rp_sub.unsubscribe();
+      aplog_sub.unsubscribe();
+      err_sub.unsubscribe();
+    };
+  });
 
   useEffect(() => {
     toolsetService.updateActiveToolsetProducts(outputProducts);

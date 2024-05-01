@@ -1,3 +1,4 @@
+import { BehaviorSubject } from "rxjs";
 import { SectionType } from "./state-service.types";
 
 class StateService {
@@ -6,10 +7,10 @@ class StateService {
   private _isPropertiesOpen = false;
   private _sectionType: SectionType = "widgets";
 
-  private $setIsWidgetsOpen: (value: boolean) => void = () => {};
-  private $setIsEditWidgetsOpen: (value: boolean) => void = () => {};
-  private $setIsPropertiesOpen: (value: boolean) => void = () => {};
-  private $setSectionType: (value: SectionType) => void = () => {};
+  private _isWidgetsOpen$ = new BehaviorSubject<boolean>(false);
+  private _isEditWidgetsOpen$ = new BehaviorSubject<boolean>(false);
+  private _isPropertiesOpen$ = new BehaviorSubject<boolean>(false);
+  private _sectionType$ = new BehaviorSubject<SectionType>("widgets");
 
   constructor() {
     return;
@@ -19,7 +20,7 @@ class StateService {
     this._isWidgetsOpen =
       typeof value === "boolean" ? value : !this._isWidgetsOpen;
 
-    this.$setIsWidgetsOpen(this._isWidgetsOpen);
+    this._isWidgetsOpen$.next(this._isWidgetsOpen);
   }
 
   public toogleEditWidgets(value?: boolean) {
@@ -28,7 +29,9 @@ class StateService {
 
     if (this._isEditWidgetsOpen) this.openSection("widgets");
 
-    this.$setIsEditWidgetsOpen(this._isEditWidgetsOpen && this._isWidgetsOpen);
+    this._isEditWidgetsOpen$.next(
+      this._isEditWidgetsOpen && this._isWidgetsOpen
+    );
   }
 
   public toogleProperties(value?: boolean) {
@@ -37,29 +40,35 @@ class StateService {
     this._isPropertiesOpen =
       typeof value === "boolean" ? value : !this._isPropertiesOpen;
 
-    this.$setIsPropertiesOpen(this._isPropertiesOpen);
+    this._isPropertiesOpen$.next(this._isPropertiesOpen);
   }
 
   public openSection(sectionType: SectionType) {
     this._sectionType = sectionType;
-    this.$setSectionType(sectionType);
+    this._sectionType$.next(this._sectionType);
   }
 
-  public provideState({
-    setIsWidgetsOpen,
-    setIsEditWidgetsOpen,
-    setIsPropertiesOpen,
-    setSectionType,
-  }: {
-    setIsWidgetsOpen: (value: boolean) => void;
-    setIsEditWidgetsOpen: (value: boolean) => void;
-    setIsPropertiesOpen: (value: boolean) => void;
-    setSectionType: (value: SectionType) => void;
-  }) {
-    this.$setIsWidgetsOpen = setIsWidgetsOpen;
-    this.$setIsEditWidgetsOpen = setIsEditWidgetsOpen;
-    this.$setIsPropertiesOpen = setIsPropertiesOpen;
-    this.$setSectionType = setSectionType;
+  public get isWidgetsOpen$() {
+    return this._isWidgetsOpen$;
+  }
+
+  public get isEditWidgetsOpen$() {
+    return this._isEditWidgetsOpen$;
+  }
+
+  public get isPropertiesOpen$() {
+    return this._isPropertiesOpen$;
+  }
+
+  public get sectionType$() {
+    return this._sectionType$;
+  }
+
+  public dispose() {
+    this._isWidgetsOpen$.complete();
+    this._isEditWidgetsOpen$.complete();
+    this._isPropertiesOpen$.complete();
+    this._sectionType$.complete();
   }
 }
 

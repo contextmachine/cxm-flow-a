@@ -40,6 +40,8 @@ class SceneService {
   public initViewer(root: HTMLDivElement) {
     this._viewer = new Viewer()
     this._viewer.init(root)
+
+    this.updateExtensions();
   }
 
   public async setScene(_sceneId: string) {

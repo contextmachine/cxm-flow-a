@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import StateService from "./state-service";
 import { SectionType } from "./state-service.types";
+import { set } from "zod";
 
 interface StateProviderProps {
   stateService: StateService;
@@ -21,12 +22,25 @@ export function StateProvider({ children }: any) {
   const [sectionType, setSectionType] = useState<SectionType>("widgets");
 
   useEffect(() => {
-    stateService.provideState({
-      setIsWidgetsOpen,
-      setIsEditWidgetsOpen,
-      setIsPropertiesOpen,
-      setSectionType,
-    });
+    const isWidgetsOpenSub = stateService.isWidgetsOpen$.subscribe((value) =>
+      setIsWidgetsOpen(value)
+    );
+    const isEditWidgetsOpenSub = stateService.isEditWidgetsOpen$.subscribe(
+      (value) => setIsEditWidgetsOpen(value)
+    );
+    const isPropertiesOpenSub = stateService.isPropertiesOpen$.subscribe(
+      (value) => setIsPropertiesOpen(value)
+    );
+    const sectionTypeSub = stateService.sectionType$.subscribe((value) =>
+      setSectionType(value)
+    );
+
+    return () => {
+      isWidgetsOpenSub.unsubscribe();
+      isEditWidgetsOpenSub.unsubscribe();
+      isPropertiesOpenSub.unsubscribe();
+      sectionTypeSub.unsubscribe();
+    };
   }, []);
 
   return (

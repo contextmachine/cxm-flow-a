@@ -78,7 +78,7 @@ export class ViewerComponent extends React.Component<NewViewerComponentProps> {
   render() {
     return (
       <ViewerContext.Provider value={this._viewer}>
-        <CanvasWrapper ref={(x) => (this._rootRef = x)}>
+        <CanvasWrapper ref={(x) => (this._rootRef = x) as any}>
           {this._props.children}
         </CanvasWrapper>
       </ViewerContext.Provider>

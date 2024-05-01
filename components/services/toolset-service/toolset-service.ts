@@ -5,6 +5,7 @@ import client from "@/components/graphql/client/client";
 import { ToolsetDto } from "./toolset-service.types";
 import { ProductsDto } from "../product-service/products.types";
 import { v4 as uuidv4 } from "uuid";
+import { BehaviorSubject } from "rxjs";
 
 class ToolsetService {
   private _authService: AuthService;
@@ -14,12 +15,12 @@ class ToolsetService {
 
   private _temporaryTodos: string[];
 
-  public $setToolsets: any;
-  public $setActiveToolset: any;
-  public $setRestProducts: any;
-  public $setActiveProducts: any;
-  public $setActivePLogId: any;
-  public $setError: any;
+  private _toolsets$ = new BehaviorSubject<ToolsetDto[]>([]);
+  private _activeToolset$ = new BehaviorSubject<ToolsetDto | null>(null);
+  private _restProducts$ = new BehaviorSubject<ProductsDto[]>([]);
+  private _activeProducts$ = new BehaviorSubject<ProductsDto[]>([]);
+  private _activePLogId$ = new BehaviorSubject<string>("");
+  private _error$ = new BehaviorSubject<string>("");
 
   constructor(private _sceneService: SceneService) {
     this._authService = this._sceneService.authService;
@@ -95,10 +96,10 @@ class ToolsetService {
       if (!this._activeToolset)
         this._activeToolset = toolsets[toolsets.length - 1];
 
-      this.$setToolsets([...toolsets]);
-      this.$setActiveToolset(this._activeToolset);
+      this._toolsets$.next([...toolsets]);
+      this._activeToolset$.next(this._activeToolset);
     } catch (error) {
-      this.$setError("Error loading scene");
+      this._error$.next("Error loading toolsets");
       console.error("Error loading scene:", error);
     }
   }
@@ -144,21 +145,19 @@ class ToolsetService {
         },
       });
 
-      this.$setError(`Toolset ${this._toolsets.size + 1} added`);
+      this._error$.next(`Toolset ${this._toolsets.size + 1} added`);
       this.fetchUserToolsets();
     } catch (error) {
-      this.$setError("Error adding toolset");
+      this._error$.next("Error adding toolset");
       console.error(error);
     }
   }
 
   public updateActiveToolsetProducts(outputProducts: ProductsDto[]) {
-    if (!this.$setActiveProducts || !this.$setRestProducts) return;
-
     const activeToolset = this._activeToolset;
     if (!activeToolset) {
-      this.$setActiveProducts([]);
-      this.$setRestProducts([]);
+      this._activeProducts$.next([]);
+      this._restProducts$.next([]);
 
       return;
     }
@@ -177,15 +176,15 @@ class ToolsetService {
       );
     });
 
-    this.$setActiveProducts([...activeProducts]);
-    this.$setRestProducts([...restProducts]);
+    this._activeProducts$.next([...activeProducts]);
+    this._restProducts$.next([...restProducts]);
 
-    this.$setActivePLogId(uuidv4());
+    this._activePLogId$.next(uuidv4());
   }
 
   public setActiveToolset(toolsetId: number) {
     this._activeToolset = this._toolsets.get(toolsetId) || null;
-    this.$setActiveToolset(this._activeToolset);
+    this._activeToolset$.next(this._activeToolset);
   }
 
   public updateTemporaryTodos(todos: string[]) {
@@ -241,20 +240,35 @@ class ToolsetService {
 
       this.fetchUserToolsets();
 
-      this.$setError("Toolset products updated");
+      this._error$.next("Toolset products updated");
     } catch (error) {
-      this.$setError("Error updating toolset products");
+      this._error$.next("Error updating toolset products");
       console.error("Error updating toolset products:", error);
     }
   }
 
-  public provideStates(states: any) {
-    this.$setToolsets = states.setToolsets;
-    this.$setActiveToolset = states.setActiveToolset;
-    this.$setRestProducts = states.setRestProducts;
-    this.$setActiveProducts = states.setActiveProducts;
-    this.$setActivePLogId = states.setActivePLogId;
-    this.$setError = states.setError;
+  public get toolsets$() {
+    return this._toolsets$.asObservable();
+  }
+
+  public get activeToolset$() {
+    return this._activeToolset$.asObservable();
+  }
+
+  public get restProducts$() {
+    return this._restProducts$.asObservable();
+  }
+
+  public get activeProducts$() {
+    return this._activeProducts$.asObservable();
+  }
+
+  public get activePLogId$() {
+    return this._activePLogId$.asObservable();
+  }
+
+  public get error$() {
+    return this._error$.asObservable();
   }
 
   public dispose() {
@@ -262,6 +276,13 @@ class ToolsetService {
     this._activeToolset = null;
 
     this._temporaryTodos = [];
+
+    this._toolsets$.complete();
+    this._activeToolset$.complete();
+    this._restProducts$.complete();
+    this._activeProducts$.complete();
+    this._activePLogId$.complete();
+    this._error$.complete();
   }
 }
 

@@ -28,17 +28,30 @@ export function ProductProvider({ children }: any) {
   const [workspaceProducts, setWorkspaceProducts] = useState<ProductsDto[]>([]);
   const [roleProducts, setRoleProducts] = useState<RoleProductDto[]>([]);
   const [outputProducts, setOutputProducts] = useState<ProductsDto[]>([]);
-
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    productService.provideStates({
-      setProducts,
-      setWorkspaceProducts,
-      setRoleProducts,
-      setOutputProducts,
-      setError,
-    });
+    const ps_sub = productService.products$.subscribe((products) =>
+      setProducts(products)
+    );
+    const wsp_sub = productService.workspaceProducts$.subscribe((products) =>
+      setWorkspaceProducts(products)
+    );
+    const rp_sub = productService.roleProducts$.subscribe((products) =>
+      setRoleProducts(products)
+    );
+    const op_sub = productService.outputProducts$.subscribe((products) =>
+      setOutputProducts(products)
+    );
+    const err_sub = productService.error$.subscribe((error) => setError(error));
+
+    return () => {
+      ps_sub.unsubscribe();
+      wsp_sub.unsubscribe();
+      rp_sub.unsubscribe();
+      op_sub.unsubscribe();
+      err_sub.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {

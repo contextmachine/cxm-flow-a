@@ -3,6 +3,7 @@ import AuthService from "../auth-service/auth-service";
 import SceneService from "../scene-service/scene-service";
 import client from "@/components/graphql/client/client";
 import { ProductsDto, RoleProductDto } from "./products.types";
+import { BehaviorSubject } from "rxjs";
 
 class ProductService {
   private _authService: AuthService;
@@ -12,11 +13,11 @@ class ProductService {
   private _roleProducts: Map<number, RoleProductDto>;
   private _outputProducts: Map<number, ProductsDto>;
 
-  private $setProducts: any;
-  private $setWorkspaceProducts: any;
-  private $setRoleProducts: any;
-  private $setOutputProducts: any;
-  private $setError: any;
+  private _products$ = new BehaviorSubject<ProductsDto[]>([]);
+  private _workspaceProducts$ = new BehaviorSubject<ProductsDto[]>([]);
+  private _roleProducts$ = new BehaviorSubject<RoleProductDto[]>([]);
+  private _outputProducts$ = new BehaviorSubject<ProductsDto[]>([]);
+  private _error$ = new BehaviorSubject<string>("");
 
   constructor(private _sceneService: SceneService) {
     this._authService = this._sceneService.authService;
@@ -25,6 +26,8 @@ class ProductService {
     this._workspaceProducts = new Map();
     this._roleProducts = new Map();
     this._outputProducts = new Map();
+
+    this.init();
   }
 
   async fetchProducts(): Promise<ProductsDto[]> {
@@ -54,13 +57,13 @@ class ProductService {
         this._products.set(product.id, product);
       });
 
-      this.$setProducts([...products]);
+      this._products$.next([...products]);
 
       if (!products) throw new Error("Products not found");
 
       return products;
     } catch (error) {
-      this.$setError("Error fetching products");
+      this._error$.next("Error fetching products");
       console.error("Error fetching products:", error);
       throw error;
     }
@@ -98,13 +101,13 @@ class ProductService {
         this._workspaceProducts.set(product.id, product);
       });
 
-      this.$setWorkspaceProducts([...products]);
+      this._workspaceProducts$.next([...products]);
 
       if (!products) throw new Error("Products not found");
 
       return products;
     } catch (error) {
-      this.$setError("Error fetching products");
+      this._error$.next("Error fetching products");
       console.error("Error fetching products:", error);
       throw error;
     }
@@ -136,11 +139,11 @@ class ProductService {
         this._roleProducts.set(role.id, role);
       });
 
-      this.$setRoleProducts([...roles]);
+      this._roleProducts$.next([...roles]);
 
       return roles;
     } catch (error) {
-      this.$setError("Error fetching role products");
+      this._error$.next("Error fetching role products");
       console.error("Error fetching role products:", error);
       throw error;
     }
@@ -176,7 +179,7 @@ class ProductService {
         if (!response.data.insert_appv3_workspace_product.affected_rows)
           throw new Error("Error updating workspace product link");
       } catch (error) {
-        this.$setError("Error updating workspace product link");
+        this._error$.next("Error updating workspace product link");
         console.error("Error updating workspace product link:", error);
         throw error;
       }
@@ -209,7 +212,7 @@ class ProductService {
         if (!response.data.delete_appv3_workspace_product.affected_rows)
           throw new Error("Error updating workspace product link");
       } catch (error) {
-        this.$setError("Error updating workspace product link");
+        this._error$.next("Error updating workspace product link");
         console.error("Error updating workspace product link:", error);
         throw error;
       }
@@ -246,7 +249,7 @@ class ProductService {
         if (!response.data.insert_appv3_product_role.affected_rows)
           throw new Error("Error updating role product link");
       } catch (error) {
-        this.$setError("Error updating role product link");
+        this._error$.next("Error updating role product link");
         throw error;
       }
     } else {
@@ -275,7 +278,7 @@ class ProductService {
         if (!response.data.delete_appv3_product_role.affected_rows)
           throw new Error("Error updating role product link");
       } catch (error) {
-        this.$setError("Error updating role product link");
+        this._error$.next("Error updating role product link");
         throw error;
       }
     }
@@ -285,7 +288,6 @@ class ProductService {
 
   public async init() {
     if (typeof this._sceneService.workspaceId !== "number") return;
-    if (!this.$setProducts || !this.$setWorkspaceProducts) return;
 
     await this.fetchProducts();
     await this.fetchWorkspaceProducts(this._sceneService.workspaceId!);
@@ -324,21 +326,31 @@ class ProductService {
       }
     });
 
-    this.$setOutputProducts([...Array.from(this._outputProducts.values())]);
+    this._outputProducts$.next([...this._outputProducts.values()]);
   }
 
   public get products() {
     return this._products;
   }
 
-  public provideStates(states: any) {
-    this.$setProducts = states.setProducts;
-    this.$setWorkspaceProducts = states.setWorkspaceProducts;
-    this.$setRoleProducts = states.setRoleProducts;
-    this.$setOutputProducts = states.setOutputProducts;
-    this.$setError = states.setError;
+  public get products$() {
+    return this._products$.asObservable();
+  }
 
-    this.init();
+  public get workspaceProducts$() {
+    return this._workspaceProducts$.asObservable();
+  }
+
+  public get roleProducts$() {
+    return this._roleProducts$.asObservable();
+  }
+
+  public get outputProducts$() {
+    return this._outputProducts$.asObservable();
+  }
+
+  public get error$() {
+    return this._error$.asObservable();
   }
 
   dispose() {
@@ -346,6 +358,12 @@ class ProductService {
     this._workspaceProducts.clear();
     this._roleProducts.clear();
     this._outputProducts.clear();
+
+    this._products$.complete();
+    this._workspaceProducts$.complete();
+    this._roleProducts$.complete();
+    this._outputProducts$.complete();
+    this._error$.complete();
   }
 }
 
