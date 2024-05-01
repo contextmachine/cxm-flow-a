@@ -5,6 +5,7 @@ import { ExtensionEntityInterface } from "../entity/extension-entity.types";
 import { DetailedViewState } from "@/src/viewer/camera-control.types";
 import viewStates from "./data/view-states.json";
 import * as THREE from "three";
+import { update } from "@tweenjs/tween.js";
 
 class CameraViewsExtensions
   extends ExtensionEntity
@@ -12,33 +13,60 @@ class CameraViewsExtensions
 {
   public name: string;
 
+  private _totalPathLength: number; // Total distance between all view states
+  private _currentPathLength: number; // Distance covered in the animation
+
   private _viewStates: DetailedViewState[];
 
   private _panel: HTMLElement | null;
   private _cameraViewsContainer: HTMLElement | null;
   private _addButton: HTMLElement | null;
+  private _progressBar: HTMLElement | null;
 
   constructor() {
     super();
 
     this.name = "CameraViewsExtensions";
 
-    this._viewStates = this._formatData(viewStates);
+    this._viewStates = this._formatData(viewStates.filter((_, i) => i !== 3));
 
     this._panel = null;
     this._cameraViewsContainer = null;
     this._addButton = null;
+    this._progressBar = null;
+
+    this._totalPathLength = 0;
+    this._currentPathLength = 0;
+
+    this._calculateTotalPathLength();
   }
 
   public load() {
+    console.log("CameraViewsExtensions loaded");
+
     this._panel = document.getElementById("footer-options-panel");
     this._createUI();
+
+    this._addCameraSubscription();
   }
 
   public unload() {
     console.log("CameraViewsExtensions unloaded");
 
     this._panel = null;
+  }
+
+  private _calculateTotalPathLength() {
+    let totalLength = 0;
+
+    for (let i = 0; i < this._viewStates.length - 1; i++) {
+      const from = this._viewStates[i].position;
+      const to = this._viewStates[i + 1].position;
+
+      totalLength += from.distanceTo(to); // Sum the distances between each state
+    }
+
+    this._totalPathLength = totalLength;
   }
 
   private _addCameraViewUI(type: "add" | "view", view?: DetailedViewState) {
@@ -51,7 +79,7 @@ class CameraViewsExtensions
       cameraView.addEventListener("click", () => {
         const sceneService = this._sceneService!;
         const cameraControls = sceneService.viewer!.controls;
-        cameraControls.restoreState(view!, false);
+        cameraControls.restoreState(view!, true, 300);
       });
     }
     // Add event listener to add a new camera view
@@ -97,16 +125,37 @@ class CameraViewsExtensions
     const sceneService = this._sceneService!;
     const cameraControls = sceneService.viewer!.controls;
 
-    let cameraViewIndex = 0;
+    let i = 0;
+
+    this._currentPathLength = 0; // Reset the current progress
 
     for (const viewState of this._viewStates) {
-      await cameraControls.restoreState(viewState, true, duration); // Animate the transition
+      const from = this._viewStates[i];
+      const to = this._viewStates[i + 1];
 
-      if (cameraViewIndex) {
+      // Restore the state and track the progress
+      await cameraControls.restoreState(viewState, true, duration, {
+        update: () => {
+          // Update the progress bar
+          //TODO
+
+          return;
+        },
+      }); // Animate the transition
+
+      if (to) {
+        this._currentPathLength += from.position.distanceTo(to.position); // Update progress
+      }
+
+      const progressPercentage =
+        (this._currentPathLength / this._totalPathLength) * 100; // Calculate percentage
+      console.log(`Progress: ${progressPercentage.toFixed(2)}%`);
+
+      if (i) {
         await this._delay(delay); // Wait before transitioning to the next state
       }
 
-      cameraViewIndex++;
+      i++;
     }
   }
 
@@ -195,6 +244,45 @@ class CameraViewsExtensions
           item.pinPosition.z
         ),
       };
+    });
+  }
+
+  /// render the camera views pins within the scene
+  private _addCameraSubscription() {
+    const cameraControls = this._sceneService!.viewer!.controls.controls;
+
+    console.log("cameraControls", cameraControls);
+
+    cameraControls.addEventListener("update", (e) => {
+      console.log("a");
+
+      const camera = cameraControls.camera;
+
+      console.log(camera);
+    });
+
+    cameraControls.addEventListener("control", (e) => {
+      console.log("b");
+
+      const camera = cameraControls.camera;
+
+      console.log(camera);
+    });
+
+    cameraControls.addEventListener("sleep", (e) => {
+      console.log("c");
+
+      const camera = cameraControls.camera;
+
+      console.log(camera);
+    });
+
+    cameraControls.addEventListener("wake", (e) => {
+      console.log("d");
+
+      const camera = cameraControls.camera;
+
+      console.log(camera);
     });
   }
 }

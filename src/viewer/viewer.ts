@@ -46,6 +46,8 @@ export class Viewer {
   private _client: ApolloClient<NormalizedCacheObject> | undefined;
 
   constructor() {
+    console.log("viewer constructor");
+
     this._renderer = new THREE.WebGLRenderer({
       antialias: true,
       powerPreference: "high-performance",

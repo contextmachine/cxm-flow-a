@@ -50,6 +50,8 @@ export class ViewerComponent extends React.Component<NewViewerComponentProps> {
 
     this._sceneService = props.sceneService;
 
+    console.log("haaaa");
+
     // new Viewer()
 
     this.state = {
