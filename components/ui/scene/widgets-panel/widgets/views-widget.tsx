@@ -3,7 +3,13 @@ import WidgetPaper from "../blocks/widget-paper/widget-paper";
 import { useScene } from "@/components/services/scene-service/scene-provider";
 import CameraViewsExtensions from "@/components/services/extension-service/extensions/camera-views-extension/camera-views-extension";
 import { ViewStateItem } from "@/components/services/extension-service/extensions/camera-views-extension/camera-views-extension.db";
-import { Box, Button, ButtonGroup, IconButton } from "@mui/material";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  CircularProgress,
+  IconButton,
+} from "@mui/material";
 import styled from "styled-components";
 import EditableTitle from "../../primitives/dynamic-title/dynamic-title";
 import { ViewState } from "@/src/viewer/camera-control.types";
@@ -19,6 +25,8 @@ const ViewsWidget: React.FC<{
 
   const [allViews, setAllViews] = useState<ViewStateItem[]>([]);
   const [animationViews, setAnimationViews] = useState<ViewStateItem[]>([]);
+  const [pending, setPending] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const extensionRef = useRef<CameraViewsExtensions | null>(null);
 
@@ -35,9 +43,19 @@ const ViewsWidget: React.FC<{
       setAnimationViews(views)
     );
 
+    const pendingSub = extension.dbService.pending$.subscribe((pending) =>
+      setPending(pending)
+    );
+    const addingSub = extension.dbService.adding$.subscribe((adding) =>
+      setAdding(adding)
+    );
+
     return () => {
       allViewsSub.unsubscribe();
       animationViewsSub.unsubscribe();
+
+      pendingSub.unsubscribe();
+      addingSub.unsubscribe();
 
       sceneService.removeExtension(extension.name);
     };
@@ -110,6 +128,9 @@ const ViewsWidget: React.FC<{
             variant="contained"
             size="medium"
             onClick={() => addView()}
+            startIcon={
+              adding ? <CircularProgress size={16} color="inherit" /> : <></>
+            }
           >
             + Add view
           </Button>
@@ -150,6 +171,15 @@ const ViewsWidget: React.FC<{
           ))}
         </Box>
       )}
+
+      {pending && (
+        <>
+          <Box sx={{ display: "flex", gap: "4px" }}>
+            <CircularProgress size={16} color="inherit" />
+            <Box>Loading content...</Box>
+          </Box>
+        </>
+      )}
     </WidgetPaper>
   );
 };
@@ -160,6 +190,8 @@ const ViewItem: React.FC<{
   restoreState: any;
   deleteView: any;
 }> = ({ view, updateTitle, restoreState, deleteView }) => {
+  const [deleting, setDeleting] = useState(false);
+
   return (
     <Wrapper
       onClick={() => {
@@ -202,15 +234,24 @@ const ViewItem: React.FC<{
           height: "100%",
         }}
       >
-        <Badge
-          onClick={(e: any) => {
-            e.stopPropagation();
+        {!deleting && (
+          <Badge
+            onClick={(e: any) => {
+              e.stopPropagation();
 
-            deleteView(view.id);
-          }}
-        >
-          Delete
-        </Badge>
+              setDeleting(true);
+              deleteView(view.id);
+            }}
+          >
+            Delete
+          </Badge>
+        )}
+
+        {deleting && (
+          <Box>
+            <CircularProgress size={16} color="inherit" />
+          </Box>
+        )}
       </Box>
     </Wrapper>
   );

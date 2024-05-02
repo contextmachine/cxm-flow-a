@@ -14,6 +14,9 @@ class CameraViewsDbService {
   private _allViews$: BehaviorSubject<ViewStateItem[]> | null = null;
   private _animationViews$: BehaviorSubject<ViewStateItem[]> | null = null;
 
+  private _adding$ = new BehaviorSubject<boolean>(false);
+  private _pending$ = new BehaviorSubject<boolean>(false);
+
   constructor(private _cameraViewsExtension: CameraViewsExtensions) {
     const sceneService = this._cameraViewsExtension.sceneService;
     this._sceneService = sceneService;
@@ -34,13 +37,14 @@ class CameraViewsDbService {
   public async addView() {
     if (!this._sceneId) return;
 
+    this._adding$.next(true);
+
     const sceneService = this._sceneService!;
     const viewer = sceneService.viewer!;
     const cameraControls = viewer.controls;
     const viewState = cameraControls.getState();
 
     const thumbUrl = await this._createThumb();
-    console.log("thumbUrl", thumbUrl);
 
     const mutation = gql`
       mutation getViews($name: String!, $state: jsonb!, $thumb: String) {
@@ -106,9 +110,12 @@ class CameraViewsDbService {
       });
     } catch (e) {
       console.log(e);
+      this._adding$.next(false);
     }
 
     await this.fetchViews();
+
+    this._adding$.next(false);
   }
 
   public async updateView(viewId: number, data: Partial<ViewStateItem>) {
@@ -163,52 +170,60 @@ class CameraViewsDbService {
   }
 
   public async fetchViews() {
-    const scene_id = this._sceneId;
-    if (!scene_id) return;
+    this._pending$.next(true);
 
-    const query = gql`
-      query getViews($sceneId: Int!) {
-        extensionsv3_view_scene(
-          where: {
-            scene_id: { _eq: $sceneId }
-            view: { state: { _is_null: false } }
-          }
-          order_by: { id: asc }
-        ) {
-          id
-          parent_type
-          scene_id
-          view_id
-          view {
+    try {
+      const scene_id = this._sceneId;
+      if (!scene_id) return;
+
+      const query = gql`
+        query getViews($sceneId: Int!) {
+          extensionsv3_view_scene(
+            where: {
+              scene_id: { _eq: $sceneId }
+              view: { state: { _is_null: false } }
+            }
+            order_by: { id: asc }
+          ) {
             id
-            name
-            state
-            thumb
+            parent_type
+            scene_id
+            view_id
+            view {
+              id
+              name
+              state
+              thumb
+            }
           }
         }
-      }
-    `;
+      `;
 
-    const result = await client.query({
-      query,
-      variables: {
-        sceneId: scene_id,
-      },
-      fetchPolicy: "network-only",
-    });
+      const result = await client.query({
+        query,
+        variables: {
+          sceneId: scene_id,
+        },
+        fetchPolicy: "network-only",
+      });
 
-    const data = result.data.extensionsv3_view_scene;
+      const data = result.data.extensionsv3_view_scene;
 
-    const allViews = data
-      .filter((item: ViewStateLinkItem) => item.parent_type === "all")
-      .map((item: ViewStateLinkItem) => item.view);
+      const allViews = data
+        .filter((item: ViewStateLinkItem) => item.parent_type === "all")
+        .map((item: ViewStateLinkItem) => item.view);
 
-    const animationViews = data
-      .filter((item: ViewStateLinkItem) => item.parent_type === "animation")
-      .map((item: ViewStateLinkItem) => item.view);
+      const animationViews = data
+        .filter((item: ViewStateLinkItem) => item.parent_type === "animation")
+        .map((item: ViewStateLinkItem) => item.view);
 
-    this._allViews$?.next([...allViews]);
-    this._animationViews$?.next([...animationViews]);
+      this._allViews$?.next([...allViews]);
+      this._animationViews$?.next([...animationViews]);
+    } catch (e) {
+      console.error(e);
+    }
+
+    this._pending$.next(false);
   }
 
   private async _createThumb() {
@@ -254,6 +269,9 @@ class CameraViewsDbService {
     this._allViews$ = null;
     this._animationViews$?.complete();
     this._animationViews$ = null;
+
+    this._pending$.complete();
+    this._adding$.complete();
   }
 
   public get allViews$() {
@@ -262,6 +280,14 @@ class CameraViewsDbService {
 
   public get animationViews$() {
     return this._animationViews$?.asObservable();
+  }
+
+  public get adding$() {
+    return this._adding$.asObservable();
+  }
+
+  public get pending$() {
+    return this._pending$.asObservable();
   }
 
   dispose() {}

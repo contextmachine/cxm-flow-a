@@ -11,6 +11,8 @@ import * as THREE from "three";
 import { update } from "@tweenjs/tween.js";
 import { v4 as uuidv4 } from "uuid";
 import CameraViewsDbService from "./camera-views-extension.db";
+import { BehaviorSubject } from "rxjs";
+import { boolean } from "zod";
 
 class CameraViewsExtensions
   extends ExtensionEntity
@@ -363,6 +365,10 @@ class CameraViewsExtensions
 
   public updateTitle(id: number, name: string) {
     this._dbService.updateView(id, { name });
+  }
+
+  public get dbService() {
+    return this._dbService;
   }
 }
 
