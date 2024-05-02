@@ -15,7 +15,7 @@ export class ProjectModel {
   protected _id: string;
 
   private _entity: Entity
-  private _unions: UnionMesh[] = []
+  private _unionMesh: UnionMesh | undefined
   private _objects: THREE.Object3D[] = []
 
   private _viewer: Viewer
@@ -42,6 +42,10 @@ export class ProjectModel {
     return this._objects
   }
 
+  public get collisionMesh() {
+    return this._unionMesh?.collisionMesh
+  }
+
   public get viewer(): Viewer {
     return this._viewer
   }
@@ -54,8 +58,8 @@ export class ProjectModel {
     return this._apiObject;
   }
 
-  public get unions(): UnionMesh[] {
-    return this._unions
+  public get unionMesh(): UnionMesh | undefined {
+    return this._unionMesh
   }
 
   public get entity(): Entity {
@@ -64,29 +68,27 @@ export class ProjectModel {
 
   public initModel(object: THREE.Object3D): Entity {
 
-    let entity: Entity
+
     if (object instanceof THREE.Group) {
 
-      // this._unions = new UnionMesh(object, this)
-      this._objects = this._unions.objects
+      this._unionMesh = new UnionMesh(object, this)
+      this._objects = this._unionMesh.objects
 
-      entity = new Group(object, this, undefined)
+      return new Group(object, this, undefined)
 
     } else if (object instanceof THREE.Mesh) {
 
       this._objects = [object]
 
-      entity = new Mesh(object, this, undefined)
+      return new Mesh(object, this, undefined)
 
     } else {
 
       this._objects = [object]
 
-      entity = new DefaultObject(object, this, undefined)
+      return new DefaultObject(object, this, undefined)
 
     }
-
-    return entity
 
   }
 
