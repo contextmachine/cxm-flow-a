@@ -4,6 +4,7 @@ import Viewer from "../viewer";
 import { Entity } from "@/src/objects/entities/entity";
 import Picker from "./picker";
 import { Group } from "@/src/objects/entities/group";
+import { activeGroupBoxHelperColor } from "@/src/objects/materials/object-materials";
 
 
 
@@ -78,10 +79,14 @@ class SelectionControl {
     this.clearSelection()
 
     if (this.currentGroup) {
+      this.currentGroup.setBboxVisibilty(false)
+      this._viewer.removeFromScene(this.currentGroup.bbox)
       this.currentGroup.children.forEach(x => x.onDisable())
     }
 
     if (group) {
+      group.setBboxVisibilty(true, activeGroupBoxHelperColor)
+      this._viewer.controls.setOrbit(group.center)
       group.children.forEach(x => x.onEnable())
     } else {
       this._viewer.entityControl.objectsOnCurrentLevel.forEach(x => x.onEnable())

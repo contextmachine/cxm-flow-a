@@ -44,7 +44,7 @@ class CameraControl {
         .subscribe((e) => {
           if (e.shiftKey) {
             orbitCameraControls.mouseButtons.right =
-              CameraControls.ACTION.TRUCK;
+              CameraControls.ACTION.OFFSET;
           }
           this._navigationSubject.next(true);
         })
@@ -90,6 +90,11 @@ class CameraControl {
 
   public get controls() {
     return this._controls;
+  }
+
+  public setOrbit(point: THREE.Vector3) {
+    this._controls.setOrbitPoint(point.x, point.y, point.z)
+    this._viewer.updateViewer()
   }
 
   public fitToScene() {
