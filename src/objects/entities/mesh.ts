@@ -14,6 +14,7 @@ import {
 } from "../materials/object-materials";
 import { Group } from "./group";
 import { assertDefined } from "@/utils";
+import UnionMesh from "./utility/union-mesh";
 
 
 
@@ -29,6 +30,7 @@ export class Mesh implements Entity {
   private _name: string;
 
   private _parent: Entity | undefined
+  private _union: UnionMesh | undefined
 
   // private _lineEdges: THREE.LineSegments | undefined;
   private _bbox = new THREE.Box3Helper(
@@ -44,7 +46,6 @@ export class Mesh implements Entity {
   private _selected = false;
   private _parentSelected = false
   private _disable = false
-
 
   private _props: ProjectObjectProps | undefined;
 
@@ -134,6 +135,11 @@ export class Mesh implements Entity {
     }
   }
 
+  private setUnion(union: UnionMesh) {
+    this._union = union
+    this._union.setMeshMaterialToFragment(this._id, this._defaultMaterial)
+  }
+
   private initMaterial() {
     const mesh = this._object3d
 
@@ -146,7 +152,6 @@ export class Mesh implements Entity {
 
       this._defaultMaterial = material as THREE.Material
 
-      this._model.unionMesh?.setMeshMaterialToFragment(this._id, this._defaultMaterial)
     }
   }
 
@@ -249,14 +254,14 @@ export class Mesh implements Entity {
 
 
   private setMeshMaterial(material: THREE.Material) {
-    if (this.model.unionMesh) {
-      this.model.unionMesh.setMeshMaterialToFragment(this.id, material)
+    if (this._union) {
+      this._union.setMeshMaterialToFragment(this.id, material)
     }
   }
 
   private setLineMaterial(material: THREE.Material) {
-    if (this.model.unionMesh) {
-      this.model.unionMesh.setLineMaterialToFragment(this.id, material)
+    if (this._union) {
+      this._union.setLineMaterialToFragment(this.id, material)
     }
   }
 

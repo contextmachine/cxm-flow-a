@@ -28,7 +28,7 @@ class Picker {
 
     this._raycaster.firstHitOnly = false;
     this._unionMeshes = [...this._viewer.entityControl.projectModels.values()]
-      .map(x => x.unionMesh)
+      .flatMap(x => x.unions)
       .filter(x => x !== undefined) as UnionMesh[]
 
     this._subscriptions.push(
@@ -48,7 +48,7 @@ class Picker {
     this._subscriptions.push(
       this._viewer.entityControl.$projectModels.subscribe((e) => {
         this._unionMeshes = [...e.values()]
-          .map(x => x.unionMesh)
+          .flatMap(x => x.unions)
           .filter(x => x !== undefined) as UnionMesh[]
       })
     );
