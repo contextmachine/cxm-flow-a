@@ -1,8 +1,7 @@
 import { ProjectModel } from "../project-model";
 import * as THREE from "three";
 import { Entity, ProjectObjectProps, ViewerObjectType, initEntity } from "./entity";
-import { meshDefaultMaterial, lineDefaultMaterial, selectedMaterial, lineSelectedMaterial } from "../materials/object-materials";
-import UnionMesh from "./utility/union-mesh";
+import { meshDefaultMaterial, selectedGroupBoxHelperColor, } from "../materials/object-materials";
 
 
 export class Group implements Entity {
@@ -19,7 +18,7 @@ export class Group implements Entity {
 
 	private _bbox = new THREE.Box3Helper(
 		new THREE.Box3(),
-		new THREE.Color("lightblue")
+		new THREE.Color()
 	);
 
 	private _visibility = true;
@@ -129,7 +128,7 @@ export class Group implements Entity {
 		const bbox = new THREE.Box3().expandByObject(this._object3d);
 		bbox.getCenter(this._center);
 		this._bbox.box = bbox;
-		this._bbox.applyMatrix4(this._object3d.matrixWorld);
+		// this._bbox.applyMatrix4(this._object3d.matrixWorld);
 	}
 
 	public setVisibility(visible: boolean) {
@@ -149,18 +148,23 @@ export class Group implements Entity {
 		this._linesVisibility = show;
 	}
 
-	public setBboxVisibilty(show: boolean) {
+	public setBboxVisibilty(show: boolean, color?: string) {
+		if (color) {
+			(this._bbox.material as THREE.LineBasicMaterial).color = new THREE.Color(color)
+		}
 		this._bboxVisibility = show;
 		this.updateBbox()
 	}
 
 	public onSelect() {
 		this._selected = true;
+		this.setBboxVisibilty(true, selectedGroupBoxHelperColor);
 		this._children.forEach(x => x.onParentSelect())
 	}
 
 	public onDeselect() {
 		this._selected = false;
+		this.setBboxVisibilty(false);
 		this._children.forEach(x => x.onParentDeselect())
 	}
 

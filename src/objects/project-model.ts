@@ -4,6 +4,9 @@ import Viewer from "@/viewer/viewer";
 import ApiObject from "../viewer/loader/objects/api-object";
 import UnionMesh from "./entities/utility/union-mesh";
 import { Entity, initEntity } from "./entities/entity";
+import { Group } from "./entities/group";
+import { Mesh } from "./entities/mesh";
+import { DefaultObject } from "./entities/default-object";
 
 
 
@@ -13,6 +16,7 @@ export class ProjectModel {
 
   private _entity: Entity
   private _unionMesh: UnionMesh | undefined
+  private _objects: THREE.Object3D[] = []
 
   private _viewer: Viewer
 
@@ -27,19 +31,15 @@ export class ProjectModel {
 
     object3d.traverse((x) => x.updateMatrixWorld());
 
-    this._entity = this.initModel(object3d);;
+    this._entity = this.initModel(object3d);
   }
 
   public updateProjectModel(object: THREE.Object3D) {
-    this._entity = this.initModel(object);;
+    this._entity = this.initModel(object);
   }
 
   public get objects(): THREE.Object3D[] {
-    if (this._unionMesh) {
-      return this._unionMesh.objects
-    } else {
-      return []
-    }
+    return this._objects
   }
 
   public get collisionMesh() {
@@ -66,12 +66,30 @@ export class ProjectModel {
     return this._entity;
   }
 
-  public initModel(object3d: THREE.Object3D): Entity {
+  public initModel(object: THREE.Object3D): Entity {
 
-    this._unionMesh = new UnionMesh(object3d, this)
-    const entity = initEntity(object3d, this)
 
-    return entity
+    if (object instanceof THREE.Group) {
+
+      this._unionMesh = new UnionMesh(object, this)
+      this._objects = this._unionMesh.objects
+
+      return new Group(object, this, undefined)
+
+    } else if (object instanceof THREE.Mesh) {
+
+      this._objects = [object]
+
+      return new Mesh(object, this, undefined)
+
+    } else {
+
+      this._objects = [object]
+
+      return new DefaultObject(object, this, undefined)
+
+    }
+
   }
 
 }

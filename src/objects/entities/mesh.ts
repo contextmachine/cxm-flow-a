@@ -33,7 +33,7 @@ export class Mesh implements Entity {
   // private _lineEdges: THREE.LineSegments | undefined;
   private _bbox = new THREE.Box3Helper(
     new THREE.Box3(),
-    new THREE.Color("lightblue")
+    new THREE.Color()
   );
 
   private _visibility = true;

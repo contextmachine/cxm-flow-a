@@ -2,12 +2,16 @@ import * as THREE from "three";
 
 
 export const selectedColor = '#C0E8FF'
-export const defaultMeshColor = '#888888'
 export const lineSelectedColor = "#279EFF"
+
+export const defaultMeshColor = '#888888'
+
 export const transparentColor = "#000000"
+
 export const disabledColor = '#ffffff'
 export const lineDisabledColor = '#767676'
-
+export const selectedGroupBoxHelperColor = '#279EFF'
+export const activeGroupBoxHelperColor = 'orange'
 
 
 export const wireframeMaterial = new THREE.MeshBasicMaterial({
@@ -37,7 +41,6 @@ export const meshDefaultMaterial = new THREE.MeshBasicMaterial({
 });
 
 export const lineDefaultMaterial = new THREE.LineBasicMaterial({
-  lineWidth: 0.1,
   color: 0x000000,
 } as any);
 

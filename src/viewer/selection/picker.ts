@@ -63,6 +63,7 @@ class Picker {
     const raycaster = this._raycaster;
 
     const pointer = getPointer(event, this._domElement);
+    this._camera.updateMatrixWorld()
     raycaster.setFromCamera(pointer, this._camera);
 
     const intersections: { uuid: string; distance: number }[] = [];
