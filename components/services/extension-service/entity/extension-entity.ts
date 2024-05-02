@@ -31,6 +31,10 @@ class ExtensionEntity {
   public set isInitialized(value: boolean) {
     this._isInitialized = value;
   }
+
+  public get sceneService() {
+    return this._sceneService;
+  }
 }
 
 export default ExtensionEntity;

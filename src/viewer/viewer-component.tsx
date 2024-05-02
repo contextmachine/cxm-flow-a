@@ -50,8 +50,6 @@ export class ViewerComponent extends React.Component<NewViewerComponentProps> {
 
     this._sceneService = props.sceneService;
 
-    console.log("haaaa");
-
     // new Viewer()
 
     this.state = {
@@ -60,8 +58,6 @@ export class ViewerComponent extends React.Component<NewViewerComponentProps> {
   }
 
   componentDidMount() {
-    console.log("did mount");
-
     this._viewer = new Viewer();
     // this._sceneService.addServices({ Viewer: this._viewer });
     // this._viewer.init(assertDefined(this._rootRef));
@@ -73,7 +69,7 @@ export class ViewerComponent extends React.Component<NewViewerComponentProps> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  componentDidUpdate() { }
+  componentDidUpdate() {}
 
   render() {
     return (

@@ -5,6 +5,7 @@ export const TitleWrapper = styled.div`
   display: flex;
   overflow: hidden;
   border-radius: 9px;
+  padding: 0 9px;
 
   &:hover {
     border-color: #333333;

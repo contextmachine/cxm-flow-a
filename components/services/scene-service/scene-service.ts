@@ -8,7 +8,7 @@ import ProductService from "../product-service/product-service";
 import ToolsetService from "../toolset-service/toolset-service";
 import Viewer from "@/src/viewer/viewer";
 import { ExtensionEntityInterface } from "../extension-service/entity/extension-entity.types";
-import CameraViewsExtensions from "../extension-service/extensions/camera-views-extension";
+import CameraViewsExtensions from "../extension-service/extensions/camera-views-extension/camera-views-extension";
 
 class SceneService {
   private _workspaceService: WorkspaceService;
@@ -33,13 +33,11 @@ class SceneService {
     this._toolsetService = new ToolsetService(this);
 
     this.updateTitle = this.updateTitle.bind(this);
-
-    this.addExtension(new CameraViewsExtensions());
   }
 
   public initViewer(root: HTMLDivElement) {
-    this._viewer = new Viewer()
-    this._viewer.init(root)
+    this._viewer = new Viewer();
+    this._viewer.init(root);
 
     this.updateExtensions();
   }
@@ -142,13 +140,27 @@ class SceneService {
     return this._viewer;
   }
 
-  public addExtension = (extension: ExtensionEntityInterface) => {
+  public addExtension = (
+    extension: ExtensionEntityInterface
+  ): ExtensionEntityInterface => {
     if (this._extensions.has(extension.name))
       throw new Error(`Extension with name ${extension.name} already exists`);
 
     this._extensions.set(extension.name, extension);
 
     this.updateExtensions();
+
+    return extension;
+  };
+
+  public removeExtension = (name: string) => {
+    if (!this._extensions.has(name))
+      throw new Error(`Extension with name ${name} does not exist`);
+
+    const extension = this._extensions.get(name);
+    extension.unload();
+
+    this._extensions.delete(name);
   };
 
   public updateExtensions = () => {

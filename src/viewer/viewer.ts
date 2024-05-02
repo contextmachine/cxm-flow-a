@@ -1,16 +1,16 @@
-import * as THREE from 'three';
-import * as RX from 'rxjs';
-import CameraControls from 'camera-controls';
-import Stats from 'three/examples/jsm/libs/stats.module';
+import * as THREE from "three";
+import * as RX from "rxjs";
+import CameraControls from "camera-controls";
+import Stats from "three/examples/jsm/libs/stats.module";
 
-import ComposerPipe from './composer-pipe';
-import CameraControl from './camera-control';
-import Loader from './loader/loader';
-import EntityControl from './entity-control';
-import { ApolloClient, NormalizedCacheObject } from '@apollo/client';
-import { appLogicError, assertDefined } from '@/utils';
-import ProjectSettingsService from '../services/project-settings/project-settings-service';
-import SelectionControl from './selection/selection-tool';
+import ComposerPipe from "./composer-pipe";
+import CameraControl from "./camera-control";
+import Loader from "./loader/loader";
+import EntityControl from "./entity-control";
+import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
+import { appLogicError, assertDefined } from "@/utils";
+import ProjectSettingsService from "../services/project-settings/project-settings-service";
+import SelectionControl from "./selection/selection-tool";
 
 CameraControls.install({ THREE: THREE });
 
@@ -48,7 +48,8 @@ export class Viewer {
   constructor() {
     this._renderer = new THREE.WebGLRenderer({
       antialias: true,
-      powerPreference: 'high-performance',
+      powerPreference: "high-performance",
+      preserveDrawingBuffer: true,
     });
 
     this._stats = new Stats();
@@ -78,7 +79,7 @@ export class Viewer {
 
     // Subscribe
     this._subscriptions.push(
-      RX.fromEvent(window, 'resize').subscribe(() => this.resize())
+      RX.fromEvent(window, "resize").subscribe(() => this.resize())
     );
     this._subscriptions.push(
       this._projectSettingsService.$settings.subscribe((settings) => {
@@ -88,7 +89,7 @@ export class Viewer {
     );
 
     this._loader.testLoad().then((model) => {
-      console.log('test load done', model);
+      console.log("test load done", model);
       this.entityControl.addModel(model);
       this._cameraService.fitToScene();
     });
@@ -144,8 +145,8 @@ export class Viewer {
   }
 
   public init(rootElement: HTMLDivElement) {
-    console.log('init');
-    if (this._isInitialized) throw appLogicError('Viewer already initialized');
+    console.log("init");
+    if (this._isInitialized) throw appLogicError("Viewer already initialized");
 
     console.log(this._isInitialized);
 
@@ -165,9 +166,9 @@ export class Viewer {
     if (this._stats) {
       this._stats.showPanel(0);
       document.body.appendChild(this._stats.dom);
-      this._stats.dom.style.right = '0';
-      this._stats.dom.style.left = '';
-      this._stats.dom.style.marginRight = '300px';
+      this._stats.dom.style.right = "0";
+      this._stats.dom.style.left = "";
+      this._stats.dom.style.marginRight = "300px";
       this._stats.begin();
     }
 
@@ -218,7 +219,7 @@ export class Viewer {
   };
 
   public dispose(): void {
-    console.log('dispose viewer');
+    console.log("dispose viewer");
 
     this.versionControl.dispose();
     document.body.removeChild(this._stats.dom);

@@ -1,6 +1,5 @@
 import { useScene } from "@/components/services/scene-service/scene-provider";
 import { DetailedViewState } from "@/src/viewer/camera-control.types";
-import { useViewer } from "@/src/viewer/viewer-component";
 import { Box, Button } from "@mui/material";
 import { useEffect, useState } from "react";
 
@@ -8,10 +7,6 @@ const OptionsPanel = () => {
   const { sceneService } = useScene();
 
   const [cameraViews, setCameraViews] = useState<DetailedViewState[]>([]);
-
-  useEffect(() => {
-    console.log("cameraViews", cameraViews);
-  }, [cameraViews]);
 
   return (
     <Box

@@ -37,13 +37,13 @@ export function SceneProvider({ children }: any) {
   const router = useRouter();
   const { query } = router;
   const { scene_id } = query;
-  const canvas = useRef<HTMLDivElement>(null)
+  const canvas = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (canvas !== null) {
-      sceneService.initViewer(canvas.current as HTMLDivElement)
+      sceneService.initViewer(canvas.current as HTMLDivElement);
     }
-  }, [canvas])
+  }, [canvas]);
 
   useEffect(() => {
     if (typeof scene_id !== "string") return;
@@ -60,7 +60,6 @@ export function SceneProvider({ children }: any) {
 
   return (
     <div>
-
       <SceneContext.Provider
         value={{
           sceneService,
@@ -68,13 +67,12 @@ export function SceneProvider({ children }: any) {
         }}
       >
         <Box sx={{ width: "100vw", height: "100vh" }}>
-          <CanvasWrapper ref={canvas}>
+          <CanvasWrapper ref={canvas} id="three-canvas">
             {children}
           </CanvasWrapper>
         </Box>
       </SceneContext.Provider>
     </div>
-
   );
 }
 
