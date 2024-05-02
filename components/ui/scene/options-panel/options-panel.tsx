@@ -1,6 +1,5 @@
 import { useScene } from "@/components/services/scene-service/scene-provider";
 import { DetailedViewState } from "@/src/viewer/camera-control.types";
-import { useViewer } from "@/src/viewer/viewer-component";
 import { Box, Button } from "@mui/material";
 import { useEffect, useState } from "react";
 
