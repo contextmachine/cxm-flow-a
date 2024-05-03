@@ -1,44 +1,106 @@
 import { Scene } from "three";
-import ExtensionEntity from "../entity/extension-entity";
-import SceneService from "../../scene-service/scene-service";
-import { ExtensionEntityInterface } from "../entity/extension-entity.types";
-import { DetailedViewState } from "@/src/viewer/camera-control.types";
+import ExtensionEntity from "../../entity/extension-entity";
+import SceneService from "../../../scene-service/scene-service";
+import { ExtensionEntityInterface } from "../../entity/extension-entity.types";
+import {
+  DetailedViewState,
+  ViewState,
+} from "@/src/viewer/camera-control.types";
 import viewStates from "./data/view-states.json";
 import * as THREE from "three";
+import { update } from "@tweenjs/tween.js";
+import { v4 as uuidv4 } from "uuid";
+import CameraViewsDbService from "./camera-views-extension.db";
+import { BehaviorSubject } from "rxjs";
+import { boolean } from "zod";
 
 class CameraViewsExtensions
   extends ExtensionEntity
   implements ExtensionEntityInterface
 {
+  public id: string;
   public name: string;
+
+  private _totalPathLength: number; // Total distance between all view states
+  private _currentPathLength: number; // Distance covered in the animation
 
   private _viewStates: DetailedViewState[];
 
   private _panel: HTMLElement | null;
   private _cameraViewsContainer: HTMLElement | null;
   private _addButton: HTMLElement | null;
+  private _progressBar: HTMLElement | null;
+
+  private _cameraSubscription: null | Map<string, any>;
+
+  private _dbService: CameraViewsDbService;
 
   constructor() {
     super();
 
+    this._dbService = new CameraViewsDbService(this);
+
+    this.id = uuidv4();
     this.name = "CameraViewsExtensions";
 
-    this._viewStates = this._formatData(viewStates);
+    this._viewStates = this._formatData(viewStates.filter((_, i) => i !== 3));
 
     this._panel = null;
     this._cameraViewsContainer = null;
     this._addButton = null;
+    this._progressBar = null;
+
+    this._totalPathLength = 0;
+    this._currentPathLength = 0;
+
+    this._cameraSubscription = null;
+
+    this._calculateTotalPathLength();
   }
 
   public load() {
-    this._panel = document.getElementById("footer-options-panel");
-    this._createUI();
+    this._dbService.load();
+    console.log("CameraViewsExtensions loaded");
+
+    this._addCameraSubscription();
   }
 
   public unload() {
     console.log("CameraViewsExtensions unloaded");
 
-    this._panel = null;
+    this._removeCameraSubscription();
+    this._dbService.unload();
+  }
+
+  private _calculateTotalPathLength() {
+    let totalLength = 0;
+
+    for (let i = 0; i < this._viewStates.length - 1; i++) {
+      const from = this._viewStates[i].position;
+      const to = this._viewStates[i + 1].position;
+
+      totalLength += from.distanceTo(to); // Sum the distances between each state
+    }
+
+    this._totalPathLength = totalLength;
+  }
+
+  public addView() {
+    return this._dbService.addView();
+  }
+
+  public deleteView(id: number) {
+    return this._dbService.deleteView(id);
+  }
+
+  // Save the current camera state
+  public restoreState(state: ViewState) {
+    const sceneService = this._sceneService!;
+    const cameraControls = sceneService.viewer!.controls;
+
+    const viewState = this._formatViewState(state);
+
+    cameraControls.restoreState(viewState as any, true, 300);
   }
 
   private _addCameraViewUI(type: "add" | "view", view?: DetailedViewState) {
@@ -51,12 +113,14 @@ class CameraViewsExtensions
       cameraView.addEventListener("click", () => {
         const sceneService = this._sceneService!;
         const cameraControls = sceneService.viewer!.controls;
-        cameraControls.restoreState(view!, false);
+        cameraControls.restoreState(view!, true, 300);
       });
     }
     // Add event listener to add a new camera view
     else {
       cameraView.addEventListener("click", () => {
+        this._dbService.addView();
+
         const sceneService = this._sceneService!;
         const viewer = sceneService.viewer!;
         const cameraControls = viewer.controls;
@@ -97,16 +161,37 @@ class CameraViewsExtensions
     const sceneService = this._sceneService!;
     const cameraControls = sceneService.viewer!.controls;
 
-    let cameraViewIndex = 0;
+    let i = 0;
+
+    this._currentPathLength = 0; // Reset the current progress
 
     for (const viewState of this._viewStates) {
-      await cameraControls.restoreState(viewState, true, duration); // Animate the transition
+      const from = this._viewStates[i];
+      const to = this._viewStates[i + 1];
 
-      if (cameraViewIndex) {
+      // Restore the state and track the progress
+      await cameraControls.restoreState(viewState, true, duration, {
+        update: () => {
+          // Update the progress bar
+          //TODO
+
+          return;
+        },
+      }); // Animate the transition
+
+      if (to) {
+        this._currentPathLength += from.position.distanceTo(to.position); // Update progress
+      }
+
+      const progressPercentage =
+        (this._currentPathLength / this._totalPathLength) * 100; // Calculate percentage
+      console.log(`Progress: ${progressPercentage.toFixed(2)}%`);
+
+      if (i) {
         await this._delay(delay); // Wait before transitioning to the next state
       }
 
-      cameraViewIndex++;
+      i++;
     }
   }
 
@@ -133,6 +218,7 @@ class CameraViewsExtensions
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  // Create the UI components
   private _createUI() {
     const panel = this._panel;
     if (!panel) return;
@@ -173,6 +259,37 @@ class CameraViewsExtensions
     panel.appendChild(uiContainer);
   }
 
+  // Remove the UI components
+  private _removeUI() {
+    if (!this._panel) return;
+
+    this._panel.innerHTML = "";
+    this._panel = null;
+  }
+
+  private _formatViewState(viewState: any): any {
+    return {
+      ...viewState,
+      position: new THREE.Vector3(
+        viewState.position.x,
+        viewState.position.y,
+        viewState.position.z
+      ),
+      quaternion: new THREE.Quaternion(
+        viewState.quaternion[0],
+        viewState.quaternion[1],
+        viewState.quaternion[2],
+        viewState.quaternion[3]
+      ),
+      lookAt: new THREE.Vector3(
+        viewState.lookAt.x,
+        viewState.lookAt.y,
+        viewState.lookAt.z
+      ),
+    };
+  }
+
+  // Format the data to match the DetailedViewState type
   private _formatData(data: any): DetailedViewState[] {
     return data.map((item: any) => {
       return {
@@ -196,6 +313,62 @@ class CameraViewsExtensions
         ),
       };
     });
+  }
+
+  /// render the camera views pins within the scene
+  private _addCameraSubscription() {
+    const cameraControls = this._sceneService!.viewer!.controls.controls;
+
+    this._cameraSubscription = new Map();
+
+    const update = cameraControls.addEventListener("update", (e) => {
+      const camera = cameraControls.camera;
+    });
+    this._cameraSubscription.set("update", update);
+
+    const control = cameraControls.addEventListener("control", (e) => {
+      const camera = cameraControls.camera;
+    });
+    this._cameraSubscription.set("control", control);
+
+    const sleep = cameraControls.addEventListener("sleep", (e) => {
+      const camera = cameraControls.camera;
+    });
+    this._cameraSubscription.set("sleep", sleep);
+
+    const wake = cameraControls.addEventListener("wake", (e) => {
+      const camera = cameraControls.camera;
+    });
+    this._cameraSubscription.set("wake", wake);
+  }
+
+  private _removeCameraSubscription() {
+    if (!this._cameraSubscription) return;
+
+    this._cameraSubscription.forEach((value, key: any) => {
+      this._sceneService!.viewer!.controls.controls.removeEventListener(
+        key,
+        value
+      );
+    });
+
+    this._cameraSubscription = null;
+  }
+
+  public get allViews$() {
+    return this._dbService.allViews$;
+  }
+
+  public get animationViews$() {
+    return this._dbService.animationViews$;
+  }
+
+  public updateTitle(id: number, name: string) {
+    this._dbService.updateView(id, { name });
+  }
+
+  public get dbService() {
+    return this._dbService;
   }
 }
 

@@ -30,6 +30,7 @@ const Content = () => {
             <EditableTitle
               title={activeWorkspace?.name || ""}
               setTitle={workspaceService.updateTitle}
+              size="large"
             />
           </Box>
 

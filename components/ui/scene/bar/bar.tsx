@@ -29,6 +29,7 @@ const Bar = () => {
         <EditableTitle
           title={sceneMetadata?.name}
           setTitle={sceneService.updateTitle}
+          size="large"
         />
       </Box>
 

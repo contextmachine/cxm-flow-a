@@ -3,9 +3,11 @@ import React from "react";
 
 const Badge: React.FC<{
   children: React.ReactNode;
-}> = ({ children }) => {
+  [key: string]: any;
+}> = ({ children, ...rest }) => {
   return (
     <Box
+      {...rest}
       sx={{
         display: "flex",
         columnGap: "3px",

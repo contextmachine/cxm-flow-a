@@ -8,10 +8,6 @@ const OptionsPanel = () => {
 
   const [cameraViews, setCameraViews] = useState<DetailedViewState[]>([]);
 
-  useEffect(() => {
-    console.log("cameraViews", cameraViews);
-  }, [cameraViews]);
-
   return (
     <Box
       sx={{

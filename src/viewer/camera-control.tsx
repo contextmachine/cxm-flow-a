@@ -174,12 +174,8 @@ class CameraControl {
   }
 
   private _renderIfTweenRunning() {
-    console.log("");
-
     if (this._tweenRunning) {
       requestAnimationFrame(() => {
-        console.log("Render if tween running");
-
         TWEEN.update();
         this._viewer.updateViewer(); // Render the scene
         this._renderIfTweenRunning(); // Keep checking if the tween is still running
