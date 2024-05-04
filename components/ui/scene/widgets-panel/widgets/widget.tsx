@@ -5,7 +5,7 @@ import MappingWidget from "./mapping-widget";
 import QueryWidget from "./query-widget";
 import StatisticsWidget from "./statistics-widget";
 import ToolsetWidget from "./toolset-widget";
-import ViewsWidget from "./views-widget";
+import ViewsWidget from "./views-widget/views-widget";
 import { WidgetType } from "./widget.types";
 
 const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {

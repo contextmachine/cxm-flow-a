@@ -10,7 +10,9 @@ import viewStates from "./data/view-states.json";
 import * as THREE from "three";
 import { update } from "@tweenjs/tween.js";
 import { v4 as uuidv4 } from "uuid";
-import CameraViewsDbService from "./camera-views-extension.db";
+import CameraViewsDbService, {
+  ViewStateItem,
+} from "./camera-views-extension.db";
 import { BehaviorSubject } from "rxjs";
 import { boolean } from "zod";
 
@@ -94,13 +96,13 @@ class CameraViewsExtensions
   }
 
   // Save the current camera state
-  public restoreState(state: ViewState) {
+  public restoreState(state: ViewState, animate: boolean, duration?: number) {
     const sceneService = this._sceneService!;
     const cameraControls = sceneService.viewer!.controls;
 
     const viewState = this._formatViewState(state);
 
-    cameraControls.restoreState(viewState as any, true, 300);
+    cameraControls.restoreState(viewState as any, animate, duration || 300);
   }
 
   private _addCameraViewUI(type: "add" | "view", view?: DetailedViewState) {
@@ -365,6 +367,10 @@ class CameraViewsExtensions
 
   public updateTitle(id: number, name: string) {
     this._dbService.updateView(id, { name });
+  }
+
+  public updateViewsOrder(views: ViewStateItem[]) {
+    this._dbService.updateViewsOrder(views);
   }
 
   public get dbService() {
