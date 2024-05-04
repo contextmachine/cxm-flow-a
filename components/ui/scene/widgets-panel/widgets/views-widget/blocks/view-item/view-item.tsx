@@ -12,14 +12,25 @@ const ViewItem: React.FC<{
   restoreState: any;
   deleteView: any;
   deleteDisabled?: boolean;
-}> = ({ view, updateTitle, restoreState, deleteView, deleteDisabled }) => {
+  isPlaying?: boolean;
+}> = ({
+  view,
+  updateTitle,
+  restoreState,
+  deleteView,
+  deleteDisabled,
+  isPlaying,
+}) => {
   const [deleting, setDeleting] = useState(false);
 
-  const { adding, pending } = useViewsWidget();
+  const { adding, pending, playing } = useViewsWidget();
 
   return (
     <Wrapper
+      data-play={isPlaying ? "true" : "false"}
       onClick={() => {
+        if (playing) return;
+
         restoreState(view.state);
       }}
     >
@@ -97,6 +108,10 @@ const Wrapper = styled.div`
   gap: 6px;
 
   border: 1px solid #f3f3f3;
+
+  &[data-play="true"] {
+    border: 1px solid #2689ff;
+  }
 
   overflow: hidden;
   cursor: pointer;

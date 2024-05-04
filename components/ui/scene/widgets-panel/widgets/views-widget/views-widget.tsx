@@ -32,6 +32,8 @@ const ViewsWidget: React.FC<{
   const [allViews, setAllViews] = useState<ViewStateItem[]>([]);
   const [pending, setPending] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [playingViewIndex, setPlayingViewIndex] = useState<number | null>(null);
 
   const extensionRef = useRef<CameraViewsExtensions | null>(null);
   const [extension, setExtension] = useState<CameraViewsExtensions | null>(
@@ -59,11 +61,20 @@ const ViewsWidget: React.FC<{
       setAdding(adding)
     );
 
+    const playSub = extension?.isPlaying$.subscribe((playing) =>
+      setPlaying(playing)
+    );
+    const playViewIndexSub = extension?.playingViewIndex$.subscribe((index) =>
+      setPlayingViewIndex(index)
+    );
+
     return () => {
       animationViewsSub?.unsubscribe();
       allViewsSub?.unsubscribe();
       pendingSub?.unsubscribe();
       addingSub?.unsubscribe();
+      playSub?.unsubscribe();
+      playViewIndexSub?.unsubscribe();
 
       sceneService.removeExtension(extension.name);
     };
@@ -106,6 +117,8 @@ const ViewsWidget: React.FC<{
         deleteView,
         pending,
         adding,
+        playing,
+        playingViewIndex,
         animationViews,
         allViews,
       }}
@@ -120,7 +133,7 @@ const ViewsWidget: React.FC<{
             alignItems: "center",
           }}
         >
-          <ButtonGroup>
+          <ButtonGroup disabled={playing}>
             <Button
               data-active={sectionType === "all" ? "true" : "false"}
               color="secondary"
@@ -170,6 +183,7 @@ const ViewsWidget: React.FC<{
               variant="contained"
               size="medium"
               onClick={() => extension?.playForward()}
+              disabled={playing}
               startIcon={
                 adding ? <CircularProgress size={16} color="inherit" /> : <></>
               }

@@ -103,7 +103,7 @@ const GlobalStyle = createGlobalStyle`
     }
 
     // MUI BUTTONS - PRIMARY
-    &.MuiButton-containedPrimary {
+    &.MuiButton-containedPrimary:not(.Mui-disabled) {
       background-color: ${Colors.Primary};
 
       &:hover {

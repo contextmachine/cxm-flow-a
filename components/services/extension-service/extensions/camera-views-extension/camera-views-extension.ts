@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import CameraViewsDbService, {
   ViewStateItem,
 } from "./camera-views-extension.db";
-import { Subscription } from "rxjs";
+import { BehaviorSubject, Subscription } from "rxjs";
 
 class CameraViewsExtensions
   extends ExtensionEntity
@@ -27,6 +27,9 @@ class CameraViewsExtensions
   private _cameraSubscription: null | Map<string, any>;
 
   private _dbService: CameraViewsDbService;
+
+  private _isPlaying$ = new BehaviorSubject<boolean>(false);
+  private _playingViewIndex$ = new BehaviorSubject<number | null>(null);
 
   constructor() {
     super();
@@ -107,6 +110,8 @@ class CameraViewsExtensions
   }
 
   public async playForward(duration: number = 2000, delay: number = 500) {
+    this._isPlaying$.next(true);
+
     const sceneService = this._sceneService!;
     const cameraControls = sceneService.viewer!.controls;
 
@@ -117,6 +122,8 @@ class CameraViewsExtensions
     for (const viewState of this._viewStates) {
       const from = this._viewStates[i];
       const to = this._viewStates[i + 1];
+
+      this._playingViewIndex$.next(i);
 
       // Restore the state and track the progress
       await cameraControls.restoreState(viewState, true, duration, {
@@ -142,10 +149,15 @@ class CameraViewsExtensions
 
       i++;
     }
+
+    this._playingViewIndex$.next(null);
+    this._isPlaying$.next(false);
   }
 
   // Play through all view states in reverse order
   public async playBackward(duration: number = 2000, delay: number = 500) {
+    this._isPlaying$.next(true);
+
     const sceneService = this._sceneService!;
     const cameraControls = sceneService.viewer!.controls;
 
@@ -160,6 +172,8 @@ class CameraViewsExtensions
 
       cameraViewIndex++;
     }
+
+    this._isPlaying$.next(false);
   }
 
   // Helper function to create a delay
@@ -235,6 +249,14 @@ class CameraViewsExtensions
 
   public get animationViews$() {
     return this._dbService.animationViews$;
+  }
+
+  public get isPlaying$() {
+    return this._isPlaying$;
+  }
+
+  public get playingViewIndex$() {
+    return this._playingViewIndex$;
   }
 
   public async updateTitle(id: number, name: string) {

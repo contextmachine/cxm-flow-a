@@ -8,8 +8,15 @@ import NoViews from "../no-views/no-views";
 import TransferSection from "../transfer-section/transfer-section";
 
 const AnimationSection: React.FC = () => {
-  const { extension, updateTitle, restoreState, deleteView, animationViews } =
-    useViewsWidget();
+  const {
+    extension,
+    updateTitle,
+    restoreState,
+    deleteView,
+    animationViews,
+    playing,
+    playingViewIndex,
+  } = useViewsWidget();
 
   const [viewGridRef, views, setViews] = useDragAndDrop<
     HTMLUListElement,
@@ -37,7 +44,7 @@ const AnimationSection: React.FC = () => {
             }}
             ref={viewGridRef}
           >
-            {views.map((view) => (
+            {views.map((view, i) => (
               <ViewItem
                 key={view.id}
                 view={view}
@@ -45,6 +52,7 @@ const AnimationSection: React.FC = () => {
                 restoreState={restoreState}
                 deleteView={deleteView}
                 deleteDisabled
+                isPlaying={i === playingViewIndex}
               />
             ))}
           </Box>
@@ -64,6 +72,7 @@ const AnimationSection: React.FC = () => {
               color="primary"
               sx={{ border: "1px solid rgba(0,0,0,0.1)" }}
               size="medium"
+              disabled={playing}
               onClick={() => setIsEditSection(true)}
             >
               Transfer Views
