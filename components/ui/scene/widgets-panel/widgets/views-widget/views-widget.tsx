@@ -5,11 +5,17 @@ import CameraViewsExtensions from "@/components/services/extension-service/exten
 import { ViewStateItem } from "@/components/services/extension-service/extensions/camera-views-extension/camera-views-extension.db";
 import { Box, Button, ButtonGroup, CircularProgress } from "@mui/material";
 import { ViewState } from "@/src/viewer/camera-control.types";
-import ViewItem from "./blocks/view-item/view-item";
 import dynamic from "next/dynamic";
 
 const AllViewsSection = dynamic(
   () => import("./blocks/all-views-section/all-views-section"),
+  {
+    ssr: false,
+  }
+);
+
+const AnimationSection = dynamic(
+  () => import("./blocks/animation-section/animation-section"),
   {
     ssr: false,
   }
@@ -23,6 +29,7 @@ const ViewsWidget: React.FC<{
   const [sectionType, setSectionType] = useState<"all" | "animation">("all");
 
   const [animationViews, setAnimationViews] = useState<ViewStateItem[]>([]);
+  const [allViews, setAllViews] = useState<ViewStateItem[]>([]);
   const [pending, setPending] = useState(false);
   const [adding, setAdding] = useState(false);
 
@@ -38,22 +45,25 @@ const ViewsWidget: React.FC<{
     extensionRef.current = extension;
     setExtension(extension);
 
-    const animationViewsSub = extension.animationViews$!.subscribe((views) =>
-      setAnimationViews(views)
+    const animationViewsSub = extension?.animationViews$?.subscribe(
+      (views: ViewStateItem[]) => setAnimationViews(views)
+    );
+    const allViewsSub = extension?.allViews$?.subscribe(
+      (views: ViewStateItem[]) => setAllViews(views)
     );
 
-    const pendingSub = extension.dbService.pending$.subscribe((pending) =>
+    const pendingSub = extension?.dbService?.pending$?.subscribe((pending) =>
       setPending(pending)
     );
-    const addingSub = extension.dbService.adding$.subscribe((adding) =>
+    const addingSub = extension?.dbService?.adding$?.subscribe((adding) =>
       setAdding(adding)
     );
 
     return () => {
-      animationViewsSub.unsubscribe();
-
-      pendingSub.unsubscribe();
-      addingSub.unsubscribe();
+      animationViewsSub?.unsubscribe();
+      allViewsSub?.unsubscribe();
+      pendingSub?.unsubscribe();
+      addingSub?.unsubscribe();
 
       sceneService.removeExtension(extension.name);
     };
@@ -90,13 +100,14 @@ const ViewsWidget: React.FC<{
   return (
     <ViewsWidgetContext.Provider
       value={{
-        animationViews,
         extension,
         updateTitle,
         restoreState,
         deleteView,
         pending,
         adding,
+        animationViews,
+        allViews,
       }}
     >
       <WidgetPaper isPreview={isPreview} title={"Views"}>
@@ -130,37 +141,47 @@ const ViewsWidget: React.FC<{
             </Button>
           </ButtonGroup>
 
-          <Box>
+          {sectionType === "all" && (
+            <Box>
+              <Button
+                data-active={"false"}
+                color="primary"
+                variant="contained"
+                size="medium"
+                onClick={() => addView()}
+                startIcon={
+                  adding ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : (
+                    <></>
+                  )
+                }
+              >
+                + Add view
+              </Button>
+            </Box>
+          )}
+
+          {sectionType === "animation" && (
             <Button
               data-active={"false"}
-              color="primary"
+              color="secondary"
+              sx={{ border: "1px solid rgba(0,0,0,0.6)" }}
               variant="contained"
               size="medium"
-              onClick={() => addView()}
+              onClick={() => extension?.playForward()}
               startIcon={
                 adding ? <CircularProgress size={16} color="inherit" /> : <></>
               }
             >
-              + Add view
+              Play
             </Button>
-          </Box>
+          )}
         </Box>
 
         {sectionType === "all" && <AllViewsSection />}
 
-        {sectionType === "animation" && (
-          <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
-            {animationViews.map((view) => (
-              <ViewItem
-                key={view.id}
-                view={view}
-                updateTitle={updateTitle}
-                restoreState={restoreState}
-                deleteView={deleteView}
-              />
-            ))}
-          </Box>
-        )}
+        {sectionType === "animation" && <AnimationSection />}
 
         {pending && (
           <>

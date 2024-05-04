@@ -11,7 +11,8 @@ const ViewItem: React.FC<{
   updateTitle: any;
   restoreState: any;
   deleteView: any;
-}> = ({ view, updateTitle, restoreState, deleteView }) => {
+  deleteDisabled?: boolean;
+}> = ({ view, updateTitle, restoreState, deleteView, deleteDisabled }) => {
   const [deleting, setDeleting] = useState(false);
 
   const { adding, pending } = useViewsWidget();
@@ -44,7 +45,7 @@ const ViewItem: React.FC<{
             right: "4px",
           }}
         >
-          {!deleting && (
+          {!deleting && !deleteDisabled && (
             <IconButton
               disabled={adding || pending}
               sx={{
@@ -62,7 +63,7 @@ const ViewItem: React.FC<{
             </IconButton>
           )}
 
-          {deleting && (
+          {deleting && !deleteDisabled && (
             <Box>
               <CircularProgress size={16} color="inherit" />
             </Box>
