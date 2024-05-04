@@ -31,6 +31,12 @@ const AnimationSection: React.FC = () => {
 
   const [isEditSection, setIsEditSection] = useState(false);
 
+  useEffect(() => {
+    if (playing) {
+      setIsEditSection(false);
+    }
+  }, [playing]);
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
       {!isEditSection && (
