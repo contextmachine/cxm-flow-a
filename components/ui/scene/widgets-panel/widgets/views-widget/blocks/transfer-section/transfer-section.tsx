@@ -163,16 +163,7 @@ const TransferSection: React.FC<{
 
   return (
     <>
-      <Box
-        sx={{
-          display: "grid",
-          width: "100%",
-          overflow: "hidden",
-          gridTemplateColumns: "1fr 30px 1fr",
-          gap: "8px",
-          marginBottom: "12px",
-        }}
-      >
+      <GridWrapper>
         <Box sx={{ overflow: "hidden" }}>{customList(left)}</Box>
         <Box>
           <Box sx={{ display: "flex", flexDirection: "column", gap: "4px" }}>
@@ -219,7 +210,7 @@ const TransferSection: React.FC<{
           </Box>
         </Box>
         <Box sx={{ overflow: "hidden" }}>{customList(right)}</Box>
-      </Box>
+      </GridWrapper>
 
       <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end" }}>
         <Button
@@ -235,6 +226,21 @@ const TransferSection: React.FC<{
     </>
   );
 };
+
+const GridWrapper = styled.div`
+  & {
+    display: grid;
+    width: 100%;
+    overflow: hidden;
+    grid-template-columns: 1fr 30px 1fr;
+    gap: 8px;
+    marginbottom: 12px;
+  }
+
+  & .MuiButton-root {
+    /* any style is here */
+  }
+`;
 
 const Wrapper = styled.div`
   &&& {
