@@ -92,7 +92,7 @@ const TransferSection: React.FC<{
         sx={{
           maxHeight: 400,
           overflow: "auto",
-          border: "1px solid rgba(0,0,0,.1)",
+          border: "1px solid rgba(0,0,0,0)",
           borderRadius: "8px",
         }}
       >
@@ -131,8 +131,8 @@ const TransferSection: React.FC<{
                 >
                   <Box
                     sx={{
-                      width: "60px",
-                      height: "40px",
+                      width: "75px",
+                      height: "55px",
                       background: view?.thumb
                         ? `url("${view?.thumb}")`
                         : "lightgrey",
@@ -183,6 +183,7 @@ const TransferSection: React.FC<{
               onClick={handleAllRight}
               disabled={left.length === 0}
               aria-label="move all right"
+
             >
               ≫
             </Button>

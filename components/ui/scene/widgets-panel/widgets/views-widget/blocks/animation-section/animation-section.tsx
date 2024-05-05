@@ -44,7 +44,7 @@ const AnimationSection: React.FC = () => {
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
+              gridTemplateColumns: "1fr 1fr 1fr 1fr",
               width: "100%",
               gap: "4px",
             }}

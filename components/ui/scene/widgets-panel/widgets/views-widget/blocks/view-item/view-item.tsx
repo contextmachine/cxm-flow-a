@@ -37,7 +37,7 @@ const ViewItem: React.FC<{
       <Box
         sx={{
           width: "100%",
-          paddingTop: "75%",
+          paddingTop: "80%",
           background: view.thumb ? `url("${view.thumb}")` : "lightgrey",
           backgroundPosition: "center",
           backgroundSize: "cover",
@@ -49,11 +49,11 @@ const ViewItem: React.FC<{
         <Box
           sx={{
             display: "flex",
-            gap: "4px",
+            gap: "2px",
             alignItems: "center",
             position: "absolute",
-            top: "4px",
-            right: "4px",
+            top: "0px",
+            right: "0px",
           }}
         >
           {!deleting && !deleteDisabled && (
@@ -61,7 +61,7 @@ const ViewItem: React.FC<{
               disabled={adding || pending}
               sx={{
                 backgroundColor: adding || pending ? "lightgrey" : "white",
-                padding: "5px !important",
+                padding: "3px !important",
               }}
               onClick={(e: any) => {
                 e.stopPropagation();
@@ -70,7 +70,7 @@ const ViewItem: React.FC<{
                 deleteView(view.id);
               }}
             >
-              <CloseIcon sx={{ fontSize: "14px !important" }} />
+              <CloseIcon sx={{ fontSize: "12px !important" }} />
             </IconButton>
           )}
 
@@ -105,7 +105,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: 4px;
 
   border: 1px solid rgba(255, 255, 255, 0);
 

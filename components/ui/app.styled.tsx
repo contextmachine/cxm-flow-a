@@ -3,6 +3,7 @@ import { createGlobalStyle } from "styled-components";
 const Colors = {
   Primary: "#2689FF",
   PrimaryHover: "#51A1FF",
+  Secondary: "#ec0303"
 };
 
 const GlobalStyle = createGlobalStyle`
@@ -133,6 +134,16 @@ const GlobalStyle = createGlobalStyle`
           color: #ffffff !important;
         }
       }
+    }
+
+    // MUI BUTTONS - SUCCESS
+    &.MuiButton-containedSuccess {
+      background-color: #444444;
+
+      &, & * {
+        color: #ffffff;
+      }
+      
     }
   }
 

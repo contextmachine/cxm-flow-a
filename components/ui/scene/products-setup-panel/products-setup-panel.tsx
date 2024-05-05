@@ -22,7 +22,7 @@ const ProductsSetupPanel = () => {
       <Button
         variant="contained"
         color="secondary"
-        sx={{ border: "1px solid rgba(0,0,0,0.1)" }}
+        sx={{ border: "1px solid rgba(0,0,0,0)" }}
         onClick={handleOpen}
       >
         Widgets

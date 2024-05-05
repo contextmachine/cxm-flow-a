@@ -178,8 +178,7 @@ const ViewsWidget: React.FC<{
           {sectionType === "animation" && (
             <Button
               data-active={"false"}
-              color="secondary"
-              sx={{ border: "1px solid rgba(0,0,0,0.6)" }}
+              color="success"
               variant="contained"
               size="medium"
               onClick={() => extension?.playForward()}

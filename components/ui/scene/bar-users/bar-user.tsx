@@ -12,7 +12,7 @@ const BarUser = () => {
       <Box
         sx={{
           display: "flex",
-          columnGap: "9px",
+          columnGap: "0px",
           height: "100%",
           alignItems: "center",
         }}
