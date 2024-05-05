@@ -52,7 +52,7 @@ class ProjectSettings
     this.tag_labels_mean_size = 2.7;
     this.tag_labels_mean_deviation = 1;
     this.tag_render_type = "svg";
-    this.background_color = "#ecf4f3";
+    this.background_color = "rgb(30,30,30)";
     this.param_namespace = "none";
   }
 

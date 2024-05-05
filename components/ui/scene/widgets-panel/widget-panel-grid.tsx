@@ -68,7 +68,7 @@ const WidgetPanelGrid = () => {
                 overflowX: "hidden",
                 borderRadius: "18px",
                 border: isEditWidgetsOpen
-                  ? "1px dashed #000"
+                  ? "1px dashed #ffff"
                   : "1px solid transparent",
               }}
             >

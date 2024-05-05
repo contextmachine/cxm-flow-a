@@ -13,7 +13,7 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'Roboto', sans-serif;
 
     &, & * {
-      color: #333333;
+      color: #ffffff;
       font-size: 12px;
     }
   }
@@ -24,14 +24,15 @@ const GlobalStyle = createGlobalStyle`
   }
 
   ::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0);
+    background: rgba(0, 0, 0, 0);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #8C8C8C; /* color of the scroll thumb /
-    border-radius: 3px; / roundness of the scroll thumb */
-    }
-    
+    background: #8C8C8C;
+    /* color of the scroll thumb /
+       border-radius: 3px; / roundness of the scroll thumb */
+  }
+
   ::-webkit-scrollbar-thumb:hover {
     background: #555; /* color when hovering over the scroll thumb */
   }
@@ -55,11 +56,13 @@ const GlobalStyle = createGlobalStyle`
       color: white;
     }
   }
-  
+
   // Papers
   & .MuiPaper-root {
     & {
       & {
+        background-color: #2c2c2c;
+
         border-radius: 18px !important;
         box-shadow: none !important;
         position: relative;
@@ -79,16 +82,16 @@ const GlobalStyle = createGlobalStyle`
 
     &, &:hover, &:active, &:focus {
       box-shadow: none;
-     }
+    }
 
     &, & * {
       font-weight: 500;
       text-transform: none;
     }
-    
+
     &.MuiButton-containedSizeMedium {
       height: 27px;
-      
+
       &, & * {
         font-size: 12px;
       }
@@ -116,18 +119,18 @@ const GlobalStyle = createGlobalStyle`
       background-color: transparent;
 
       &, & * {
-        color: #333333;
+        color: #ffffff;
       }
 
       &:hover {
-        background-color: #F5FAFF;
+        background-color: #444444;
       }
 
       &[data-active="true"] {
-        background-color: #ECF5FF;
+        background-color: #444444;
 
         &, & * {
-          color: ${Colors.Primary} !important;
+          color: #ffffff !important;
         }
       }
     }
@@ -135,20 +138,21 @@ const GlobalStyle = createGlobalStyle`
 
   // MUI BUTTON GROUP
   & .MuiButtonGroup-root {
-   & > * {
-    border-top-right-radius: 9px !important;
-    border-bottom-right-radius: 9px !important;
-    border-top-left-radius: 9px !important;
-    border-bottom-left-radius: 9px !important;
-   }
+    & > * {
+      border-top-right-radius: 9px !important;
+      border-bottom-right-radius: 9px !important;
+      border-top-left-radius: 9px !important;
+      border-bottom-left-radius: 9px !important;
+    }
   }
 
   // MUI ICON BUTTONS
   & .MuiIconButton-root {
     padding: 0;
+    background-color: transparent;
 
     &:hover {
-      background-color: #F5FAFF
+      background-color: #444444
     }
   }
 
@@ -165,15 +169,15 @@ const GlobalStyle = createGlobalStyle`
     & {
       border-radius: 9px;
       min-width: max-content;
-      border: 1px solid rgba(0, 0, 0, 0);
+      border: 1px solid rgba(255, 255, 255, 0);
     }
 
     & .MuiSelect-select {
       border-radius: 9px;
       padding: 0px 10px;
       height: 24px;
-      background-color: #F3F3F3;
-      border: 1px solid rgba(0, 0, 0, 0);
+      background-color: #cc6b6b;
+      border: 1px solid rgb(255, 0, 0);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -192,6 +196,7 @@ const GlobalStyle = createGlobalStyle`
 
       &, & * {
         font-size: 12px;
+        color: #F3F3F3;
       }
     }
   }
@@ -200,7 +205,7 @@ const GlobalStyle = createGlobalStyle`
   & .MuiInputBase-root[data-type='role-badge'] {
     &, & * {
       font-size: 12px;
-      background-color: lightgrey;
+      background-color: #444444;
       border-radius: 9px;
     }
 
@@ -215,7 +220,7 @@ const GlobalStyle = createGlobalStyle`
 
   // SELECT MENU
   .MuiPaper-root.MuiPopover-paper.MuiMenu-paper {
-    border: 1px solid #EEEEEE;
+    border: 1px solid #444444;
     border-radius: 13.5px !important;
     max-width: max-content;
     padding: 4px;
@@ -275,12 +280,15 @@ const GlobalStyle = createGlobalStyle`
     box-shadow: 0 2px 10px var(--black-a7);
     cursor: pointer;
   }
+
   .SelectTrigger:hover {
     background-color: #E7E7E7
   }
+
   .SelectTrigger:focus {
     box-shadow: 0 0 0 2px black;
   }
+
   .SelectTrigger[data-placeholder] {
     color: var(--violet-9);
   }
@@ -312,10 +320,12 @@ const GlobalStyle = createGlobalStyle`
     position: relative;
     user-select: none;
   }
+
   .SelectItem[data-disabled] {
     color: var(--mauve-8);
     pointer-events: none;
   }
+
   .SelectItem[data-highlighted] {
     outline: none;
     background-color: var(--violet-9);
@@ -398,6 +408,7 @@ const GlobalStyle = createGlobalStyle`
       background-color: rgba(0, 0, 0, 0.04);
     }
   }
+
   .ContextMenuSubTrigger[data-state='open'] {
     background-color: var(--violet-4);
     color: var(--violet-11);
@@ -406,6 +417,7 @@ const GlobalStyle = createGlobalStyle`
       background-color: rgba(0, 0, 0, 0.04);
     }
   }
+
   .ContextMenuItem[data-disabled],
   .ContextMenuCheckboxItem[data-disabled],
   .ContextMenuRadioItem[data-disabled],
@@ -413,6 +425,7 @@ const GlobalStyle = createGlobalStyle`
     color: var(--mauve-8);
     pointer-events: 'none';
   }
+
   .ContextMenuItem[data-highlighted],
   .ContextMenuCheckboxItem[data-highlighted],
   .ContextMenuRadioItem[data-highlighted],
@@ -448,9 +461,11 @@ const GlobalStyle = createGlobalStyle`
     padding-left: 20px;
     color: var(--mauve-11);
   }
+
   [data-highlighted] > .RightSlot {
     color: white;
   }
+
   [data-disabled] .RightSlot {
     color: var(--mauve-8);
   }

@@ -20,7 +20,7 @@ const WidgetEditPaper: React.FC<WidgetProps> = ({ type }) => {
       style={{
         flexDirection: "column",
         alignItems: "flex-start",
-        backgroundColor: "rgba(255, 255, 255, 0.4)",
+        backgroundColor: "rgba(44,44,44,0.6)",
         padding: "18px",
         overflow: "hidden",
       }}

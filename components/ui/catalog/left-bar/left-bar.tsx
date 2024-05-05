@@ -92,7 +92,7 @@ export const MenuWrapper = styled.div`
     &,
     & * {
       font-size: 12px;
-      color: #333333;
+      color: #ffffff;
     }
   }
 `;

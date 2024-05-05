@@ -36,7 +36,7 @@ const EditGrid = () => {
           display: "flex",
           width: "100%",
           overflowY: "scroll",
-          border: "1px dashed #000",
+          border: "1px dashed #ffff",
           borderRadius: "18px",
         }}
       >

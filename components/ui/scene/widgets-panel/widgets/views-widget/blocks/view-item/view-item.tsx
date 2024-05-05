@@ -107,7 +107,7 @@ const Wrapper = styled.div`
   align-items: flex-start;
   gap: 6px;
 
-  border: 1px solid #f3f3f3;
+  border: 1px solid rgba(255, 255, 255, 0);
 
   &[data-play="true"] {
     border: 1px solid #2689ff;
@@ -120,7 +120,7 @@ const Wrapper = styled.div`
   padding: 5px 10px;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: rgba(0, 0, 0, 0);
   }
 `;
 

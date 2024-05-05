@@ -45,7 +45,7 @@ const RightBar = () => {
           variant="contained"
           color="secondary"
           size="large"
-          sx={{ backgroundColor: "white !important" }}
+          sx={{ backgroundColor: "2C2C2C" }}
         >
           Import
         </Button>
@@ -62,7 +62,7 @@ const RightBar = () => {
 
       <Paper
         sx={{
-          backgroundColor: "#EEEEEE",
+          backgroundColor: "2c2c2c",
           padding: "18px !important",
           flexDirection: "column",
         }}
@@ -168,13 +168,14 @@ const RightBar = () => {
       </Paper>
 
       <Button
-        sx={{ backgroundColor: "white !important" }}
+        sx={{ backgroundColor: "2C2C2C" }}
         variant="contained"
         color="secondary"
         size="large"
+
         onClick={workspaceService.deleteWorkspace}
       >
-        <span style={{ color: "#AA1A1A" }}>Delete Workspace</span>
+        <span style={{ color: "#ffffff" }}>Delete Workspace</span>
       </Button>
     </>
   );
@@ -241,7 +242,7 @@ const UserRole: React.FC<{
         })}
       <Divider />
       <MenuItem value={"leave"}>
-        <span style={{ color: "#AA1A1A" }}>Leave</span>
+        <span style={{ color: "#ffffff" }}>Leave</span>
       </MenuItem>
     </Select>
   );

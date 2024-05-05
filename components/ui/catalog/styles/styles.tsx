@@ -16,9 +16,9 @@ export const Ava = styled.div<{
   max-height: 27px;
 
   border-radius: 50%;
-  border: 2px solid white;
+  border: 2px solid #2c2c2c;
   filter: brightness(1.2);
 
-  background-color: ${({ color }) => color};
+  background-color: ${({color}) => color};
   margin-left: -8px;
 `;

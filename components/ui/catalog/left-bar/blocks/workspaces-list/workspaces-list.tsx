@@ -45,7 +45,7 @@ export const MenuWrapper = styled.div`
     &,
     & * {
       font-size: 12px;
-      color: #333333;
+      color: #a2a2a2;
     }
   }
 `;
