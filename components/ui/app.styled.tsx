@@ -176,8 +176,8 @@ const GlobalStyle = createGlobalStyle`
       border-radius: 9px;
       padding: 0px 10px;
       height: 24px;
-      background-color: #cc6b6b;
-      border: 1px solid rgb(255, 0, 0);
+      background-color: #444444;
+      border: 1px solid rgb(68, 68, 68);
       display: flex;
       align-items: center;
       justify-content: space-between;
