@@ -4,7 +4,11 @@ import { ExtensionEntityInterface } from "../../entity/extension-entity.types";
 import client from "@/components/graphql/client/client";
 import QueryEntity from "./entities/query-entity";
 import { BehaviorSubject } from "rxjs";
-import { QueryRawData } from "./entities/query-entity.types";
+import {
+  QueryEntityTreeItem,
+  QueryRawData,
+} from "./entities/query-entity.types";
+import { QuerySectionTreeItem } from "./query-extension.types";
 
 class QueryExtension
   extends ExtensionEntity
@@ -16,6 +20,10 @@ class QueryExtension
   private _queryMap: Map<number, QueryEntity> = new Map();
 
   private _queries$ = new BehaviorSubject<QueryEntity[]>([]);
+  private _treeData$ = new BehaviorSubject<QuerySectionTreeItem[]>([]);
+
+  private _openedEditForm$ = new BehaviorSubject<boolean>(false);
+  private _editQueryId$ = new BehaviorSubject<number | null>(null);
 
   constructor() {
     super();
@@ -112,6 +120,58 @@ class QueryExtension
     }
   };
 
+  public assembleTreeData = () => {
+    const restQueries: QueryEntityTreeItem[] = this._queries.map(
+      (query) => query.treeItem
+    );
+
+    const treeData: QuerySectionTreeItem[] = [
+      {
+        label: "REST",
+        id: "rest",
+        children: restQueries,
+        isQuerySection: true,
+      },
+    ];
+
+    this._treeData$.next(treeData);
+  };
+
+  public getQuery = (queryId: number) => {
+    return this._queryMap.get(queryId);
+  };
+
+  public editQuery = (queryId: number) => {
+    this._editQueryId$.next(queryId);
+    this._openedEditForm$.next(true);
+  };
+
+  public closeEditForm = () => {
+    this._openedEditForm$.next(false);
+    this._editQueryId$.next(null);
+  };
+
+  public openEditForm = () => {
+    this._editQueryId$.next(null);
+    this._openedEditForm$.next(true);
+  };
+
+  public get queries$() {
+    return this._queries$.asObservable();
+  }
+
+  public get treeData$() {
+    return this._treeData$.asObservable();
+  }
+
+  public get openedEditForm$() {
+    return this._openedEditForm$.asObservable();
+  }
+
+  public get editQueryId$() {
+    return this._editQueryId$.asObservable();
+  }
+
   public async unload() {
     console.log("QueryExtension unloaded");
 
@@ -119,6 +179,7 @@ class QueryExtension
     this._queryMap.clear();
 
     this._queries$.complete();
+    this._treeData$.complete();
   }
 }
 

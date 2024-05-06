@@ -1,15 +1,14 @@
 import { gql } from "@apollo/client";
 import AuthService from "../auth-service/auth-service";
 import client from "@/components/graphql/client/client";
-import { WorkspaceDto } from "../workspace-service/workspace-service.types";
 import WorkspaceService from "../workspace-service/workspace-service";
 import { SceneMetadataDto } from "./scene-service.types";
 import ProductService from "../product-service/product-service";
 import ToolsetService from "../toolset-service/toolset-service";
 import Viewer from "@/src/viewer/viewer";
 import { ExtensionEntityInterface } from "../extension-service/entity/extension-entity.types";
-import CameraViewsExtensions from "../extension-service/extensions/camera-views-extension/camera-views-extension";
 import QueryExtension from "../extension-service/extensions/query-extension/query-extension";
+import { BehaviorSubject } from "rxjs";
 
 class SceneService {
   private _workspaceService: WorkspaceService;
@@ -23,6 +22,8 @@ class SceneService {
 
   private _productService: ProductService;
   private _toolsetService: ToolsetService;
+
+  private _extensions$ = new BehaviorSubject<Map<string, any>>(new Map());
 
   constructor(private _authService: AuthService) {
     this._workspaceService = this._authService.workspaceService;
@@ -152,6 +153,10 @@ class SceneService {
     return this._viewer;
   }
 
+  public getExtension(name: string) {
+    return this._extensions.get(name) || null;
+  }
+
   public addExtension = (
     extension: ExtensionEntityInterface
   ): ExtensionEntityInterface => {
@@ -173,6 +178,8 @@ class SceneService {
     extension.unload();
 
     this._extensions.delete(name);
+
+    this._extensions$.next(this._extensions);
   };
 
   public updateExtensions = () => {
@@ -190,7 +197,13 @@ class SceneService {
 
       extension.load();
     });
+
+    this._extensions$.next(this._extensions);
   };
+
+  public get extensions$() {
+    return this._extensions$.asObservable();
+  }
 
   public dispose() {
     this._metadata = null;

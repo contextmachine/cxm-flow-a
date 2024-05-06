@@ -1,13 +1,13 @@
-import { Box, Button, InputBase, Paper } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EnhancedTreeItem from "./blocks/enhanced-tree-item";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import WidgetPaper from "../../blocks/widget-paper/widget-paper";
 import styled from "styled-components";
 import SearchBar from "../../blocks/search-bar/search-bar";
-import Badge from "../../../primitives/badge";
-import { useRef } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useScene } from "@/components/services/scene-service/scene-provider";
+import QueryExtension from "@/components/services/extension-service/extensions/query-extension/query-extension";
+import { QuerySectionTreeItem } from "@/components/services/extension-service/extensions/query-extension/query-extension.types";
+import EditForm from "./blocks/edit-form/edit-form";
 
 const TreeView = RichTreeView;
 
@@ -19,126 +19,84 @@ const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview }) => {
   const treeViewRef = useRef<any>(null);
   const apiRef = useRef<any>(null);
 
-  /* const renderTree = (nodes: any) => {
-    const iconPath = nodes.isObject
-      ? "/icons/box.svg"
-      : nodes.isList
-      ? "/icons/stack.svg"
-      : "/icons/folder.svg"; */
-
-  return (
-    <WidgetPaper isPreview={isPreview} title={"Queries"}>
-      <SearchBar buttonLabel="Find query" />
-
-      <TreeWrapper>
-        <TreeView
-          ref={treeViewRef}
-          slots={{
-            item: EnhancedTreeItem,
-          }}
-          apiRef={apiRef}
-          multiSelect
-          items={treeData}
-          expandedItems={[]}
-          onExpandedItemsChange={(event, ids) => true}
-          onSelectedItemsChange={(event, ids) => true}
-        />
-      </TreeWrapper>
-    </WidgetPaper>
+  const { sceneService } = useScene();
+  const [queryExtension, setQueryExtension] = useState<QueryExtension | null>(
+    sceneService.getExtension("QueryExtension")
   );
 
-  /* return (
-      <TreeItem
-        key={nodes.id}
-        // @ts-ignore
-        nodeId={nodes.id}
-        label={
-          <Box
-            sx={{
-              display: "flex",
-              columnGap: "6px",
-              justifyContent: "space-between",
-            }}
-          >
-            {nodes.isMain && (
-              <>
-                <Box sx={{ display: "flex", columnGap: "6px" }}>
-                  <Badge>
-                    <Box
-                      sx={{
-                        width: "12px",
-                        height: "12px",
-                        minWidth: "12px",
-                        minHeight: "12px",
-                        backgroundImage: `url(${iconPath})`,
-                      }}
-                    />
+  const [treeData, setTreeData] = useState<QuerySectionTreeItem[]>([]);
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [openedEditForm, setOpenedEditForm] = useState(false);
+  const [editQueryId, setEditQueryId] = useState<number | null>(null);
 
-                    <Box>{nodes.name}</Box>
-                  </Badge>
-                  <Box>queries</Box>
-                </Box>
-
-                <Badge>+ Add query</Badge>
-              </>
-            )}
-
-            {!nodes.isMain && nodes.name}
-          </Box>
-        }
-      >
-        {Array.isArray(nodes.children)
-          ? nodes.children.map((node: any) => renderTree(node))
-          : null}
-      </TreeItem>
+  useEffect(() => {
+    const extSub = sceneService.extensions$.subscribe((extensions) =>
+      setQueryExtension(extensions.get("QueryExtension"))
     );
-  }; */
 
-  /* return (
-    <WidgetPaper isPreview={isPreview} title={"Queries"}>
-      <SearchBar buttonLabel="Find query" />
+    return () => extSub.unsubscribe();
+  }, []);
 
-      <TreeWrapper>
-        <Box sx={{ flexGrow: 1, width: "100%" }}>
+  useEffect(() => {
+    if (queryExtension) {
+      const treeDataSub = queryExtension.treeData$.subscribe(setTreeData);
+      const oefSub =
+        queryExtension.openedEditForm$.subscribe(setOpenedEditForm);
+      const eqiSub = queryExtension.editQueryId$.subscribe(setEditQueryId);
+
+      return () => {
+        treeDataSub.unsubscribe();
+        oefSub.unsubscribe();
+        eqiSub.unsubscribe();
+      };
+    }
+  }, [queryExtension]);
+
+  return (
+    <QueryWidgetContext.Provider
+      value={{ queryExtension, openedEditForm, editQueryId }}
+    >
+      <WidgetPaper isPreview={isPreview} title={"Queries"}>
+        <EditForm />
+
+        <SearchBar buttonLabel="Find query" />
+
+        <TreeWrapper>
           <TreeView
-            // @ts-ignore
-            defaultCollapseIcon={
-              // @ts-ignore
-              <ExpandMoreIcon sx={{ fontSize: "16px !important" }} />
-            }
-            defaultExpanded={["1"]}
-            defaultExpandIcon={
-              <ChevronRightIcon sx={{ fontSize: "16px !important" }} />
-            }
-          >
-            {treeData.map((node) => renderTree(node))}
-          </TreeView>
-        </Box>
-      </TreeWrapper>
-    </WidgetPaper>
-  ); */
+            ref={treeViewRef}
+            slots={{
+              item: EnhancedTreeItem,
+            }}
+            apiRef={apiRef}
+            multiSelect
+            items={treeData}
+            expandedItems={expandedItems}
+            onExpandedItemsChange={(event, ids) => setExpandedItems(ids)}
+            onSelectedItemsChange={(event, ids) => true}
+          />
+        </TreeWrapper>
+      </WidgetPaper>
+    </QueryWidgetContext.Provider>
+  );
 };
 
-const treeData = [
-  {
-    id: "1",
-    label: "GraphQl",
-    isMain: true,
-    children: Array.from({ length: 15 }, (_, i) => ({
-      id: `1-${i}`,
-      label: `Query #${i}`,
-    })),
-  },
-  {
-    id: "2",
-    label: "REST",
-    isMain: true,
-    children: Array.from({ length: 12 }, (_, i) => ({
-      id: `2-${i}`,
-      label: `Query #${i}`,
-    })),
-  },
-];
+interface QueryWidgetProviderProps {
+  queryExtension: QueryExtension | null;
+  openedEditForm: boolean;
+  editQueryId: number | null;
+}
+
+const QueryWidgetContext = createContext<QueryWidgetProviderProps | null>(null);
+
+export function useQueryWidget() {
+  const service = useContext(QueryWidgetContext);
+
+  if (service === null) {
+    throw new Error("useQueryWidget must be used within a QueryWidgetContext");
+  }
+
+  return service;
+}
 
 const TreeWrapper = styled.div`
   & {
@@ -149,6 +107,14 @@ const TreeWrapper = styled.div`
   &,
   & * {
     font-size: 12px !important;
+  }
+
+  & .MuiRichTreeView-root {
+    width: 100%;
+  }
+
+  & .MuiTreeItem-content {
+    background-color: transparent !important;
   }
 `;
 

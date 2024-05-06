@@ -72,11 +72,6 @@ const EnhancedTreeItem = React.forwardRef<HTMLLIElement, EnhancedTreeItemProps>(
       toggleVisibility(item.dbId, item.modelId, item.isVisible);
     };
 
-    // Conditional rendering based on search match
-    if (!item.matchesSearch) {
-      return null;
-    }
-
     return (
       <EnhancedTreeItemProvider itemId={itemId}>
         <TreeItem2Root
@@ -127,8 +122,8 @@ const Icon = styled.div`
     height: 15px;
 
     &[data-expandable="true"] {
-      background-image: url("/content/images/viewer-icons/arrow.svg");
-      //background-size: cover;
+      background-image: url("/icons/arrow-tree-item.svg");
+      background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
 
