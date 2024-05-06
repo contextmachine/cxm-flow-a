@@ -7,12 +7,12 @@ import {
 } from "three-mesh-bvh";
 import axios from "axios";
 
-
 import * as RX from "rxjs";
 import Viewer from "../viewer";
 import { findThreeJSJSON } from "./utils/findThreejsJSON";
 import ApiObject from "./objects/api-object";
 import { ProjectModel } from "@/src/objects/project-model";
+import QueryEntity from "@/components/services/extension-service/extensions/query-extension/entities/query-entity";
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
@@ -25,12 +25,10 @@ export type StatusHistoryEntry = {
 };
 
 class Loader {
-
   private _status: LoaderStatus = "idle";
   private _statusSubject = new RX.Subject<LoaderStatus>();
 
   constructor(private _viewer: Viewer) {
-
     this._statusSubject.next(this._status);
   }
 
@@ -42,38 +40,26 @@ class Loader {
     return this._statusSubject;
   }
 
-  public async testLoad() {
+  public async loadQueryModel(queryEntity: QueryEntity): Promise<ProjectModel> {
+    console.log("a");
+    const data = queryEntity.rawData;
+    const jsonObject = findThreeJSJSON(data);
 
-    console.log('test load')
+    console.log("b");
 
+    const object3d = await parseJSON(jsonObject);
 
-    const endpoint = 'https://storage.yandexcloud.net/lahta.contextmachine.online/files/pretty_celling.json'
-    // const endpoint = 'https://storage.yandexcloud.net/lahta.contextmachine.online/files/sbm_lengths1.json'
+    console.log("c");
 
-    const apiObject = new ApiObject(endpoint)
+    console.log("object3d", object3d);
 
-    const response = await axios.get(endpoint);
-    const jsonObject = findThreeJSJSON(response.data)
+    const model = new ProjectModel(this._viewer, object3d, queryEntity);
 
-    const object3d = await parseJSON(jsonObject)
+    this._viewer.entityControl.addModel(model);
+    this._viewer.cameraService.fitToScene();
 
-    const model = new ProjectModel(this._viewer, object3d, apiObject)
-
-    return model
-
-
-
+    return model;
   }
-
-
-
-
-
-
-
-
-
-
 
   public dispose() {
     console.log("dispose loader");
@@ -81,4 +67,4 @@ class Loader {
   }
 }
 
-export default Loader
+export default Loader;

@@ -2,7 +2,7 @@ import BarChartWidget from "./bar-widget";
 import ChartWidget from "./chart-widget";
 import DummyWidget from "./dummy-widget";
 import MappingWidget from "./mapping-widget";
-import QueryWidget from "./query-widget";
+import QueryWidget from "./query-widget/query-widget";
 import StatisticsWidget from "./statistics-widget";
 import ToolsetWidget from "./toolset-widget";
 import ViewsWidget from "./views-widget";
@@ -15,14 +15,14 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
   }
 
   switch (type) {
+    case "queries":
+      return <QueryWidget isPreview={isPreview} />;
     case "views":
       return <ViewsWidget isPreview={isPreview} />;
     case "chart-widget":
       return <ChartWidget isPreview={isPreview} />;
     case "mapping-widget":
       return <MappingWidget isPreview={isPreview} />;
-    case "query-widget":
-      return <QueryWidget isPreview={isPreview} />;
     case "statistics-widget":
       return <StatisticsWidget isPreview={isPreview} />;
     case "bar-widget":

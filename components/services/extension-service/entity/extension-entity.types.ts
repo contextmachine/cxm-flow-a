@@ -1,6 +1,7 @@
 import SceneService from "../../scene-service/scene-service";
 
 export interface ExtensionEntityInterface {
+  id: string;
   name: string;
 
   load(): void;

@@ -87,12 +87,6 @@ export class Viewer {
         this.updateViewer();
       })
     );
-
-    this._loader.testLoad().then((model) => {
-      console.log("test load done", model);
-      this.entityControl.addModel(model);
-      this._cameraService.fitToScene();
-    });
   }
 
   public get scene(): THREE.Scene {
@@ -101,6 +95,10 @@ export class Viewer {
 
   public get canvas(): HTMLCanvasElement {
     return this._renderer.domElement;
+  }
+
+  public get cameraService(): CameraControl {
+    return this._cameraService;
   }
 
   public get versionControl(): Loader {
@@ -125,6 +123,10 @@ export class Viewer {
 
   public get projectSettingsService(): ProjectSettingsService {
     return this._projectSettingsService;
+  }
+
+  public get loader(): Loader {
+    return this._loader;
   }
 
   public get camera() {

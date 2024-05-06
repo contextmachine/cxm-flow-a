@@ -1,26 +1,53 @@
 import { Box, Button, InputBase, Paper } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { TreeView } from "@mui/x-tree-view/TreeView";
-import { TreeItem } from "@mui/x-tree-view/TreeItem";
-import WidgetPaper from "../blocks/widget-paper/widget-paper";
+import EnhancedTreeItem from "./blocks/enhanced-tree-item";
+import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
+import WidgetPaper from "../../blocks/widget-paper/widget-paper";
 import styled from "styled-components";
-import SearchBar from "../blocks/search-bar/search-bar";
-import Badge from "../../primitives/badge";
+import SearchBar from "../../blocks/search-bar/search-bar";
+import Badge from "../../../primitives/badge";
+import { useRef } from "react";
+
+const TreeView = RichTreeView;
 
 interface QueryWidgetProps {
   isPreview?: boolean;
 }
 
 const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview }) => {
-  const renderTree = (nodes: any) => {
+  const treeViewRef = useRef<any>(null);
+  const apiRef = useRef<any>(null);
+
+  /* const renderTree = (nodes: any) => {
     const iconPath = nodes.isObject
       ? "/icons/box.svg"
       : nodes.isList
       ? "/icons/stack.svg"
-      : "/icons/folder.svg";
+      : "/icons/folder.svg"; */
 
-    return (
+  return (
+    <WidgetPaper isPreview={isPreview} title={"Queries"}>
+      <SearchBar buttonLabel="Find query" />
+
+      <TreeWrapper>
+        <TreeView
+          ref={treeViewRef}
+          slots={{
+            item: EnhancedTreeItem,
+          }}
+          apiRef={apiRef}
+          multiSelect
+          items={treeData}
+          expandedItems={[]}
+          onExpandedItemsChange={(event, ids) => true}
+          onSelectedItemsChange={(event, ids) => true}
+        />
+      </TreeWrapper>
+    </WidgetPaper>
+  );
+
+  /* return (
       <TreeItem
         key={nodes.id}
         // @ts-ignore
@@ -65,9 +92,9 @@ const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview }) => {
           : null}
       </TreeItem>
     );
-  };
+  }; */
 
-  return (
+  /* return (
     <WidgetPaper isPreview={isPreview} title={"Queries"}>
       <SearchBar buttonLabel="Find query" />
 
@@ -89,26 +116,26 @@ const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview }) => {
         </Box>
       </TreeWrapper>
     </WidgetPaper>
-  );
+  ); */
 };
 
 const treeData = [
   {
     id: "1",
-    name: "GraphQl",
+    label: "GraphQl",
     isMain: true,
     children: Array.from({ length: 15 }, (_, i) => ({
       id: `1-${i}`,
-      name: `Query #${i}`,
+      label: `Query #${i}`,
     })),
   },
   {
     id: "2",
-    name: "REST",
+    label: "REST",
     isMain: true,
     children: Array.from({ length: 12 }, (_, i) => ({
       id: `2-${i}`,
-      name: `Query #${i}`,
+      label: `Query #${i}`,
     })),
   },
 ];

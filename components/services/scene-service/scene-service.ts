@@ -9,6 +9,7 @@ import ToolsetService from "../toolset-service/toolset-service";
 import Viewer from "@/src/viewer/viewer";
 import { ExtensionEntityInterface } from "../extension-service/entity/extension-entity.types";
 import CameraViewsExtensions from "../extension-service/extensions/camera-views-extension/camera-views-extension";
+import QueryExtension from "../extension-service/extensions/query-extension/query-extension";
 
 class SceneService {
   private _workspaceService: WorkspaceService;
@@ -33,6 +34,12 @@ class SceneService {
     this._toolsetService = new ToolsetService(this);
 
     this.updateTitle = this.updateTitle.bind(this);
+
+    this.loadCoreExtensions();
+  }
+
+  public loadCoreExtensions() {
+    this.addExtension(new QueryExtension());
   }
 
   public initViewer(root: HTMLDivElement) {
@@ -72,6 +79,7 @@ class SceneService {
       if (!scene) throw new Error("Scene not found");
 
       this.updateSceneMetadata(scene);
+      this.updateExtensions();
 
       this._productService.init();
     } catch (error) {
@@ -132,6 +140,10 @@ class SceneService {
     return this._metadata;
   }
 
+  public get sceneId() {
+    return this._metadata?.id;
+  }
+
   public get toolsetService() {
     return this._toolsetService;
   }
@@ -164,7 +176,7 @@ class SceneService {
   };
 
   public updateExtensions = () => {
-    if (!this._viewer) return;
+    if (!this._viewer || !this._metadata) return;
 
     this._extensions.forEach((extension) => {
       if (extension.isInitialized) return;
