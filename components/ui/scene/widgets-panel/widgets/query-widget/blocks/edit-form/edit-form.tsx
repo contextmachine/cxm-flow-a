@@ -27,11 +27,18 @@ const EditForm = () => {
   }, [editQueryId]);
 
   const handleSave = () => {
-    // Save logic here
+    if (isNew) {
+      queryExtension?.addQuery({ name, endpoint });
+    } else {
+      queryExtension?.updateQuery(editQueryId, { name, endpoint });
+    }
+
+    queryExtension?.closeEditForm();
   };
 
   const handleDelete = () => {
-    // Delete logic here
+    queryExtension?.deleteQuery(editQueryId);
+    queryExtension?.closeEditForm();
   };
 
   return (

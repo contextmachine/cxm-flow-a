@@ -41,17 +41,10 @@ class Loader {
   }
 
   public async loadQueryModel(queryEntity: QueryEntity): Promise<ProjectModel> {
-    console.log("a");
     const data = queryEntity.rawData;
     const jsonObject = findThreeJSJSON(data);
 
-    console.log("b");
-
     const object3d = await parseJSON(jsonObject);
-
-    console.log("c");
-
-    console.log("object3d", object3d);
 
     const model = new ProjectModel(this._viewer, object3d, queryEntity);
 

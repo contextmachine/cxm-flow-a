@@ -38,6 +38,8 @@ class QueryExtension
   }
 
   public fetchQueries = async () => {
+    const existingQueryIds = new Set(this._queries.map((query) => query.id));
+
     const query = gql`
       query getQueries($sceneId: Int!) {
         appv3_scene_query(where: { scene_id: { _eq: $sceneId } }) {
@@ -65,19 +67,52 @@ class QueryExtension
       });
 
       const queries = response.data.appv3_scene_query;
-      const queryEntities = queries.map((query: QueryRawData) => {
-        const queryEntity = new QueryEntity(this, query);
-        queryEntity.load();
+      const newQueries: QueryEntity[] = [];
+      const updatedQueries: QueryEntity[] = [];
 
-        return queryEntity;
-      });
+      for (const query of queries) {
+        const queryEntity = this._queryMap.get(query.id);
+        if (queryEntity) {
+          queryEntity.update(query);
+          updatedQueries.push(queryEntity);
+        } else {
+          const queryEntity = new QueryEntity(this, query);
+          queryEntity.load();
+          newQueries.push(queryEntity);
+        }
+      }
 
-      this._queries = queryEntities;
-      this._queryMap = new Map(
-        queryEntities.map((query: QueryEntity) => [query.id, query])
+      // Find and unload deleted queries
+      const deletedQueries = await Promise.all(
+        this._queries
+          .filter((query) => !existingQueryIds.has(query.id))
+          .map(async (query) => {
+            query.unload();
+            return query.id;
+          })
       );
 
+      // Remove deleted queries from _queries array and _queryMap
+      for (const deletedQueryId of deletedQueries) {
+        this._queries = this._queries.filter(
+          (query) => query.id !== deletedQueryId
+        );
+        this._queryMap.delete(deletedQueryId);
+      }
+
+      // Update _queries array with new and updated queries
+      this._queries = [...newQueries, ...updatedQueries];
+
+      // Update _queryMap with new queries
+      this._queryMap.clear();
+      for (const queryEntity of newQueries) {
+        this._queryMap.set(queryEntity.id, queryEntity);
+      }
+
+      // Notify subscribers of _queries$ with the updated _queries array
       this._queries$.next(this._queries);
+
+      this.assembleTreeData();
     } catch (error) {
       console.error("fetchQueries error", error);
     }
@@ -120,7 +155,70 @@ class QueryExtension
     }
   };
 
+  public updateQuery = async (
+    queryId: number,
+    { endpoint, name }: { endpoint: string; name: string }
+  ) => {
+    const mutation = gql`
+      mutation updateQuery($queryId: Int!, $endpoint: String!, $name: String!) {
+        update_appv3_query_by_pk(
+          pk_columns: { id: $queryId }
+          _set: { endpoint: $endpoint, name: $name }
+        ) {
+          id
+        }
+      }
+    `;
+
+    try {
+      await client.mutate({
+        mutation,
+        variables: {
+          queryId,
+          endpoint,
+          name,
+        },
+      });
+
+      await this.fetchQueries();
+    } catch (error) {
+      console.error("updateQuery error", error);
+    }
+  };
+
+  public deleteQuery = async (queryId: number) => {
+    const mutation = gql`
+      mutation deleteQuery($queryId: Int!, $sceneId: Int!) {
+        delete_appv3_scene_query(
+          where: { query_id: { _eq: $queryId }, scene_id: { _eq: $sceneId } }
+        ) {
+          affected_rows
+        }
+
+        delete_appv3_query_by_pk(id: $queryId) {
+          id
+        }
+      }
+    `;
+
+    try {
+      await client.mutate({
+        mutation,
+        variables: {
+          queryId,
+          sceneId: this.sceneService!.sceneId,
+        },
+      });
+
+      await this.fetchQueries();
+    } catch (error) {
+      console.error("deleteQuery error", error);
+    }
+  };
+
   public assembleTreeData = () => {
+    console.log("assembleTreeData");
+
     const restQueries: QueryEntityTreeItem[] = this._queries.map(
       (query) => query.treeItem
     );

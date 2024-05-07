@@ -84,6 +84,8 @@ class QueryEntity {
       this._failed$.next(true);
       this._loading$.next(false);
     }
+
+    console.log("end load");
   }
 
   private async fetch(): Promise<any | null> {
@@ -101,15 +103,48 @@ class QueryEntity {
     }
   }
 
-  public unload() {
+  public async unload() {
     if (this._projectModel) {
-      this._sceneService.viewer!.entityControl.removeModel(this._projectModel!);
+      await this._sceneService.viewer!.entityControl.removeModel(
+        this._projectModel!
+      );
       this._projectModel = null;
     }
 
     this._queryLoaded$.next(false);
     this._modelLoaded$.next(false);
     this._failed$.next(false);
+  }
+
+  public async update(rawData: QueryRawData) {
+    let needsReload = false;
+    let newLogId = false;
+
+    if (this._endpoint !== rawData.query.endpoint) {
+      this._endpoint = rawData.query.endpoint;
+      needsReload = true;
+      newLogId = true;
+    }
+
+    if (this._name !== rawData.query.name) {
+      this._name = rawData.query.name;
+      newLogId = true;
+    }
+
+    if (needsReload) {
+      this.unload();
+
+      this._rawData = rawData;
+      this._endpoint = rawData.query.endpoint;
+      this._type = rawData.query.type;
+      this._name = rawData.query.name;
+
+      await this.load();
+    } else {
+      if (newLogId) {
+        this._logId$.next(uuidv4());
+      }
+    }
   }
 
   public get id() {
