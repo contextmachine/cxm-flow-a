@@ -2,12 +2,10 @@ import { z, ZodSchema } from "zod";
 
 abstract class ValidationCore {
   public isReady: boolean;
-
   private _showErrors: boolean;
 
   constructor() {
     this.isReady = false;
-
     this._showErrors = false;
   }
 
