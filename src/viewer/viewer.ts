@@ -11,12 +11,15 @@ import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
 import { appLogicError, assertDefined } from "@/utils";
 import ProjectSettingsService from "../services/project-settings/project-settings-service";
 import SelectionControl from "./selection/selection-tool";
+import SceneService from "@/components/services/scene-service/scene-service";
 
 CameraControls.install({ THREE: THREE });
 
 export class Viewer {
   private _rootElement: HTMLDivElement | undefined;
   private _scene = new THREE.Scene();
+
+  private _sceneService: SceneService
 
   private _renderer: THREE.WebGLRenderer;
   private _stats: Stats;
@@ -45,7 +48,9 @@ export class Viewer {
 
   private _client: ApolloClient<NormalizedCacheObject> | undefined;
 
-  constructor() {
+  constructor(sceneService: SceneService) {
+    this._sceneService = sceneService
+
     this._renderer = new THREE.WebGLRenderer({
       antialias: true,
       powerPreference: "high-performance",
@@ -63,8 +68,6 @@ export class Viewer {
     );
 
     this._entityControl = new EntityControl(this);
-    this._loader = new Loader(this);
-
     // this._taggingService = new TaggingService(this)
 
     this._scene.background = new THREE.Color(
@@ -88,11 +91,7 @@ export class Viewer {
       })
     );
 
-    this._loader.testLoad().then((model) => {
-      console.log("test load done", model);
-      this.entityControl.addModel(model);
-      this._cameraService.fitToScene();
-    });
+
   }
 
   public get scene(): THREE.Scene {
@@ -105,6 +104,10 @@ export class Viewer {
 
   public get versionControl(): Loader {
     return this._loader;
+  }
+
+  public get sceneService(): SceneService {
+    return this._sceneService
   }
 
   // public get taggingService(): TaggingService {

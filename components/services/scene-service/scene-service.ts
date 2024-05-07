@@ -1,18 +1,18 @@
 import { gql } from "@apollo/client";
 import AuthService from "../auth-service/auth-service";
 import client from "@/components/graphql/client/client";
-import { WorkspaceDto } from "../workspace-service/workspace-service.types";
 import WorkspaceService from "../workspace-service/workspace-service";
 import { SceneMetadataDto } from "./scene-service.types";
 import ProductService from "../product-service/product-service";
 import ToolsetService from "../toolset-service/toolset-service";
 import Viewer from "@/src/viewer/viewer";
 import { ExtensionEntityInterface } from "../extension-service/entity/extension-entity.types";
-import CameraViewsExtensions from "../extension-service/extensions/camera-views-extension/camera-views-extension";
+import * as RX from "rxjs";
 
 class SceneService {
   private _workspaceService: WorkspaceService;
   private _metadata: SceneMetadataDto | null;
+  private _metadataSubject: RX.Subject<SceneMetadataDto> = new RX.Subject()
 
   private _extensions: Map<string, any>;
 
@@ -36,13 +36,14 @@ class SceneService {
   }
 
   public initViewer(root: HTMLDivElement) {
-    this._viewer = new Viewer();
+    this._viewer = new Viewer(this);
     this._viewer.init(root);
 
     this.updateExtensions();
   }
 
   public async setScene(_sceneId: string) {
+
     const sceneId = parseInt(_sceneId);
 
     // Load the scene using the sceneId
@@ -110,10 +111,15 @@ class SceneService {
   public updateSceneMetadata(metadata: any) {
     this._metadata = metadata;
     this.$setSceneMetadata(metadata ? { ...metadata } : null);
+    this._metadataSubject.next(metadata)
   }
 
   public provideStates(states: any) {
     this.$setSceneMetadata = states.setSceneMetadata;
+  }
+
+  public get $sceneMetadata() {
+    return this._metadataSubject
   }
 
   public get productService() {

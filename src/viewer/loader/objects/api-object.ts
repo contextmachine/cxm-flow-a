@@ -5,10 +5,14 @@ class ApiObject {
   private _id: string = uuidv4();
   private _entry: string
 
-  constructor(entry: string) {
+  constructor(id: string, entry: string) {
 
     this._entry = entry
 
+  }
+
+  public get entry() {
+    return this._entry
   }
 
 }
