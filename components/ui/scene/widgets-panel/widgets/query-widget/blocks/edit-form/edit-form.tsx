@@ -13,6 +13,7 @@ const EditForm = () => {
   useEffect(() => {
     if (typeof editQueryId === "number") {
       const query = queryExtension?.getQuery(editQueryId);
+
       if (!query) return;
 
       const name = query.name;
@@ -24,7 +25,7 @@ const EditForm = () => {
       setName("");
       setEndpoint("");
     }
-  }, [editQueryId]);
+  }, [editQueryId, openedEditForm]);
 
   const handleSave = () => {
     if (isNew) {
@@ -37,7 +38,9 @@ const EditForm = () => {
   };
 
   const handleDelete = () => {
-    queryExtension?.deleteQuery(editQueryId);
+    if (!editQueryId) return;
+
+    queryExtension?.deleteQuery(editQueryId!);
     queryExtension?.closeEditForm();
   };
 

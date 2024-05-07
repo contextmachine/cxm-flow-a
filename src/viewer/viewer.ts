@@ -150,8 +150,6 @@ export class Viewer {
     console.log("init");
     if (this._isInitialized) throw appLogicError("Viewer already initialized");
 
-    console.log(this._isInitialized);
-
     const width = window.innerWidth;
     const height = window.innerHeight;
 

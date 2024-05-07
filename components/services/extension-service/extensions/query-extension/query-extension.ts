@@ -64,6 +64,7 @@ class QueryExtension
       const response = await client.query({
         query,
         variables,
+        fetchPolicy: "network-only",
       });
 
       const queries = response.data.appv3_scene_query;
@@ -105,9 +106,7 @@ class QueryExtension
 
       // Update _queryMap with new queries
       this._queryMap.clear();
-      for (const queryEntity of newQueries) {
-        this._queryMap.set(queryEntity.id, queryEntity);
-      }
+      this._queries.forEach((query) => this._queryMap.set(query.id, query));
 
       // Notify subscribers of _queries$ with the updated _queries array
       this._queries$.next(this._queries);
@@ -130,9 +129,13 @@ class QueryExtension
         $endpoint: String!
         $name: String!
         $type: String!
+        $sceneId: Int!
       ) {
-        insert_appv3_query(
-          objects: { endpoint: $endpoint, name: $name, type: $type }
+        insert_appv3_scene_query(
+          objects: {
+            query: { data: { endpoint: $endpoint, name: $name, type: $type } }
+            scene_id: $sceneId
+          }
         ) {
           affected_rows
         }
@@ -145,6 +148,7 @@ class QueryExtension
         variables: {
           endpoint,
           name,
+          sceneId: this.sceneService!.sceneId,
           type: "rest",
         },
       });
@@ -217,8 +221,6 @@ class QueryExtension
   };
 
   public assembleTreeData = () => {
-    console.log("assembleTreeData");
-
     const restQueries: QueryEntityTreeItem[] = this._queries.map(
       (query) => query.treeItem
     );

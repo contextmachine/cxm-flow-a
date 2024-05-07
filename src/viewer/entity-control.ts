@@ -64,7 +64,6 @@ class EntityControl {
   }
 
   public addModel(model: ProjectModel) {
-    console.log(model);
     model.objects.forEach((x) => this._viewer.addToScene(x));
 
     this._projectModels.set(model.id, model);
