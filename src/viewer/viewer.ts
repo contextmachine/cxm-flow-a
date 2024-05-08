@@ -19,7 +19,7 @@ export class Viewer {
   private _rootElement: HTMLDivElement | undefined;
   private _scene = new THREE.Scene();
 
-  private _sceneService: SceneService
+  private _sceneService: SceneService;
 
   private _renderer: THREE.WebGLRenderer;
   private _stats: Stats;
@@ -49,7 +49,7 @@ export class Viewer {
   private _client: ApolloClient<NormalizedCacheObject> | undefined;
 
   constructor(sceneService: SceneService) {
-    this._sceneService = sceneService
+    this._sceneService = sceneService;
 
     this._renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -90,8 +90,6 @@ export class Viewer {
         this.updateViewer();
       })
     );
-
-
   }
 
   public get scene(): THREE.Scene {
@@ -107,7 +105,7 @@ export class Viewer {
   }
 
   public get sceneService(): SceneService {
-    return this._sceneService
+    return this._sceneService;
   }
 
   // public get taggingService(): TaggingService {
