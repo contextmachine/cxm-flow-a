@@ -7,7 +7,6 @@ import {
 } from "three-mesh-bvh";
 import axios from "axios";
 
-
 import * as RX from "rxjs";
 import Viewer from "../viewer";
 import { findThreeJSJSON } from "./utils/findThreejsJSON";
@@ -25,12 +24,10 @@ export type StatusHistoryEntry = {
 };
 
 class Loader {
-
   private _status: LoaderStatus = "idle";
   private _statusSubject = new RX.Subject<LoaderStatus>();
 
   constructor(private _viewer: Viewer) {
-
     this._statusSubject.next(this._status);
   }
 
@@ -43,37 +40,23 @@ class Loader {
   }
 
   public async testLoad() {
+    console.log("test load");
 
-    console.log('test load')
+    ///const endpoint = 'https://storage.yandexcloud.net/lahta.contextmachine.online/files/pretty_celling.json'
+    const endpoint =
+      "https://storage.yandexcloud.net/lahta.contextmachine.online/files/sbm_lengths1.json";
 
-
-    const endpoint = 'https://storage.yandexcloud.net/lahta.contextmachine.online/files/pretty_celling.json'
-    // const endpoint = 'https://storage.yandexcloud.net/lahta.contextmachine.online/files/sbm_lengths1.json'
-
-    const apiObject = new ApiObject(endpoint)
+    const apiObject = new ApiObject(endpoint);
 
     const response = await axios.get(endpoint);
-    const jsonObject = findThreeJSJSON(response.data)
+    const jsonObject = findThreeJSJSON(response.data);
 
-    const object3d = await parseJSON(jsonObject)
+    const object3d = await parseJSON(jsonObject);
 
-    const model = new ProjectModel(this._viewer, object3d, apiObject)
+    const model = new ProjectModel(this._viewer, object3d, apiObject);
 
-    return model
-
-
-
+    return model;
   }
-
-
-
-
-
-
-
-
-
-
 
   public dispose() {
     console.log("dispose loader");
@@ -81,4 +64,4 @@ class Loader {
   }
 }
 
-export default Loader
+export default Loader;

@@ -9,6 +9,7 @@ import ToolsetService from "../toolset-service/toolset-service";
 import Viewer from "@/src/viewer/viewer";
 import { ExtensionEntityInterface } from "../extension-service/entity/extension-entity.types";
 import CameraViewsExtensions from "../extension-service/extensions/camera-views-extension/camera-views-extension";
+import PointCloudExtension from "../extension-service/extensions/point-cloud-extension/point-cloud-extension";
 
 class SceneService {
   private _workspaceService: WorkspaceService;
@@ -33,6 +34,11 @@ class SceneService {
     this._toolsetService = new ToolsetService(this);
 
     this.updateTitle = this.updateTitle.bind(this);
+
+    // TODO: Temporary solution of adding extensions
+    console.log("init twice");
+
+    this.addExtension(new PointCloudExtension());
   }
 
   public initViewer(root: HTMLDivElement) {
@@ -183,6 +189,11 @@ class SceneService {
   public dispose() {
     this._metadata = null;
     this.$setSceneMetadata = null;
+
+    this._extensions.forEach((extension) => {
+      extension.unload();
+    });
+    this._extensions.clear();
 
     this._productService.dispose();
     this._toolsetService.dispose();

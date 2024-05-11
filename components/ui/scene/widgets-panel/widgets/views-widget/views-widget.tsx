@@ -41,6 +41,8 @@ const ViewsWidget: React.FC<{
   );
 
   useEffect(() => {
+    console.log("going to add extension");
+
     const extension = sceneService.addExtension(
       new CameraViewsExtensions()
     ) as CameraViewsExtensions;
@@ -75,6 +77,8 @@ const ViewsWidget: React.FC<{
       addingSub?.unsubscribe();
       playSub?.unsubscribe();
       playViewIndexSub?.unsubscribe();
+
+      console.log("remove extnesions");
 
       sceneService.removeExtension(extension.name);
     };
