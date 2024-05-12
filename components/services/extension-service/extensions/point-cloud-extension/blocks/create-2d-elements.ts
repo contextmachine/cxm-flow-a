@@ -8,7 +8,7 @@ export const createBlurredCircle = (
 
   ellipse.setAttribute(
     "style",
-    "fill: red; stroke: none; stroke-width: 1; filter: blur(15px); opacity: 0;"
+    "fill: rgba(255, 255, 255, 0.8); stroke: none; stroke-width: 1; filter: blur(10px); transition: opacity 0.3s;"
   );
 
   svgCanvas.appendChild(ellipse);
@@ -26,7 +26,7 @@ export const createDashedCircle = (
 
   ellipse.setAttribute(
     "style",
-    "fill: none; stroke: rgba(0,0,0,0.8); stroke-width: 1; stroke-dasharray: 5;"
+    "fill: none; stroke: rgba(0,0,0,0.8); stroke-width: 1; stroke-dasharray: 5; transition: opacity 0.3s;"
   );
 
   svgCanvas.appendChild(ellipse);
@@ -50,7 +50,7 @@ export const createPoint = (
   pointWrapper.style.justifyContent = "center";
   pointWrapper.style.alignItems = "center";
   pointWrapper.style.gap = "5px";
-  pointWrapper.style.pointerEvents = "all";
+  pointWrapper.style.transition = "opacity 0.3s";
 
   // add Text there
   const text = document.createElement("p");

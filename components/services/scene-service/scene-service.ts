@@ -186,6 +186,10 @@ class SceneService {
     });
   };
 
+  public get extensions() {
+    return this._extensions;
+  }
+
   public dispose() {
     this._metadata = null;
     this.$setSceneMetadata = null;

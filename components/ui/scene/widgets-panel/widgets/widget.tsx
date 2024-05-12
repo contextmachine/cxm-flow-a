@@ -2,6 +2,7 @@ import BarChartWidget from "./bar-widget";
 import ChartWidget from "./chart-widget";
 import DummyWidget from "./dummy-widget";
 import MappingWidget from "./mapping-widget";
+import PointCloudHandlerWidget from "./pointcloud-handler-widget/pointcloud-handler-widget";
 import QueryWidget from "./query-widget";
 import StatisticsWidget from "./statistics-widget";
 import ToolsetWidget from "./toolset-widget";
@@ -17,6 +18,8 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
   switch (type) {
     case "views":
       return <ViewsWidget isPreview={isPreview} />;
+    case "pointcloud-handler":
+      return <PointCloudHandlerWidget isPreview={isPreview} />;
     case "chart-widget":
       return <ChartWidget isPreview={isPreview} />;
     case "mapping-widget":

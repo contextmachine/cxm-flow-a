@@ -260,6 +260,23 @@ const GlobalStyle = createGlobalStyle`
     }
   }
 
+  // MUI Accordion
+  & .MuiAccordion-root {
+   &, & * {
+    font-size: 12px;
+   }
+
+   gap: 0px;
+
+   & .MuiAccordionSummary-root {
+    & .MuiAccordionSummary-content {
+      margin: 0;
+     }
+
+     min-height: max-content;
+   }
+  }
+
   .SelectTrigger {
     display: inline-flex;
     align-items: center;

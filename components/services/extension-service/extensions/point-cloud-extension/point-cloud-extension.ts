@@ -23,6 +23,7 @@ import {
   createPoint,
 } from "./blocks/create-2d-elements";
 import { update2dElement } from "./blocks/update-2d-elements";
+import { BehaviorSubject } from "rxjs";
 
 class PointCloudExtension
   extends ExtensionEntity
@@ -30,6 +31,8 @@ class PointCloudExtension
 {
   public id: string;
   public name: string;
+
+  private _topViewEnabled = false;
 
   private _cameraSubscription: Map<string, any> = new Map();
 
@@ -41,9 +44,11 @@ class PointCloudExtension
   private _svgCanvas: SVGElement | null = null;
   private _divCanvas: HTMLDivElement | null = null;
 
-  private _paramsWindow: PointCloudFloarParamWindow | null = null;
-
   private _wireframeDisabled = true;
+
+  private _points$ = new BehaviorSubject<Map<string, PointCloudFieldHandler>>(
+    new Map()
+  );
 
   constructor() {
     super();
@@ -61,9 +66,13 @@ class PointCloudExtension
       const itemData = item as PointCloudFieldHandler;
       this._points.set(itemData.id, itemData);
     });
+
+    this._points$.next(this._points);
   }
 
   private _drawCylinders() {
+    console.log("sre");
+
     const camera = this._sceneService?.viewer?.controls.camera!;
     camera.updateMatrixWorld(true);
 
@@ -79,6 +88,7 @@ class PointCloudExtension
       if (!indices) return;
 
       const polygons = [] as [number, number][][];
+      let center: [number, number] = [0, 0];
 
       // Force update of camera matrices
 
@@ -100,6 +110,15 @@ class PointCloudExtension
 
         polygons.push(points);
       }
+
+      const centerPosition = new THREE.Vector3(center[0], center[1], 0);
+      centerPosition.applyMatrix4(worldMatrix);
+      centerPosition.project(camera);
+
+      const x = (centerPosition.x * 0.5 + 0.5) * svgElement.clientWidth;
+      const y = (-centerPosition.y * 0.5 + 0.5) * svgElement.clientHeight;
+
+      center = [x, y];
 
       try {
         const b = polygons.map((points): any => [points]);
@@ -125,29 +144,33 @@ class PointCloudExtension
             point: createPoint(divElement, this._points.get(key)!.name),
           };
 
-          pointSvg.point.onclick = () => this._showParamWindow(mesh, key);
+          pointSvg.blurCircle.style.opacity = "0";
+          pointSvg.dashedCircle.style.opacity = "0";
+          pointSvg.point.style.opacity = "0";
 
           this._pointSvgs.set(key, pointSvg);
         }
 
         const pointSvg = this._pointSvgs.get(key)!;
-        update2dElement(pointSvg, centerX, centerY, width, height);
+        update2dElement(pointSvg, centerX, centerY, width, height, center);
       } catch (error) {
         console.error("Error:", error);
       }
     });
+  }
 
-    // Update the param window position
-    if (this._paramsWindow) {
-      const id = this._paramsWindow.id;
-      const point = this._pointSvgs.get(id)?.point;
+  public updatePoint(id: string, data: Partial<PointCloudFieldHandler>) {
+    const point = this._points.get(id);
+    if (!point) return;
 
-      if (point) {
-        const rect = point.getBoundingClientRect();
-        this._paramsWindow.div.style.left = rect.right + "px";
-        this._paramsWindow.div.style.top = rect.top + "px";
-      }
+    const updatedPoint = { ...point, ...data };
+    this._points.set(id, updatedPoint);
+
+    if (data.size) {
+      this._modifyCylinderSize(id, data.size);
     }
+
+    this._points$.next(this._points);
   }
 
   private _modifyCylinderSize(id: string, size: PointCloudFieldSize) {
@@ -159,71 +182,11 @@ class PointCloudExtension
     const mesh = this._pointMeshes.get(id);
     if (!mesh) return;
 
-    mesh.scale.set(size[0], size[1], 1);
+    mesh.scale.set(size[0], 1, size[1]);
     mesh.updateMatrix();
     mesh.updateMatrixWorld(true);
-  }
-
-  private _showParamWindow(mesh: THREE.Mesh, id: string) {
-    this._hideParamWindow();
-
-    const point = this._points.get(id);
-    const size = point?.size || [1, 1];
-
-    const div = document.createElement("div");
-    div.style.position = "absolute";
-
-    div.style.width = "200px";
-    div.style.height = "200px";
-    div.style.backgroundColor = "white";
-    div.style.display = "flex";
-    div.style.flexDirection = "column";
-    div.classList.add(
-      "MuiPaper-root",
-      "MuiPaper-elevation",
-      "MuiPaper-rounded"
-    );
-    div.style.pointerEvents = "all";
-
-    // Add input type range
-    const rangeInput1 = document.createElement("input");
-    rangeInput1.type = "range";
-    rangeInput1.min = "0,1";
-    rangeInput1.max = "4";
-    rangeInput1.value = `${size[0]}`;
-    rangeInput1.style.width = "100%";
-
-    console.log("size", size);
-
-    const rangeInput2 = document.createElement("input");
-    rangeInput2.type = "range";
-    rangeInput2.min = "0.1";
-    rangeInput2.max = "4";
-    rangeInput2.value = `${size[1]}`;
-    rangeInput2.style.width = "100%";
-
-    div.appendChild(rangeInput1);
-    div.appendChild(rangeInput2);
-
-    this._divCanvas?.appendChild(div);
-
-    const position = mesh.position;
-    const paramWindow: PointCloudFloarParamWindow = {
-      position: position,
-      id: id,
-      div: div,
-    };
-
-    this._paramsWindow = paramWindow;
 
     this._drawCylinders();
-  }
-
-  private _hideParamWindow() {
-    if (this._paramsWindow) {
-      this._paramsWindow.div.remove();
-      this._paramsWindow = null;
-    }
   }
 
   private _createPrimitives() {
@@ -244,7 +207,11 @@ class PointCloudExtension
     this._divCanvas = divCanvas;
   }
 
-  private _enableTopView() {
+  public enableTopView() {
+    if (this._topViewEnabled) return;
+
+    this._topViewEnabled = !this._topViewEnabled;
+
     const viewer = this.sceneService?.viewer!;
     const cameraControl = viewer.controls;
 
@@ -267,6 +234,23 @@ class PointCloudExtension
     if (count > 0) {
       center.divideScalar(count);
     }
+
+    // increase size of point cloud
+    entities.forEach((entity) => {
+      console.log("entity:", entity);
+
+      const model = entity.model;
+      const objects = model.objects;
+
+      objects.forEach((object) => {
+        // check if they are point cloud
+        const material = (object as any).material;
+        if (material && material instanceof THREE.PointsMaterial) {
+          material.size = 20;
+          // update
+        }
+      });
+    });
 
     console.log("Center:", center);
 
@@ -307,17 +291,6 @@ class PointCloudExtension
     this._createPrimitives();
     this._addCameraSubscription();
 
-    const optionPanel = document.getElementById("footer-options-panel");
-    if (optionPanel) {
-      const button = document.createElement("button");
-      button.innerText = "Top View";
-      button.onclick = () => {
-        this._enableTopView();
-      };
-
-      optionPanel.appendChild(button);
-    }
-
     try {
       const response = await axios.post(
         "https://sbm.dev.contextmachine.cloud/sbm_lamp/stats",
@@ -350,19 +323,48 @@ class PointCloudExtension
       );
       this._cameraSubscription.set(event, subscription);
     });
+
+    const resizeSubscription = window.addEventListener(
+      "resize",
+      this._drawCylinders
+    );
+    this._cameraSubscription.set("resize", resizeSubscription);
   }
 
   private _removeCameraSubscription() {
     if (!this._cameraSubscription) return;
 
     this._cameraSubscription.forEach((value, key: any) => {
-      this._sceneService!.viewer!.controls.controls.removeEventListener(
-        key,
-        value
-      );
+      if (key !== "resize") {
+        this._sceneService!.viewer!.controls.controls.removeEventListener(
+          key,
+          value
+        );
+      } else {
+        window.removeEventListener("resize", value);
+      }
     });
 
     this._cameraSubscription.clear();
+  }
+
+  public hoverPoint(id: string | null) {
+    const pointsSvg = this._pointSvgs;
+    pointsSvg.forEach((pointSvg) => {
+      pointSvg.blurCircle.style.opacity = "0";
+      pointSvg.dashedCircle.style.opacity = "0";
+      pointSvg.point.style.opacity = "0";
+    });
+
+    const point = this._points.get(id!);
+    if (!point) return;
+
+    const pointSvg = pointsSvg.get(id!);
+    if (!pointSvg) return;
+
+    pointSvg.blurCircle.style.opacity = "1";
+    pointSvg.dashedCircle.style.opacity = "1";
+    pointSvg.point.style.opacity = "1";
   }
 
   public unload() {
@@ -383,6 +385,10 @@ class PointCloudExtension
 
     this._removeCameraSubscription();
     console.log("PointCloudExtension unloaded");
+  }
+
+  public get points$() {
+    return this._points$.asObservable();
   }
 }
 

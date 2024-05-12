@@ -1,5 +1,6 @@
 export type WidgetType =
   | "views"
+  | "pointcloud-handler"
   | "chart-widget"
   | "mapping-widget"
   | "query-widget"

@@ -5,7 +5,8 @@ export const update2dElement = (
   centerX: number,
   centerY: number,
   width: number,
-  height: number
+  height: number,
+  center: [number, number]
 ) => {
   const polygonSvg = pointSvg.blurCircle;
   polygonSvg.setAttribute("cx", centerX.toString());
@@ -20,6 +21,6 @@ export const update2dElement = (
   dashPolygonSvg.setAttribute("ry", (height / 2).toString());
 
   const pointsSvg = pointSvg.point;
-  pointsSvg.style.left = centerX + "px";
-  pointsSvg.style.top = centerY - 9 + "px";
+  pointsSvg.style.left = center[0] + "px";
+  pointsSvg.style.top = center[1] - 9 + "px";
 };
