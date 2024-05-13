@@ -12,7 +12,7 @@ import * as RX from "rxjs";
 class SceneService {
   private _workspaceService: WorkspaceService;
   private _metadata: SceneMetadataDto | null;
-  private _metadataSubject: RX.Subject<SceneMetadataDto> = new RX.Subject()
+  private _metadataSubject: RX.Subject<SceneMetadataDto> = new RX.Subject();
 
   private _extensions: Map<string, any>;
 
@@ -35,15 +35,16 @@ class SceneService {
     this.updateTitle = this.updateTitle.bind(this);
   }
 
-  public initViewer(root: HTMLDivElement) {
+  public initViewer(root: HTMLDivElement): Viewer {
     this._viewer = new Viewer(this);
     this._viewer.init(root);
 
     this.updateExtensions();
+
+    return this._viewer;
   }
 
   public async setScene(_sceneId: string) {
-
     const sceneId = parseInt(_sceneId);
 
     // Load the scene using the sceneId
@@ -111,7 +112,7 @@ class SceneService {
   public updateSceneMetadata(metadata: any) {
     this._metadata = metadata;
     this.$setSceneMetadata(metadata ? { ...metadata } : null);
-    this._metadataSubject.next(metadata)
+    this._metadataSubject.next(metadata);
   }
 
   public provideStates(states: any) {
@@ -119,7 +120,7 @@ class SceneService {
   }
 
   public get $sceneMetadata() {
-    return this._metadataSubject
+    return this._metadataSubject;
   }
 
   public get productService() {

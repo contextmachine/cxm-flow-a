@@ -1,21 +1,7 @@
-import client from "@/components/graphql/client/client";
 import { gql } from "@apollo/client";
-import { DocumentNode } from "graphql";
-import { apiObjectFromDto } from "../dto/fromDto";
-
-const getGQLData = (query: DocumentNode, variables?: any) => {
-  try {
-    const response = client.query({
-      query,
-      variables,
-      fetchPolicy: "network-only",
-    });
-
-    return response;
-  } catch (e) {
-    throw new Error(`Server error ${e}`);
-  }
-};
+import zod, { ZodSchema, z } from "zod";
+import { getGQLData, validateObject } from "./utils";
+import { apiObjectFromDto } from "./fromDto";
 
 export const getQueries = (sceneId: number) => {
   const query = gql`

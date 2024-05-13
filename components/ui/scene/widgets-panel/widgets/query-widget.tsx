@@ -1,12 +1,12 @@
 import { Box, Button, InputBase, Paper } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { TreeView } from "@mui/x-tree-view/TreeView";
 import { TreeItem } from "@mui/x-tree-view/TreeItem";
 import WidgetPaper from "../blocks/widget-paper/widget-paper";
 import styled from "styled-components";
 import SearchBar from "../blocks/search-bar/search-bar";
 import Badge from "../../primitives/badge";
+import { SimpleTreeView } from "@mui/x-tree-view";
 
 interface QueryWidgetProps {
   isPreview?: boolean;
@@ -14,6 +14,7 @@ interface QueryWidgetProps {
 
 const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview }) => {
   const renderTree = (nodes: any) => {
+    console.log(nodes);
     const iconPath = nodes.isObject
       ? "/icons/box.svg"
       : nodes.isList
@@ -73,7 +74,7 @@ const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview }) => {
 
       <TreeWrapper>
         <Box sx={{ flexGrow: 1, width: "100%" }}>
-          <TreeView
+          <SimpleTreeView
             // @ts-ignore
             defaultCollapseIcon={
               // @ts-ignore
@@ -85,7 +86,7 @@ const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview }) => {
             }
           >
             {treeData.map((node) => renderTree(node))}
-          </TreeView>
+          </SimpleTreeView>
         </Box>
       </TreeWrapper>
     </WidgetPaper>

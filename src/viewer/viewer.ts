@@ -100,7 +100,7 @@ export class Viewer {
     return this._renderer.domElement;
   }
 
-  public get versionControl(): Loader {
+  public get loader(): Loader {
     return this._loader;
   }
 
@@ -222,7 +222,7 @@ export class Viewer {
   public dispose(): void {
     console.log("dispose viewer");
 
-    this.versionControl.dispose();
+    this.loader.dispose();
     document.body.removeChild(this._stats.dom);
     // this.selectionService.dispose();
 

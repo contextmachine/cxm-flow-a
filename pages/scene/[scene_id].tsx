@@ -5,6 +5,7 @@ import { useAuth } from "@/components/services/auth-service/auth-provider";
 import { SceneProvider } from "@/components/services/scene-service/scene-provider";
 import { ProductProvider } from "@/components/services/product-service/product-provider";
 import { ToolsetProvider } from "@/components/services/toolset-service/toolset-provider";
+import { Loading } from "@/components/services/loading";
 
 const ScenePage: NextPage = () => {
   const { authService } = useAuth();
@@ -18,9 +19,6 @@ const ScenePage: NextPage = () => {
             {/* Layout */}
             {/* UI interface of panels */}
             <SceneGrid />
-
-            {/* Viewer 3D */}
-            {/* <Viewer /> */}
           </StateProvider>
         </ToolsetProvider>
       </ProductProvider>

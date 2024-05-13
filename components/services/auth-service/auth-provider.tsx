@@ -59,9 +59,9 @@ export function AuthProvider({ children }: any) {
         userMetadata,
       }}
     >
-      {(loading ||
+      {/* {(loading ||
         (!loading && isUnauthorized && !isAuthPage) ||
-        (!loading && !isUnauthorized && isAuthPage)) && <Loader />}
+        (!loading && !isUnauthorized && isAuthPage)) && <Loader />} */}
 
       {children}
 

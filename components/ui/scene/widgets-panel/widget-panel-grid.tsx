@@ -74,6 +74,7 @@ const WidgetPanelGrid = () => {
             >
               <Widget type="bar-widget" />
               <Widget type="toolset-widget" />
+              <Widget type="query-widget" />
 
               {sectionType === "widgets" && <InUseGrid key={activePLogId} />}
 
@@ -83,7 +84,7 @@ const WidgetPanelGrid = () => {
             </Box>
 
             {/* Edit Panel */}
-            {isEditWidgetsOpen && <EditGrid key={activePLogId}/>}
+            {isEditWidgetsOpen && <EditGrid key={activePLogId} />}
           </>
         )}
 

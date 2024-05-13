@@ -17,7 +17,7 @@ THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
-export type LoaderStatus = "loading" | "initObjects" | "idle";
+export type LoaderStatus = "loading" | "idle";
 export type StatusHistoryEntry = {
   status: LoaderStatus;
   service: string;
@@ -30,6 +30,7 @@ class Loader {
   private _statusSubject = new RX.Subject<LoaderStatus>();
 
   private _queries: ApiObject[] = [];
+  private _queriesSubject = new RX.Subject<ApiObject[]>();
 
   constructor(private _viewer: Viewer) {
     this._statusSubject.next(this._status);
@@ -43,14 +44,28 @@ class Loader {
     );
   }
 
-  private async initialLoad(sceneId: number) {
-    const queries = await getQueries(sceneId);
+  private setStatus(status: LoaderStatus) {
+    this._status = status;
+    this._statusSubject.next(status);
+  }
 
+  private updateQueries(queries: ApiObject[]) {
+    this._queries = queries;
+    this._queriesSubject.next(queries);
+  }
+
+  private async initialLoad(sceneId: number) {
+    this.setStatus("loading");
+
+    const queries = await getQueries(sceneId);
     const apiObjects = queries.map((x) => new ApiObject(x.id, x.endpoint));
-    this._queries = apiObjects;
+    this.updateQueries(apiObjects);
+
     for (let i = 0; i < apiObjects.length; i++) {
       await this.loadFromApiObject(apiObjects[i]);
     }
+
+    this.setStatus("idle");
 
     this._viewer.controls.fitToScene();
   }
