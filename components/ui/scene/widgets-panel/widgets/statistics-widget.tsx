@@ -5,9 +5,13 @@ import styled from "styled-components";
 
 interface StatisticsWidgetProps {
   isPreview?: boolean;
+  extension: any;
 }
 
-const StatisticsWidget: React.FC<StatisticsWidgetProps> = ({ isPreview }) => {
+const StatisticsWidget: React.FC<StatisticsWidgetProps> = ({
+  isPreview,
+  extension,
+}) => {
   return (
     <WidgetPaper isPreview={isPreview} title={"Sample size"}>
       <Box

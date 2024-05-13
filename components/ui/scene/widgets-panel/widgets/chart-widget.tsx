@@ -12,9 +12,10 @@ const ResponsivePie: any = lazy(() =>
 
 interface ChartWidgetProps {
   isPreview?: boolean;
+  extension: any;
 }
 
-const ChartWidget: React.FC<ChartWidgetProps> = ({ isPreview }) => {
+const ChartWidget: React.FC<ChartWidgetProps> = ({ isPreview, extension }) => {
   return (
     <WidgetPaper isPreview={isPreview} title={"Data Visualisation"}>
       <Select

@@ -153,7 +153,7 @@ class ToolsetService {
     }
   }
 
-  public updateActiveToolsetProducts(outputProducts: ProductsDto[]) {
+  public updateActiveToolsetProducts(widgetProducts: ProductsDto[]) {
     const activeToolset = this._activeToolset;
     if (!activeToolset) {
       this._activeProducts$.next([]);
@@ -164,13 +164,13 @@ class ToolsetService {
 
     const activeProducts = activeToolset.toolset_products
       .map((toolsetProduct) => {
-        return outputProducts.find(
+        return widgetProducts.find(
           (product) => product.id === toolsetProduct.product_id
         )!;
       })
       .filter((product) => product);
 
-    const restProducts = outputProducts.filter((product) => {
+    const restProducts = widgetProducts.filter((product) => {
       return !activeToolset.toolset_products.some(
         (toolsetProduct) => toolsetProduct.product_id === product.id
       );

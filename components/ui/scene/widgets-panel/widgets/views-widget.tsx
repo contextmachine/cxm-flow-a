@@ -15,11 +15,15 @@ import EditableTitle from "../../primitives/dynamic-title/dynamic-title";
 import { ViewState } from "@/src/viewer/camera-control.types";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import Badge from "../../primitives/badge";
+import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 
 const ViewsWidget: React.FC<{
   isPreview?: boolean;
-}> = ({ isPreview }) => {
+  extension: ExtensionEntityInterface;
+}> = ({ isPreview, extension }) => {
   const { sceneService } = useScene();
+
+  extension = extension as CameraViewsExtensions;
 
   const [sectionType, setSectionType] = useState<"all" | "animation">("all");
 
@@ -28,25 +32,18 @@ const ViewsWidget: React.FC<{
   const [pending, setPending] = useState(false);
   const [adding, setAdding] = useState(false);
 
-  const extensionRef = useRef<CameraViewsExtensions | null>(null);
-
   useEffect(() => {
-    const extension = sceneService.addExtension(
-      new CameraViewsExtensions()
-    ) as CameraViewsExtensions;
-    extensionRef.current = extension;
-
-    const allViewsSub = extension.allViews$!.subscribe((views) =>
+    const allViewsSub = extension.allViews$!.subscribe((views: any) =>
       setAllViews(views)
     );
-    const animationViewsSub = extension.animationViews$!.subscribe((views) =>
-      setAnimationViews(views)
+    const animationViewsSub = extension.animationViews$!.subscribe(
+      (views: any) => setAnimationViews(views)
     );
 
-    const pendingSub = extension.dbService.pending$.subscribe((pending) =>
-      setPending(pending)
+    const pendingSub = extension.dbService.pending$.subscribe(
+      (pending: boolean) => setPending(pending)
     );
-    const addingSub = extension.dbService.adding$.subscribe((adding) =>
+    const addingSub = extension.dbService.adding$.subscribe((adding: boolean) =>
       setAdding(adding)
     );
 
@@ -59,33 +56,21 @@ const ViewsWidget: React.FC<{
 
       sceneService.removeExtension(extension.name);
     };
-  }, []);
+  }, [extension]);
 
   const updateTitle = (id: number, name: string) => {
-    const extension = extensionRef.current;
-    if (!extension) return;
-
     extension.updateTitle(id, name);
   };
 
   const restoreState = (state: ViewState) => {
-    const extension = extensionRef.current;
-    if (!extension) return;
-
     extension.restoreState(state);
   };
 
   const addView = () => {
-    const extension = extensionRef.current;
-    if (!extension) return;
-
     extension.addView();
   };
 
   const deleteView = (id: number) => {
-    const extension = extensionRef.current;
-    if (!extension) return;
-
     extension.deleteView(id);
   };
 

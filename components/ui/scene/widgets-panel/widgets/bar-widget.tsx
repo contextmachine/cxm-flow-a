@@ -5,9 +5,13 @@ import { useStates } from "@/components/services/state-service/state-provider";
 
 interface BarChartWidgetProps {
   isPreview?: boolean;
+  extension: any;
 }
 
-const BarChartWidget: React.FC<BarChartWidgetProps> = ({ isPreview }) => {
+const BarChartWidget: React.FC<BarChartWidgetProps> = ({
+  isPreview,
+  extension,
+}) => {
   const { stateService, sectionType } = useStates();
 
   return (

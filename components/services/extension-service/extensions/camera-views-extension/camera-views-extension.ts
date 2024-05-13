@@ -41,7 +41,7 @@ class CameraViewsExtensions
     this._dbService = new CameraViewsDbService(this);
 
     this.id = uuidv4();
-    this.name = "CameraViewsExtensions";
+    this.name = "views";
 
     this._viewStates = this._formatData(viewStates.filter((_, i) => i !== 3));
 

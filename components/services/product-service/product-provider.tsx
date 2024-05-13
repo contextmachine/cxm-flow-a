@@ -12,6 +12,7 @@ interface ProductProviderProps {
   workspaceProducts: ProductsDto[];
   roleProducts: RoleProductDto[];
   outputProducts: ProductsDto[];
+  widgetProducts: ProductsDto[];
 }
 
 const ProductContext = createContext<ProductProviderProps | null>(null);
@@ -28,6 +29,7 @@ export function ProductProvider({ children }: any) {
   const [workspaceProducts, setWorkspaceProducts] = useState<ProductsDto[]>([]);
   const [roleProducts, setRoleProducts] = useState<RoleProductDto[]>([]);
   const [outputProducts, setOutputProducts] = useState<ProductsDto[]>([]);
+  const [widgetProducts, setWidgetProducts] = useState<ProductsDto[]>([]);
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
@@ -43,6 +45,10 @@ export function ProductProvider({ children }: any) {
     const op_sub = productService.outputProducts$.subscribe((products) =>
       setOutputProducts(products)
     );
+    const wp_sub = productService.widgetProducts$.subscribe((products) =>
+      setWidgetProducts(products)
+    );
+
     const err_sub = productService.error$.subscribe((error) => setError(error));
 
     return () => {
@@ -50,6 +56,7 @@ export function ProductProvider({ children }: any) {
       wsp_sub.unsubscribe();
       rp_sub.unsubscribe();
       op_sub.unsubscribe();
+      wp_sub.unsubscribe();
       err_sub.unsubscribe();
     };
   }, []);
@@ -83,6 +90,7 @@ export function ProductProvider({ children }: any) {
         workspaceProducts,
         roleProducts,
         outputProducts,
+        widgetProducts,
       }}
     >
       {children}

@@ -24,7 +24,7 @@ const ToolsetContext = createContext<ToolsetProviderProps | null>(null);
 export function ToolsetProvider({ children }: any) {
   const { userMetadata } = useAuth();
   const { sceneService, sceneMetadata } = useScene();
-  const { outputProducts } = useProduct();
+  const { outputProducts, widgetProducts } = useProduct();
 
   const toolsetService = sceneService.toolsetService;
 
@@ -75,8 +75,8 @@ export function ToolsetProvider({ children }: any) {
   }, []);
 
   useEffect(() => {
-    toolsetService.updateActiveToolsetProducts(outputProducts);
-  }, [outputProducts, activeToolset]);
+    toolsetService.updateActiveToolsetProducts(widgetProducts);
+  }, [widgetProducts, activeToolset]);
 
   return (
     <ToolsetContext.Provider

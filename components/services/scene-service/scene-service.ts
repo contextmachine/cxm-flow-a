@@ -10,6 +10,7 @@ import { ExtensionEntityInterface } from "../extension-service/entity/extension-
 import * as RX from "rxjs";
 import QueryExtension from "../extension-service/extensions/query-extension/query-extension";
 import { BehaviorSubject } from "rxjs";
+import CameraViewsExtensions from "../extension-service/extensions/camera-views-extension/camera-views-extension";
 
 class SceneService {
   private _workspaceService: WorkspaceService;
@@ -42,6 +43,7 @@ class SceneService {
   }
 
   public loadCoreExtensions() {
+    this.addExtension(new CameraViewsExtensions());
     this.addExtension(new QueryExtension());
   }
 
@@ -212,6 +214,10 @@ class SceneService {
 
   public get extensions$() {
     return this._extensions$.asObservable();
+  }
+
+  public get extensions() {
+    return this._extensions;
   }
 
   public dispose() {

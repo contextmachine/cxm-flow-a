@@ -47,7 +47,6 @@ export function SceneProvider({ children }: any) {
     if (canvas !== null) {
       const viewer = sceneService.initViewer(canvas.current as HTMLDivElement);
       setViewer(viewer);
-      console.log("viewer", viewer);
     }
   }, [canvas]);
 
@@ -63,6 +62,8 @@ export function SceneProvider({ children }: any) {
       sceneService.dispose();
     };
   }, [scene_id]);
+
+  console.log("sceneService", sceneService);
 
   return (
     <div>

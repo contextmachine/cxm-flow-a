@@ -28,7 +28,7 @@ class QueryExtension
   constructor() {
     super();
 
-    this.name = "QueryExtension";
+    this.name = "queries";
   }
 
   public async load() {

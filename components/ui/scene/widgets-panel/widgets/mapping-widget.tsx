@@ -4,12 +4,23 @@ import { Select } from "@mui/material";
 
 interface MappingWidgetProps {
   isPreview?: boolean;
+  extension: any;
 }
 
-const MappingWidget: React.FC<MappingWidgetProps> = ({ isPreview }) => {
+const MappingWidget: React.FC<MappingWidgetProps> = ({
+  isPreview,
+  extension,
+}) => {
   return (
     <WidgetPaper isPreview={isPreview} title={"Change in values"}>
-      <div style={{ display: "flex", columnGap: "5px", width: "100%", alignItems: 'center' }}>
+      <div
+        style={{
+          display: "flex",
+          columnGap: "5px",
+          width: "100%",
+          alignItems: "center",
+        }}
+      >
         <Select
           sx={{ width: "100%" }}
           data-type="select"

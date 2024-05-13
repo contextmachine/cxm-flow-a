@@ -8,34 +8,27 @@ import { useScene } from "@/components/services/scene-service/scene-provider";
 import QueryExtension from "@/components/services/extension-service/extensions/query-extension/query-extension";
 import { QuerySectionTreeItem } from "@/components/services/extension-service/extensions/query-extension/query-extension.types";
 import EditForm from "./blocks/edit-form/edit-form";
+import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 
 const TreeView = RichTreeView;
 
 interface QueryWidgetProps {
   isPreview?: boolean;
+  extension: ExtensionEntityInterface;
 }
 
-const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview }) => {
+const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview, extension }) => {
   const treeViewRef = useRef<any>(null);
   const apiRef = useRef<any>(null);
 
-  const { sceneService } = useScene();
-  const [queryExtension, setQueryExtension] = useState<QueryExtension | null>(
-    sceneService.getExtension("QueryExtension")
+  const [queryExtension] = useState<QueryExtension | null>(
+    extension as QueryExtension
   );
 
   const [treeData, setTreeData] = useState<QuerySectionTreeItem[]>([]);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [openedEditForm, setOpenedEditForm] = useState(false);
   const [editQueryId, setEditQueryId] = useState<number | null>(null);
-
-  useEffect(() => {
-    const extSub = sceneService.extensions$.subscribe((extensions) =>
-      setQueryExtension(extensions.get("QueryExtension"))
-    );
-
-    return () => extSub.unsubscribe();
-  }, []);
 
   useEffect(() => {
     if (queryExtension) {

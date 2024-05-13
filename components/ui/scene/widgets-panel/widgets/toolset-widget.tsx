@@ -11,9 +11,13 @@ import { ToolsetDto } from "@/components/services/toolset-service/toolset-servic
 
 interface ToolsetWidgetProps {
   isPreview?: boolean;
+  extension: any;
 }
 
-const ToolsetWidget: React.FC<ToolsetWidgetProps> = ({ isPreview }) => {
+const ToolsetWidget: React.FC<ToolsetWidgetProps> = ({
+  isPreview,
+  extension,
+}) => {
   const { toolsets, activeToolset, toolsetService } = useToolset();
 
   return (

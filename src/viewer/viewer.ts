@@ -100,10 +100,6 @@ export class Viewer {
     return this._renderer.domElement;
   }
 
-  public get loader(): Loader {
-    return this._loader;
-  }
-
   public get sceneService(): SceneService {
     return this._sceneService;
   }
@@ -150,7 +146,6 @@ export class Viewer {
   }
 
   public init(rootElement: HTMLDivElement) {
-    console.log("init");
     if (this._isInitialized) throw appLogicError("Viewer already initialized");
 
     const width = window.innerWidth;

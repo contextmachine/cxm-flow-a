@@ -13,10 +13,15 @@ class ProductService {
   private _roleProducts: Map<number, RoleProductDto>;
   private _outputProducts: Map<number, ProductsDto>;
 
+  private _widgetProducts: Map<number, ProductsDto>;
+
   private _products$ = new BehaviorSubject<ProductsDto[]>([]);
   private _workspaceProducts$ = new BehaviorSubject<ProductsDto[]>([]);
   private _roleProducts$ = new BehaviorSubject<RoleProductDto[]>([]);
   private _outputProducts$ = new BehaviorSubject<ProductsDto[]>([]);
+
+  private _widgetProducts$ = new BehaviorSubject<ProductsDto[]>([]);
+
   private _error$ = new BehaviorSubject<string>("");
 
   constructor(private _sceneService: SceneService) {
@@ -27,7 +32,32 @@ class ProductService {
     this._roleProducts = new Map();
     this._outputProducts = new Map();
 
+    this._widgetProducts = new Map();
+
     this.init();
+
+    this._outputProducts$.subscribe(() => this.updateWidgetProducts());
+    this._sceneService.extensions$.subscribe(() => this.updateWidgetProducts());
+  }
+
+  public updateWidgetProducts() {
+    const extensions = this._sceneService.extensions;
+    const outputProducts = this._outputProducts;
+
+    const _widgetProducts = new Map<number, ProductsDto>();
+
+    outputProducts.forEach((outputProduct) => {
+      const { name } = outputProduct;
+
+      const extension = extensions.get(name);
+
+      if (extension) {
+        _widgetProducts.set(outputProduct.id, outputProduct);
+      }
+    });
+
+    this._widgetProducts = _widgetProducts;
+    this._widgetProducts$.next([..._widgetProducts.values()]);
   }
 
   async fetchProducts(): Promise<ProductsDto[]> {
@@ -300,6 +330,8 @@ class ProductService {
     const userId = this._authService.userMetadata?.id;
     const workspaceId = this._sceneService.workspaceId;
 
+    if (!userId || !workspaceId) return;
+
     const userRole =
       this._authService.workspaceService.getUserRoleWithinWorkspace(
         userId!,
@@ -347,6 +379,10 @@ class ProductService {
 
   public get outputProducts$() {
     return this._outputProducts$.asObservable();
+  }
+
+  public get widgetProducts$() {
+    return this._widgetProducts$.asObservable();
   }
 
   public get error$() {

@@ -8,6 +8,7 @@ import Properties from "./blocks/properties/properties";
 import Widget from "./widgets/widget";
 import OutlinerWidget from "./widgets/outliner-widget";
 import { useToolset } from "@/components/services/toolset-service/toolset-provider";
+import { useScene } from "@/components/services/scene-service/scene-provider";
 
 const InUseGrid = dynamic(() => import("./blocks/in-use-grid/in-use-grid"), {
   ssr: false,
@@ -74,7 +75,6 @@ const WidgetPanelGrid = () => {
             >
               <Widget type="bar-widget" />
               <Widget type="toolset-widget" />
-              <Widget type="query-widget" />
 
               {sectionType === "widgets" && <InUseGrid key={activePLogId} />}
 
@@ -87,7 +87,6 @@ const WidgetPanelGrid = () => {
             {isEditWidgetsOpen && <EditGrid key={activePLogId} />}
           </>
         )}
-
         <Properties />
       </Box>
     </>
