@@ -21,7 +21,7 @@ export class ProjectModel {
   constructor(
     viewer: Viewer,
     object3d: THREE.Object3D,
-    private _apiObject: ApiObject
+    private _queryEntity: QueryEntity
   ) {
     this._viewer = viewer;
     this._id = object3d.uuid;
@@ -51,8 +51,8 @@ export class ProjectModel {
     return this._id;
   }
 
-  public get apiObject(): RestObject {
-    return this._apiObject;
+  public get queryEntity(): QueryEntity {
+    return this._queryEntity;
   }
 
   public get unionMesh(): UnionMesh | undefined {

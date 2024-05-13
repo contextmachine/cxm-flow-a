@@ -128,6 +128,10 @@ export class Viewer {
     return this._projectSettingsService;
   }
 
+  public get loader(): Loader {
+    return this._loader;
+  }
+
   public get camera() {
     return this._cameraService.camera;
   }
@@ -148,8 +152,6 @@ export class Viewer {
   public init(rootElement: HTMLDivElement) {
     console.log("init");
     if (this._isInitialized) throw appLogicError("Viewer already initialized");
-
-    console.log(this._isInitialized);
 
     const width = window.innerWidth;
     const height = window.innerHeight;

@@ -1,5 +1,6 @@
 import Viewer from "@/src/viewer/viewer";
 import SceneService from "../../scene-service/scene-service";
+import { v4 as uuidv4 } from "uuid";
 
 class ExtensionEntity {
   protected _sceneService: SceneService | null;
@@ -7,9 +8,13 @@ class ExtensionEntity {
 
   private _isInitialized: boolean;
 
+  public id: string;
+
   constructor() {
     this._sceneService = null;
     this._viewer = null;
+
+    this.id = uuidv4();
 
     this._isInitialized = false;
   }

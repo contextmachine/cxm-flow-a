@@ -8,6 +8,8 @@ import ToolsetService from "../toolset-service/toolset-service";
 import Viewer from "@/src/viewer/viewer";
 import { ExtensionEntityInterface } from "../extension-service/entity/extension-entity.types";
 import * as RX from "rxjs";
+import QueryExtension from "../extension-service/extensions/query-extension/query-extension";
+import { BehaviorSubject } from "rxjs";
 
 class SceneService {
   private _workspaceService: WorkspaceService;
@@ -23,6 +25,8 @@ class SceneService {
   private _productService: ProductService;
   private _toolsetService: ToolsetService;
 
+  private _extensions$ = new BehaviorSubject<Map<string, any>>(new Map());
+
   constructor(private _authService: AuthService) {
     this._workspaceService = this._authService.workspaceService;
     this._metadata = null;
@@ -33,6 +37,12 @@ class SceneService {
     this._toolsetService = new ToolsetService(this);
 
     this.updateTitle = this.updateTitle.bind(this);
+
+    this.loadCoreExtensions();
+  }
+
+  public loadCoreExtensions() {
+    this.addExtension(new QueryExtension());
   }
 
   public initViewer(root: HTMLDivElement): Viewer {
@@ -74,6 +84,7 @@ class SceneService {
       if (!scene) throw new Error("Scene not found");
 
       this.updateSceneMetadata(scene);
+      this.updateExtensions();
 
       this._productService.init();
     } catch (error) {
@@ -139,12 +150,20 @@ class SceneService {
     return this._metadata;
   }
 
+  public get sceneId() {
+    return this._metadata?.id;
+  }
+
   public get toolsetService() {
     return this._toolsetService;
   }
 
   public get viewer() {
     return this._viewer;
+  }
+
+  public getExtension(name: string) {
+    return this._extensions.get(name) || null;
   }
 
   public addExtension = (
@@ -168,10 +187,12 @@ class SceneService {
     extension.unload();
 
     this._extensions.delete(name);
+
+    this._extensions$.next(this._extensions);
   };
 
   public updateExtensions = () => {
-    if (!this._viewer) return;
+    if (!this._viewer || !this._metadata) return;
 
     this._extensions.forEach((extension) => {
       if (extension.isInitialized) return;
@@ -185,7 +206,13 @@ class SceneService {
 
       extension.load();
     });
+
+    this._extensions$.next(this._extensions);
   };
+
+  public get extensions$() {
+    return this._extensions$.asObservable();
+  }
 
   public dispose() {
     this._metadata = null;
