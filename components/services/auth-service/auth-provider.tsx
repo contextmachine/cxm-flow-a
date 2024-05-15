@@ -1,9 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import AuthService from "./auth-service";
-import { UserMetadataResponse } from "./auth-service.types";
+import { FeatureType, UserMetadataResponse } from "./auth-service.types";
 import { useRouter } from "next/router";
 import Loader from "@/components/ui/auth/loader/loader";
 import { Snackbar } from "@mui/material";
+import GlobalStyle from "@/components/ui/app.styled";
 
 interface AuthProviderProps {
   authService: AuthService;
@@ -19,6 +20,11 @@ export function AuthProvider({ children }: any) {
   const [isUnauthorized, setIsUnauthorized] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const [featureMap, setFeatureMap] = useState<Map<FeatureType, boolean>>(
+    new Map()
+  );
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+
   const [error, setError] = useState<string>("");
 
   const router = useRouter();
@@ -31,6 +37,17 @@ export function AuthProvider({ children }: any) {
       setError,
     });
   }, []);
+
+  useEffect(() => {
+    if (!authService) return;
+
+    authService.featureMap$.subscribe((map) => {
+      setFeatureMap(map);
+      setIsDarkMode(map.get("isDarkMode") || false);
+    });
+  }, [authService]);
+
+  console.log("isDarkMode", isDarkMode);
 
   const isAuthPage =
     router.pathname === "/signin" || router.pathname === "/signup";
@@ -75,6 +92,8 @@ export function AuthProvider({ children }: any) {
           horizontal: "center",
         }}
       />
+
+      <GlobalStyle darkMode={isDarkMode} />
     </AuthContext.Provider>
   );
 }

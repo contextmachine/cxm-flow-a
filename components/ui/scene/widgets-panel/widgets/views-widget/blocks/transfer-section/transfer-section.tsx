@@ -92,7 +92,7 @@ const TransferSection: React.FC<{
         sx={{
           maxHeight: 400,
           overflow: "auto",
-          border: "1px solid rgba(0,0,0,.1)",
+          border: "1px solid var(--box-border-color)",
           borderRadius: "8px",
         }}
       >

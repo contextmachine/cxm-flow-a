@@ -5,16 +5,48 @@ const Colors = {
   PrimaryHover: "#51A1FF",
 };
 
-const GlobalStyle = createGlobalStyle`
+const GlobalStyle = createGlobalStyle<{
+  darkMode: boolean;
+}>`
+  :root {
+    --button-primary-color: #2689FF;
+
+    --button-secondary-color: ${(props) =>
+      props.darkMode ? "#444444" : "#F3F3F3"};
+    --button-secondary-hover-color: ${(props) =>
+      props.darkMode ? "#4F4F4F" : "#F5FAFF"};
+
+    --button-secondary-active-bg-color: ${(props) =>
+      props.darkMode ? "#444444" : "#ECF5FF"};
+    --button-secondary-active-text-color: ${(props) =>
+      props.darkMode ? "#FFFFFF" : "#2689FF"};
+
+    --icon-button-color: ${(props) =>
+      props.darkMode ? "#444444" : "transparent"};
+    --icon-button-hover-color: ${(props) =>
+      props.darkMode ? "#4F4F4F" : "#ECF5FF"};
+
+    --paper-bg-color: ${(props) => (props.darkMode ? "#2C2C2C" : "#FFFFFF")};
+    --main-text-color: ${(props) => (props.darkMode ? "#FFFFFF" : "#333333")};
+    --main-bg-color: ${(props) => (props.darkMode ? "#1E1E1E" : "#F3F3F3")};
+    --font-size: 12px;
+
+    --box-border-color: ${(props) =>
+      props.darkMode ? "#444444" : "rgba(0, 0, 0, 0.12)"};
+
+    --select-bg-color: ${(props) => (props.darkMode ? "#444444" : "#F3F3F3")};
+  }
+
   body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Roboto', sans-serif;
+    background-color: var(--main-bg-color);
 
     &, & * {
-      color: #333333;
-      font-size: 12px;
+      color: var(--main-text-color);
+      font-size: var(--font-size);
     }
   }
 
@@ -50,6 +82,8 @@ const GlobalStyle = createGlobalStyle`
 
   // SNACKBARS
   & .MuiSnackbarContent-root {
+    background-color: #333333 !important;
+
     &, & * {
       font-size: 12px;
       color: white;
@@ -62,6 +96,7 @@ const GlobalStyle = createGlobalStyle`
       & {
         border-radius: 18px !important;
         box-shadow: none !important;
+        background-color: var(--paper-bg-color);
         position: relative;
         display: flex;
         gap: 9px;
@@ -113,21 +148,29 @@ const GlobalStyle = createGlobalStyle`
 
     // MUI BUTTONS - SECONDARY
     &.MuiButton-containedSecondary {
-      background-color: transparent;
+      background-color: var(--button-secondary-color);
 
       &, & * {
-        color: #333333;
+        color: var(--main-text-color);
       }
 
       &:hover {
-        background-color: #F5FAFF;
+        background-color: var(--button-secondary-hover-color);
       }
 
       &[data-active="true"] {
-        background-color: #ECF5FF;
+        background-color: var(--button-secondary-active-bg-color);
 
         &, & * {
-          color: ${Colors.Primary} !important;
+          color: var(--button-secondary-active-text-color) !important;
+        }
+      }
+
+      &[data-active="false"] {
+        background-color: transparent;
+
+        &, & * {
+          color: var(--main-text-color);
         }
       }
     }
@@ -146,9 +189,11 @@ const GlobalStyle = createGlobalStyle`
   // MUI ICON BUTTONS
   & .MuiIconButton-root {
     padding: 0;
+    background-color: var(--icon-button-color);
+    border-radius: 9px;
 
     &:hover {
-      background-color: #F5FAFF
+      background-color: var(--icon-button-hover-color);
     }
   }
 
@@ -172,7 +217,7 @@ const GlobalStyle = createGlobalStyle`
       border-radius: 9px;
       padding: 0px 10px;
       height: 24px;
-      background-color: #F3F3F3;
+      background-color: var(--select-bg-color);
       border: 1px solid rgba(0, 0, 0, 0);
       display: flex;
       align-items: center;
@@ -191,6 +236,7 @@ const GlobalStyle = createGlobalStyle`
       }
 
       &, & * {
+        color: var(--main-text-color);
         font-size: 12px;
       }
     }
@@ -263,7 +309,7 @@ const GlobalStyle = createGlobalStyle`
   // MUI Accordion
   & .MuiAccordion-root {
    &, & * {
-    font-size: 12px;
+    font-size: var(--font-size);
    }
 
    gap: 0px;

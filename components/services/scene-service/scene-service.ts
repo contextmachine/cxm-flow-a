@@ -42,7 +42,7 @@ class SceneService {
   }
 
   public initViewer(root: HTMLDivElement) {
-    this._viewer = new Viewer();
+    this._viewer = new Viewer(this);
     this._viewer.init(root);
 
     this.updateExtensions();

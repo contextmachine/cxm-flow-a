@@ -126,7 +126,7 @@ const Wrapper = styled.div`
       margin: 0;
     }
 
-    border: 1px solid rgba(0, 0, 0, 0.12);
+    border: 1px solid var(--box-border-color);
     border-radius: 4px !important;
   }
 

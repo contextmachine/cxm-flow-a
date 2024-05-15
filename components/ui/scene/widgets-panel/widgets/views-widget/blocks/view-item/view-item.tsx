@@ -107,7 +107,7 @@ const Wrapper = styled.div`
   align-items: flex-start;
   gap: 6px;
 
-  border: 1px solid #f3f3f3;
+  border: 1px solid var(--box-border-color);
 
   &[data-play="true"] {
     border: 1px solid #2689ff;
