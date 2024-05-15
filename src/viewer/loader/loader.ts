@@ -44,7 +44,7 @@ class Loader {
 
     ///const endpoint = 'https://storage.yandexcloud.net/lahta.contextmachine.online/files/pretty_celling.json'
     const endpoint =
-      "https://storage.yandexcloud.net/lahta.contextmachine.online/files/sbm_lengths1.json";
+      "https://storage.yandexcloud.net/lahta.contextmachine.online/files/sbm_initial_lengths.json";
 
     const apiObject = new ApiObject(endpoint);
 
