@@ -3,7 +3,7 @@ import BarChartWidget from "./bar-widget";
 import ChartWidget from "./chart-widget";
 import DummyWidget from "./dummy-widget";
 import MappingWidget from "./mapping-widget";
-import QueryWidget from "./query-widget/query-widget";
+import QueryWidget from "../../../../services/extensions/query-extension/query-widget/query-widget";
 import StatisticsWidget from "./statistics-widget";
 import ToolsetWidget from "./toolset-widget";
 import ViewsWidget from "./views-widget";

@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import RestObject from "../viewer/loader/objects/api-object";
 import Viewer from "@/viewer/viewer";
 import ApiObject from "../viewer/loader/objects/api-object";
 import UnionMesh from "./entities/utility/union-mesh";
@@ -21,7 +20,7 @@ export class ProjectModel {
   constructor(
     viewer: Viewer,
     object3d: THREE.Object3D,
-    private _queryEntity: QueryEntity
+    private _queryEntity: ApiObject
   ) {
     this._viewer = viewer;
     this._id = object3d.uuid;
@@ -29,6 +28,7 @@ export class ProjectModel {
     object3d.traverse((x) => x.updateMatrixWorld());
 
     this._entity = this.initModel(object3d);
+    this._queryEntity.setModel(this);
   }
 
   public updateProjectModel(object: THREE.Object3D) {
@@ -49,10 +49,6 @@ export class ProjectModel {
 
   public get id(): string {
     return this._id;
-  }
-
-  public get queryEntity(): QueryEntity {
-    return this._queryEntity;
   }
 
   public get unionMesh(): UnionMesh | undefined {

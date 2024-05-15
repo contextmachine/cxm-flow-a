@@ -63,8 +63,6 @@ export function SceneProvider({ children }: any) {
     };
   }, [scene_id]);
 
-  console.log("sceneService", sceneService);
-
   return (
     <div>
       <SceneContext.Provider

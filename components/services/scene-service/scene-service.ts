@@ -8,9 +8,9 @@ import ToolsetService from "../toolset-service/toolset-service";
 import Viewer from "@/src/viewer/viewer";
 import { ExtensionEntityInterface } from "../extension-service/entity/extension-entity.types";
 import * as RX from "rxjs";
-import QueryExtension from "../extension-service/extensions/query-extension/query-extension";
+import QueryExtension from "../extensions/query-extension/query-extension";
 import { BehaviorSubject } from "rxjs";
-import CameraViewsExtensions from "../extension-service/extensions/camera-views-extension/camera-views-extension";
+import CameraViewsExtensions from "../extensions/camera-views-extension/camera-views-extension";
 
 class SceneService {
   private _workspaceService: WorkspaceService;

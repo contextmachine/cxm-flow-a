@@ -1,12 +1,11 @@
 import EnhancedTreeItem from "./blocks/enhanced-tree-item";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
-import WidgetPaper from "../../blocks/widget-paper/widget-paper";
+import WidgetPaper from "../../../../ui/scene/widgets-panel/blocks/widget-paper/widget-paper";
 import styled from "styled-components";
-import SearchBar from "../../blocks/search-bar/search-bar";
+import SearchBar from "../../../../ui/scene/widgets-panel/blocks/search-bar/search-bar";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { useScene } from "@/components/services/scene-service/scene-provider";
-import QueryExtension from "@/components/services/extension-service/extensions/query-extension/query-extension";
-import { QuerySectionTreeItem } from "@/components/services/extension-service/extensions/query-extension/query-extension.types";
+import QueryExtension from "@/components/services/extensions/query-extension/query-extension";
+import { QuerySectionTreeItem } from "@/components/services/extensions/query-extension/query-extension.types";
 import EditForm from "./blocks/edit-form/edit-form";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 
@@ -21,7 +20,7 @@ const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview, extension }) => {
   const treeViewRef = useRef<any>(null);
   const apiRef = useRef<any>(null);
 
-  const [queryExtension] = useState<QueryExtension | null>(
+  const [queryExtension] = useState<QueryExtension>(
     extension as QueryExtension
   );
 
@@ -31,18 +30,15 @@ const QueryWidget: React.FC<QueryWidgetProps> = ({ isPreview, extension }) => {
   const [editQueryId, setEditQueryId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (queryExtension) {
-      const treeDataSub = queryExtension.treeData$.subscribe(setTreeData);
-      const oefSub =
-        queryExtension.openedEditForm$.subscribe(setOpenedEditForm);
-      const eqiSub = queryExtension.editQueryId$.subscribe(setEditQueryId);
+    const treeDataSub = queryExtension.$treeData.subscribe(setTreeData);
+    const oefSub = queryExtension.$openedEditForm.subscribe(setOpenedEditForm);
+    const eqiSub = queryExtension.$editQueryId.subscribe(setEditQueryId);
 
-      return () => {
-        treeDataSub.unsubscribe();
-        oefSub.unsubscribe();
-        eqiSub.unsubscribe();
-      };
-    }
+    return () => {
+      treeDataSub.unsubscribe();
+      oefSub.unsubscribe();
+      eqiSub.unsubscribe();
+    };
   }, [queryExtension]);
 
   return (

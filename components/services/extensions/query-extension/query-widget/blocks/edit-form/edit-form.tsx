@@ -29,7 +29,7 @@ const EditForm = () => {
 
   const handleSave = () => {
     if (isNew) {
-      queryExtension?.addQuery({ name, endpoint });
+      queryExtension?.addApiObject({ name, endpoint });
     } else {
       queryExtension?.updateQuery(editQueryId, { name, endpoint });
     }
@@ -40,7 +40,7 @@ const EditForm = () => {
   const handleDelete = () => {
     if (!editQueryId) return;
 
-    queryExtension?.deleteQuery(editQueryId!);
+    queryExtension?.deleteApiObject(editQueryId!);
     queryExtension?.closeEditForm();
   };
 

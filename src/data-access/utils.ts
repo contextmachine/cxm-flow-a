@@ -16,6 +16,19 @@ export const getGQLData = (query: DocumentNode, variables?: any) => {
   }
 };
 
+export const mutateGQLData = (mutation: DocumentNode, variables?: any) => {
+  try {
+    const response = client.mutate({
+      mutation,
+      variables,
+    });
+
+    return response;
+  } catch (e) {
+    throw new Error(`Server error ${e}`);
+  }
+};
+
 export const validateObject = (data: any, zodObject: ZodSchema) => {
   try {
     return zodObject.parse(data);

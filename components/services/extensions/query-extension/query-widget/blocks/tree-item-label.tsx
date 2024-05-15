@@ -1,8 +1,10 @@
 import { Box, CircularProgress } from "@mui/material";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { TreeObject } from "../query-widget.types";
-import { QuerySectionTreeItem } from "@/components/services/extension-service/extensions/query-extension/query-extension.types";
-import { QueryEntityTreeItem } from "@/components/services/extension-service/extensions/query-extension/entities/query-entity.types";
+import {
+  QueryEntityTreeItem,
+  QuerySectionTreeItem,
+} from "@/components/services/extensions/query-extension/query-extension.types";
 import Badge from "@/components/ui/scene/primitives/badge";
 import { useQueryWidget } from "../query-widget";
 

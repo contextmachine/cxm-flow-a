@@ -1,16 +1,4 @@
-export interface QueryRawData {
-  id: number;
-  query: {
-    id: number;
-    endpoint: string;
-    name: string;
-    type: QueryType;
-  };
-  query_id: number;
-  scene_id: number;
-}
-
-export type QueryType = "rest";
+import { QueryType } from "@/src/viewer/loader/objects/api-object";
 
 export interface QueryEntityTreeItem {
   id: string;
@@ -23,4 +11,11 @@ export interface QueryEntityTreeItem {
   modelLoaded: boolean;
   failed: boolean;
   queryId: number;
+}
+
+export interface QuerySectionTreeItem {
+  id: string;
+  label: string;
+  children: QueryEntityTreeItem[];
+  isQuerySection: boolean;
 }

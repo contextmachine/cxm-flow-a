@@ -102,7 +102,7 @@ const EnhancedTreeItem = React.forwardRef<HTMLLIElement, EnhancedTreeItemProps>(
             </TreeItem2IconContainer>
 
             <TreeItemLabel
-              handleVisibilityClick={handleVisibilityClick}
+              // handleVisibilityClick={handleVisibilityClick}
               item={item}
             />
           </EnhancedTreeItemContent>

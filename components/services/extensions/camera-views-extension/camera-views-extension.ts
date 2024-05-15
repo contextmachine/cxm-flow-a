@@ -1,7 +1,7 @@
 import { Scene } from "three";
-import ExtensionEntity from "../../entity/extension-entity";
-import SceneService from "../../../scene-service/scene-service";
-import { ExtensionEntityInterface } from "../../entity/extension-entity.types";
+import ExtensionEntity from "../../extension-service/entity/extension-entity";
+import SceneService from "../../scene-service/scene-service";
+import { ExtensionEntityInterface } from "../../extension-service/entity/extension-entity.types";
 import {
   DetailedViewState,
   ViewState,

@@ -1,8 +1,8 @@
 import { use, useEffect, useRef, useState } from "react";
 import WidgetPaper from "../blocks/widget-paper/widget-paper";
 import { useScene } from "@/components/services/scene-service/scene-provider";
-import CameraViewsExtensions from "@/components/services/extension-service/extensions/camera-views-extension/camera-views-extension";
-import { ViewStateItem } from "@/components/services/extension-service/extensions/camera-views-extension/camera-views-extension.db";
+import CameraViewsExtensions from "@/components/services/extensions/camera-views-extension/camera-views-extension";
+import { ViewStateItem } from "@/components/services/extensions/camera-views-extension/camera-views-extension.db";
 import {
   Box,
   Button,
