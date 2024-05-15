@@ -220,7 +220,9 @@ class PointCloudExtension
 
     controls.mouseButtons.left = CameraControls.ACTION.NONE; // Disable rotation with mouse left button
     controls.touches.one = CameraControls.ACTION.NONE;
-
+    controls.touches.two = CameraControls.ACTION.NONE;
+    controls.mouseButtons.left=CameraControls.ACTION.TRUCK
+    controls.mouseButtons.wheel=CameraControls.ACTION.ZOOM
     const entityControl = viewer.entityControl;
     const entities = entityControl.entities;
     const center = new THREE.Vector3();
@@ -246,7 +248,7 @@ class PointCloudExtension
         // check if they are point cloud
         const material = (object as any).material;
         if (material && material instanceof THREE.PointsMaterial) {
-          material.size = 20;
+          //material.size = 20;
           // update
         }
       });
