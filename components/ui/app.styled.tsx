@@ -15,6 +15,8 @@ const GlobalStyle = createGlobalStyle<{
       props.darkMode ? "#444444" : "#F3F3F3"};
     --button-secondary-hover-color: ${(props) =>
       props.darkMode ? "#4F4F4F" : "#F5FAFF"};
+      --button-secondary-border-color: ${(props) =>
+        props.darkMode ? "#444444" : "rgba(0,0,0,0.1)"};
 
     --button-secondary-active-bg-color: ${(props) =>
       props.darkMode ? "#444444" : "#ECF5FF"};
