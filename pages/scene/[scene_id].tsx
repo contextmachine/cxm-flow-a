@@ -16,6 +16,8 @@ const ScenePage: NextPage = () => {
         <ToolsetProvider>
           {/* Global State Service */}
           <StateProvider>
+            <Loading />
+
             {/* Layout */}
             {/* UI interface of panels */}
             <SceneGrid />

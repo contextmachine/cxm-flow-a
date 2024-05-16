@@ -76,7 +76,7 @@ class EntityControl {
   }
 
   public removeModel(model: ProjectModel) {
-    model.unionMesh?.objects.forEach((x) => this._viewer.removeFromScene(x));
+    model.objects.forEach((x) => this._viewer.removeFromScene(x));
 
     this._projectModels.delete(model.id);
 

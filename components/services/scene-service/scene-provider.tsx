@@ -36,8 +36,6 @@ export function SceneProvider({ children }: any) {
 
   const [sceneMetadata, setSceneMetadata] = useState<any>(null);
 
-  const [viewer, setViewer] = useState<Viewer | null>(null);
-
   const router = useRouter();
   const { query } = router;
   const { scene_id } = query;
@@ -45,8 +43,7 @@ export function SceneProvider({ children }: any) {
 
   useEffect(() => {
     if (canvas !== null) {
-      const viewer = sceneService.initViewer(canvas.current as HTMLDivElement);
-      setViewer(viewer);
+      sceneService.initViewer(canvas.current as HTMLDivElement);
     }
   }, [canvas]);
 
@@ -72,7 +69,6 @@ export function SceneProvider({ children }: any) {
         }}
       >
         <Box sx={{ width: "100vw", height: "100vh" }}>
-          {/* <Loading /> */}
           <CanvasWrapper ref={canvas} id="three-canvas">
             {children}
           </CanvasWrapper>

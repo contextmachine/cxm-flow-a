@@ -109,24 +109,24 @@ class Loader {
       this.removeApiObject(apiObject);
     }
 
+    if (needsToLoad.length > 0 || deletedQueries.length > 0) {
+      this._viewer.controls.fitToScene();
+    }
+
     this.updateApiObjects();
-
     this.setStatus("idle");
-
-    this._viewer.controls.fitToScene();
   }
 
-  public async removeApiObject(apiObject: ApiObject) {
+  private async removeApiObject(apiObject: ApiObject) {
     if (this._queries.has(apiObject)) {
       this._queries.delete(apiObject);
       if (apiObject.model) {
         this._viewer.entityControl.removeModel(apiObject.model);
       }
-      this.updateApiObjects();
     }
   }
 
-  public async loadApiObject(apiObject: ApiObject) {
+  private async loadApiObject(apiObject: ApiObject) {
     const exsisting = this._queries.has(apiObject);
 
     if (exsisting) {
@@ -143,8 +143,6 @@ class Loader {
 
     const model = new ProjectModel(this._viewer, object3d, apiObject);
     this._viewer.entityControl.addModel(model);
-
-    this.updateApiObjects();
 
     return model;
   }
