@@ -37,25 +37,16 @@ class ProductService {
     this.init();
 
     this._outputProducts$.subscribe(() => this.updateWidgetProducts());
-    this._sceneService.extensions$.subscribe(() => this.updateWidgetProducts());
+    // this._sceneService.extensions$.subscribe(() => this.updateWidgetProducts());
   }
 
   public updateWidgetProducts() {
-    const extensions = this._sceneService.extensions;
     const outputProducts = this._outputProducts;
-
     const _widgetProducts = new Map<number, ProductsDto>();
-
     outputProducts.forEach((outputProduct) => {
       const { name } = outputProduct;
-
-      const extension = extensions.get(name);
-
-      if (extension) {
-        _widgetProducts.set(outputProduct.id, outputProduct);
-      }
+      _widgetProducts.set(outputProduct.id, outputProduct);
     });
-
     this._widgetProducts = _widgetProducts;
     this._widgetProducts$.next([..._widgetProducts.values()]);
   }
@@ -365,7 +356,7 @@ class ProductService {
     return this._products;
   }
 
-  public get products$() {
+  public get $products() {
     return this._products$.asObservable();
   }
 

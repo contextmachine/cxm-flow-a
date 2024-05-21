@@ -1,4 +1,4 @@
-import SceneService from "../../scene-service/scene-service";
+import Viewer from "@/src/viewer/viewer";
 
 export interface ExtensionEntityInterface {
   id: string;
@@ -6,8 +6,6 @@ export interface ExtensionEntityInterface {
 
   load(): void;
   unload(): void;
-
-  sceneService: SceneService | null;
 
   [key: string]: any;
 }

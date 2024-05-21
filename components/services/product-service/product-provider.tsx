@@ -33,7 +33,7 @@ export function ProductProvider({ children }: any) {
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    const ps_sub = productService.products$.subscribe((products) =>
+    const ps_sub = productService.$products.subscribe((products) =>
       setProducts(products)
     );
     const wsp_sub = productService.workspaceProducts$.subscribe((products) =>

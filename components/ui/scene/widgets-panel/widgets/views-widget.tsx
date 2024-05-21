@@ -53,8 +53,6 @@ const ViewsWidget: React.FC<{
 
       pendingSub.unsubscribe();
       addingSub.unsubscribe();
-
-      sceneService.removeExtension(extension.name);
     };
   }, [extension]);
 

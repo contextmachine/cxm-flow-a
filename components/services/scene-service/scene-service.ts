@@ -17,8 +17,6 @@ class SceneService {
   private _metadata: SceneMetadataDto | null;
   private _metadataSubject: RX.Subject<SceneMetadataDto> = new RX.Subject();
 
-  private _extensions: Map<string, any>;
-
   private $setSceneMetadata: any;
 
   private _viewer: Viewer | undefined;
@@ -26,32 +24,19 @@ class SceneService {
   private _productService: ProductService;
   private _toolsetService: ToolsetService;
 
-  private _extensions$ = new BehaviorSubject<Map<string, any>>(new Map());
-
   constructor(private _authService: AuthService) {
     this._workspaceService = this._authService.workspaceService;
     this._metadata = null;
-
-    this._extensions = new Map<string, any>();
 
     this._productService = new ProductService(this);
     this._toolsetService = new ToolsetService(this);
 
     this.updateTitle = this.updateTitle.bind(this);
-
-    this.loadCoreExtensions();
-  }
-
-  public loadCoreExtensions() {
-    this.addExtension(new CameraViewsExtensions());
-    this.addExtension(new QueryExtension());
   }
 
   public initViewer(root: HTMLDivElement): Viewer {
     this._viewer = new Viewer(this);
     this._viewer.init(root);
-
-    this.updateExtensions();
 
     return this._viewer;
   }
@@ -86,7 +71,6 @@ class SceneService {
       if (!scene) throw new Error("Scene not found");
 
       this.updateSceneMetadata(scene);
-      this.updateExtensions();
 
       this._productService.init();
     } catch (error) {
@@ -162,62 +146,6 @@ class SceneService {
 
   public get viewer() {
     return this._viewer;
-  }
-
-  public getExtension(name: string) {
-    return this._extensions.get(name) || null;
-  }
-
-  public addExtension = (
-    extension: ExtensionEntityInterface
-  ): ExtensionEntityInterface => {
-    if (this._extensions.has(extension.name))
-      throw new Error(`Extension with name ${extension.name} already exists`);
-
-    this._extensions.set(extension.name, extension);
-
-    this.updateExtensions();
-
-    return extension;
-  };
-
-  public removeExtension = (name: string) => {
-    if (!this._extensions.has(name))
-      throw new Error(`Extension with name ${name} does not exist`);
-
-    const extension = this._extensions.get(name);
-    extension.unload();
-
-    this._extensions.delete(name);
-
-    this._extensions$.next(this._extensions);
-  };
-
-  public updateExtensions = () => {
-    if (!this._viewer || !this._metadata) return;
-
-    this._extensions.forEach((extension) => {
-      if (extension.isInitialized) return;
-
-      extension.provideStates({
-        sceneService: this,
-        viewer: this._viewer,
-      });
-
-      extension.isInitialized = true;
-
-      extension.load();
-    });
-
-    this._extensions$.next(this._extensions);
-  };
-
-  public get extensions$() {
-    return this._extensions$.asObservable();
-  }
-
-  public get extensions() {
-    return this._extensions;
   }
 
   public dispose() {

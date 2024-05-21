@@ -3,13 +3,16 @@ import BarChartWidget from "./bar-widget";
 import ChartWidget from "./chart-widget";
 import DummyWidget from "./dummy-widget";
 import MappingWidget from "./mapping-widget";
-import QueryWidget from "../../../../services/extensions/query-extension/query-widget/query-widget";
 import StatisticsWidget from "./statistics-widget";
 import ToolsetWidget from "./toolset-widget";
 import ViewsWidget from "./views-widget";
 import { WidgetType } from "./widget.types";
-import { useScene } from "@/components/services/scene-service/scene-provider";
+import {
+  useScene,
+  useViewer,
+} from "@/components/services/scene-service/scene-provider";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
+import QueryWidget from "@/components/services/extensions/query-extension/query-widget/query-widget";
 
 const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
   if (type.toLowerCase().startsWith("product")) {
@@ -17,15 +20,17 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
     return <DummyWidget isPreview={isPreview} index={index} />;
   }
 
-  const { sceneService } = useScene();
+  const viewer = useViewer();
 
   const [extension, setExtension] = useState<ExtensionEntityInterface | null>(
     null
   );
 
   useEffect(() => {
-    const extension = sceneService.getExtension(type);
-    setExtension(extension);
+    const extension = viewer.extensionControl.getExtension(type);
+    if (extension) {
+      setExtension(extension as any);
+    }
   }, [type]);
 
   const exceptions = [

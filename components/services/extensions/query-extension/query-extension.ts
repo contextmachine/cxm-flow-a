@@ -18,10 +18,7 @@ import ApiObject from "@/src/viewer/loader/objects/api-object";
 import Viewer from "@/src/viewer/viewer";
 import { assertDefined } from "@/src/utils";
 
-class QueryExtension
-  extends ExtensionEntity
-  implements ExtensionEntityInterface
-{
+class QueryExtension extends ExtensionEntity {
   public name: string;
 
   private _subscriptions: RX.Unsubscribable[] = [];
@@ -32,8 +29,8 @@ class QueryExtension
   private _$openedEditForm = new RX.BehaviorSubject<boolean>(false);
   private _$editQueryId = new RX.BehaviorSubject<number | null>(null);
 
-  constructor() {
-    super();
+  constructor(viewer: Viewer) {
+    super(viewer);
 
     this.name = "queries";
   }
@@ -61,7 +58,7 @@ class QueryExtension
     const id = await addQuery(
       endpoint,
       name,
-      this.sceneService!.sceneId!,
+      this._viewer.sceneService.sceneId!,
       "rest"
     );
 
@@ -78,7 +75,7 @@ class QueryExtension
       endpoint,
       name,
       type: "rest",
-      scene_id: this._sceneService!.sceneId!,
+      scene_id: this._viewer.sceneService!.sceneId!,
     };
 
     await updateQuery(data);

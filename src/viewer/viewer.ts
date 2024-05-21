@@ -12,6 +12,7 @@ import { appLogicError, assertDefined } from "@/utils";
 import ProjectSettingsService from "../services/project-settings/project-settings-service";
 import SelectionControl from "./selection/selection-tool";
 import SceneService from "@/components/services/scene-service/scene-service";
+import ExtensionControl from "./extension-control";
 
 CameraControls.install({ THREE: THREE });
 
@@ -38,6 +39,7 @@ export class Viewer {
   private _cameraService: CameraControl;
   private _entityControl: EntityControl;
   private _selectionControl: SelectionControl;
+  private _extensionControl: ExtensionControl;
   private _loader: Loader;
   // private _taggingService: TaggingService
 
@@ -80,6 +82,8 @@ export class Viewer {
 
     this._selectionControl = new SelectionControl(this);
 
+    this._extensionControl = new ExtensionControl(this);
+
     // Subscribe
     this._subscriptions.push(
       RX.fromEvent(window, "resize").subscribe(() => this.resize())
@@ -114,6 +118,10 @@ export class Viewer {
 
   public get entityControl(): EntityControl {
     return this._entityControl;
+  }
+
+  public get extensionControl(): ExtensionControl {
+    return this._extensionControl;
   }
 
   public get controls(): CameraControl {

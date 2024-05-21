@@ -1,6 +1,4 @@
-import { Scene } from "three";
 import ExtensionEntity from "../../extension-service/entity/extension-entity";
-import SceneService from "../../scene-service/scene-service";
 import { ExtensionEntityInterface } from "../../extension-service/entity/extension-entity.types";
 import {
   DetailedViewState,
@@ -8,11 +6,9 @@ import {
 } from "@/src/viewer/camera-control.types";
 import viewStates from "./data/view-states.json";
 import * as THREE from "three";
-import { update } from "@tweenjs/tween.js";
 import { v4 as uuidv4 } from "uuid";
 import CameraViewsDbService from "./camera-views-extension.db";
-import { BehaviorSubject } from "rxjs";
-import { boolean } from "zod";
+import Viewer from "@/src/viewer/viewer";
 
 class CameraViewsExtensions
   extends ExtensionEntity
@@ -35,8 +31,8 @@ class CameraViewsExtensions
 
   private _dbService: CameraViewsDbService;
 
-  constructor() {
-    super();
+  constructor(viewer: Viewer) {
+    super(viewer);
 
     this._dbService = new CameraViewsDbService(this);
 
@@ -95,8 +91,7 @@ class CameraViewsExtensions
 
   // Save the current camera state
   public restoreState(state: ViewState) {
-    const sceneService = this._sceneService!;
-    const cameraControls = sceneService.viewer!.controls;
+    const cameraControls = this._viewer.controls;
 
     const viewState = this._formatViewState(state);
 
@@ -111,8 +106,7 @@ class CameraViewsExtensions
     // Add event listener to restore the camera view
     if (type === "view") {
       cameraView.addEventListener("click", () => {
-        const sceneService = this._sceneService!;
-        const cameraControls = sceneService.viewer!.controls;
+        const cameraControls = this._viewer.controls;
         cameraControls.restoreState(view!, true, 300);
       });
     }
@@ -121,9 +115,7 @@ class CameraViewsExtensions
       cameraView.addEventListener("click", () => {
         this._dbService.addView();
 
-        const sceneService = this._sceneService!;
-        const viewer = sceneService.viewer!;
-        const cameraControls = viewer.controls;
+        const cameraControls = this._viewer.controls;
         const viewState = cameraControls.getState();
 
         const detailedViewState: DetailedViewState = {
@@ -158,8 +150,7 @@ class CameraViewsExtensions
   }
 
   private async _playForward(duration: number = 2000, delay: number = 500) {
-    const sceneService = this._sceneService!;
-    const cameraControls = sceneService.viewer!.controls;
+    const cameraControls = this._viewer.controls;
 
     let i = 0;
 
@@ -197,8 +188,7 @@ class CameraViewsExtensions
 
   // Play through all view states in reverse order
   private async _playBackward(duration: number = 2000, delay: number = 500) {
-    const sceneService = this._sceneService!;
-    const cameraControls = sceneService.viewer!.controls;
+    const cameraControls = this._viewer.controls;
 
     let cameraViewIndex = 0;
 
@@ -317,7 +307,7 @@ class CameraViewsExtensions
 
   /// render the camera views pins within the scene
   private _addCameraSubscription() {
-    const cameraControls = this._sceneService!.viewer!.controls.controls;
+    const cameraControls = this._viewer.controls.controls;
 
     this._cameraSubscription = new Map();
 
@@ -346,10 +336,7 @@ class CameraViewsExtensions
     if (!this._cameraSubscription) return;
 
     this._cameraSubscription.forEach((value, key: any) => {
-      this._sceneService!.viewer!.controls.controls.removeEventListener(
-        key,
-        value
-      );
+      this._viewer.controls.controls.removeEventListener(key, value);
     });
 
     this._cameraSubscription = null;

@@ -1,32 +1,23 @@
 import Viewer from "@/src/viewer/viewer";
 import SceneService from "../../scene-service/scene-service";
 import { v4 as uuidv4 } from "uuid";
+import { ExtensionEntityInterface } from "./extension-entity.types";
 
-class ExtensionEntity {
-  protected _sceneService: SceneService | null;
-  protected _viewer: Viewer | null;
+class ExtensionEntity implements ExtensionEntityInterface {
+  protected _viewer: Viewer;
 
   private _isInitialized: boolean;
 
   public id: string;
+  public name: string;
 
-  constructor() {
-    this._sceneService = null;
-    this._viewer = null;
+  constructor(viewer: Viewer) {
+    this._viewer = viewer;
+    this.name = "default";
 
     this.id = uuidv4();
 
     this._isInitialized = false;
-  }
-
-  public provideStates(states: any) {
-    if (states.sceneService) {
-      this._sceneService = states.sceneService;
-    }
-
-    if (states.viewer) {
-      this._viewer = states.viewer;
-    }
   }
 
   public get isInitialized() {
@@ -37,8 +28,12 @@ class ExtensionEntity {
     this._isInitialized = value;
   }
 
-  public get sceneService() {
-    return this._sceneService;
+  public load() {
+    return;
+  }
+
+  public unload() {
+    return;
   }
 }
 
