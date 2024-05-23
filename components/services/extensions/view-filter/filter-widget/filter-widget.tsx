@@ -34,15 +34,17 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
 
   const [filterInput, setFilterInput] = useState<string>("");
 
-  const onChange = (e: string) => {
+  const onSelectFilter = (e: string) => {
     extension.addFilter(e, undefined);
+    setFilterInput("");
+    setFilteredOptions([...properties.keys()]);
+  };
+
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFilterInput(e.target.value);
     setFilteredOptions(
       [...properties.keys()].filter((x) => filterOption(filterInput, x))
     );
-  };
-
-  const onSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    console.log("search:", e.target.value);
   };
 
   const onDelete = (id: string) => {
@@ -62,7 +64,7 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
 
   const handleOptionClick = (option: any) => {
     setIsOpen(false);
-    onChange(option);
+    onSelectFilter(option);
   };
 
   return (
@@ -95,9 +97,9 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
             className="TriggerButtonIntroduction"
             onClick={() => setIsOpen(!isOpen)}
             inputProps={{ disableUnderline: true }}
-            value={filterInput !== "" ? filterInput : null}
+            value={filterInput}
             placeholder="Add new filter"
-            onChange={onSearch}
+            onChange={onChange}
             endAdornment={
               <InputAdornment position="end">
                 <SearchOutlined sx={{ fontSize: 16 }} />
