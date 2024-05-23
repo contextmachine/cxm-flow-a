@@ -10,8 +10,6 @@ const PointDensityForm: React.FC<{
   point: PointCloudFieldHandler;
   extension: PointCloudExtension | null;
 }> = ({ point, extension }) => {
-  console.log("point.shape", point.shape);
-
   return (
     <Box
       sx={{
@@ -42,7 +40,7 @@ const PointDensityForm: React.FC<{
         </Box>
       </ParamItem>
 
-      <ParamItem>
+      {/* <ParamItem>
         <Box>Coordinates</Box>
         <Box>
           <Select
@@ -56,7 +54,7 @@ const PointDensityForm: React.FC<{
             <MenuItem value={30}>Thirty</MenuItem>
           </Select>
         </Box>
-      </ParamItem>
+          </ParamItem> */}
 
       {/*  <ParamItem>
         <Box>Density step, mm</Box>

@@ -1,6 +1,6 @@
 export const initializeSVGOverlay = () => {
   const threeCanvas = document.getElementById("three-canvas");
-  console.log("threeCanvas", threeCanvas);
+
   if (!threeCanvas) return;
 
   // Create SVG element

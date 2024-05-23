@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import WidgetPaper from "../../blocks/widget-paper/widget-paper";
 import { useScene } from "@/components/services/scene-service/scene-provider";
-import CameraViewsExtensions from "@/components/services/extension-service/extensions/camera-views-extension/camera-views-extension";
-import { ViewStateItem } from "@/components/services/extension-service/extensions/camera-views-extension/camera-views-extension.db";
+
 import { Box, Button, ButtonGroup, CircularProgress } from "@mui/material";
 import { ViewState } from "@/src/viewer/camera-control.types";
 import dynamic from "next/dynamic";
+import { ViewStateItem } from "@/components/services/extensions/camera-views-extension/camera-views-extension.db";
+import CameraViewsExtensions from "@/components/services/extensions/camera-views-extension/camera-views-extension";
+import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 
 const AllViewsSection = dynamic(
   () => import("./blocks/all-views-section/all-views-section"),
@@ -23,8 +25,9 @@ const AnimationSection = dynamic(
 
 const ViewsWidget: React.FC<{
   isPreview?: boolean;
-}> = ({ isPreview }) => {
-  const { sceneService } = useScene();
+  extension: ExtensionEntityInterface;
+}> = ({ isPreview, extension }) => {
+  extension = extension as CameraViewsExtensions;
 
   const [sectionType, setSectionType] = useState<"all" | "animation">("all");
 
@@ -35,20 +38,7 @@ const ViewsWidget: React.FC<{
   const [playing, setPlaying] = useState(false);
   const [playingViewIndex, setPlayingViewIndex] = useState<number | null>(null);
 
-  const extensionRef = useRef<CameraViewsExtensions | null>(null);
-  const [extension, setExtension] = useState<CameraViewsExtensions | null>(
-    null
-  );
-
   useEffect(() => {
-    console.log("going to add extension");
-
-    const extension = sceneService.addExtension(
-      new CameraViewsExtensions()
-    ) as CameraViewsExtensions;
-    extensionRef.current = extension;
-    setExtension(extension);
-
     const animationViewsSub = extension?.animationViews$?.subscribe(
       (views: ViewStateItem[]) => setAnimationViews(views)
     );
@@ -56,18 +46,18 @@ const ViewsWidget: React.FC<{
       (views: ViewStateItem[]) => setAllViews(views)
     );
 
-    const pendingSub = extension?.dbService?.pending$?.subscribe((pending) =>
-      setPending(pending)
+    const pendingSub = extension.dbService.pending$.subscribe(
+      (pending: boolean) => setPending(pending)
     );
-    const addingSub = extension?.dbService?.adding$?.subscribe((adding) =>
+    const addingSub = extension.dbService.adding$.subscribe((adding: boolean) =>
       setAdding(adding)
     );
 
-    const playSub = extension?.isPlaying$.subscribe((playing) =>
+    const playSub = extension.isPlaying$.subscribe((playing: boolean) =>
       setPlaying(playing)
     );
-    const playViewIndexSub = extension?.playingViewIndex$.subscribe((index) =>
-      setPlayingViewIndex(index)
+    const playViewIndexSub = extension?.playingViewIndex$.subscribe(
+      (index: number) => setPlayingViewIndex(index)
     );
 
     return () => {
@@ -77,38 +67,22 @@ const ViewsWidget: React.FC<{
       addingSub?.unsubscribe();
       playSub?.unsubscribe();
       playViewIndexSub?.unsubscribe();
-
-      console.log("remove extnesions");
-
-      sceneService.removeExtension(extension.name);
     };
   }, []);
 
   const updateTitle = (id: number, name: string) => {
-    const extension = extensionRef.current;
-    if (!extension) return;
-
     extension.updateTitle(id, name);
   };
 
   const restoreState = (state: ViewState) => {
-    const extension = extensionRef.current;
-    if (!extension) return;
-
     extension.restoreState(state, false);
   };
 
   const addView = () => {
-    const extension = extensionRef.current;
-    if (!extension) return;
-
     extension.addView();
   };
 
   const deleteView = (id: number) => {
-    const extension = extensionRef.current;
-    if (!extension) return;
-
     extension.deleteView(id);
   };
 
@@ -165,7 +139,9 @@ const ViewsWidget: React.FC<{
                 color="primary"
                 variant="contained"
                 size="medium"
-                onClick={() => addView()}
+                onClick={() => {
+                  addView();
+                }}
                 startIcon={
                   adding ? (
                     <CircularProgress size={16} color="inherit" />
@@ -174,7 +150,7 @@ const ViewsWidget: React.FC<{
                   )
                 }
               >
-                + Add view
+                + Add view fuck you
               </Button>
             </Box>
           )}

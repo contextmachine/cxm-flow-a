@@ -26,6 +26,8 @@ import {
 } from "./blocks/create-2d-elements";
 import { update2dElement } from "./blocks/update-2d-elements";
 import { BehaviorSubject } from "rxjs";
+import Viewer from "@/src/viewer/viewer";
+import { ViewState } from "@/src/viewer/camera-control.types";
 
 class PointCloudExtension
   extends ExtensionEntity
@@ -52,11 +54,11 @@ class PointCloudExtension
     new Map()
   );
 
-  constructor() {
-    super();
+  constructor(viewer: Viewer) {
+    super(viewer);
 
     this.id = uuidv4();
-    this.name = "PointCloudExtension";
+    this.name = "pointcloud-handler";
 
     this._addPoints();
 
@@ -73,7 +75,7 @@ class PointCloudExtension
   }
 
   private _drawCylinders() {
-    const camera = this._sceneService?.viewer?.controls.camera!;
+    const camera = this._viewer.controls.camera!;
     camera.updateMatrixWorld(true);
 
     const svgElement = this._svgCanvas!;
@@ -157,8 +159,6 @@ class PointCloudExtension
             shape,
           };
 
-          console.log("pointSvg:", pointSvg);
-
           pointSvg.blurred.style.opacity = "0";
           pointSvg.dashed.style.opacity = "0";
           pointSvg.point.style.opacity = "0";
@@ -233,12 +233,22 @@ class PointCloudExtension
     this._divCanvas = divCanvas;
   }
 
+  public getCameraState(): ViewState {
+    return this._viewer.controls.getState();
+  }
+
+  public restoreCameraState(state: ViewState) {
+    this._viewer.controls.restoreState(state);
+
+    this._topViewEnabled = false;
+  }
+
   public enableTopView() {
     if (this._topViewEnabled) return;
 
     this._topViewEnabled = !this._topViewEnabled;
 
-    const viewer = this.sceneService?.viewer!;
+    const viewer = this._viewer;
     const cameraControl = viewer.controls;
 
     const controls: CameraControls = cameraControl.controls!;
@@ -288,7 +298,7 @@ class PointCloudExtension
     }
 
     // Position the camera for top view
-    const distance = 500; // Set this based on your scene size
+    const distance = 800; // Set this based on your scene size
     camera.position.set(center.x, center.y, center.z + distance);
     camera.lookAt(center);
 
@@ -318,7 +328,6 @@ class PointCloudExtension
         "https://sbm.dev.contextmachine.cloud/sbm_lamp/stats",
         data
       );
-      console.log("Post request successful aaa:", response.data);
     } catch (error) {
       console.error("Error making post request:", error);
     }
@@ -328,7 +337,7 @@ class PointCloudExtension
 
   /// render the camera views pins within the scene
   private _addCameraSubscription() {
-    const cameraControls = this._sceneService!.viewer!.controls.controls;
+    const cameraControls = this._viewer!.controls.controls;
 
     this._cameraSubscription = new Map();
 
@@ -358,10 +367,7 @@ class PointCloudExtension
 
     this._cameraSubscription.forEach((value, key: any) => {
       if (key !== "resize") {
-        this._sceneService!.viewer!.controls.controls.removeEventListener(
-          key,
-          value
-        );
+        this._viewer.controls.controls.removeEventListener(key, value);
       } else {
         window.removeEventListener("resize", value);
       }

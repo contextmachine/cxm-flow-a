@@ -31,7 +31,6 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
   useEffect(() => {
     const extension = viewer.extensionControl.getExtension(type);
 
-    console.log("widget", type, extension);
     if (extension) {
       setExtension(extension as any);
     }

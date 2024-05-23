@@ -5,6 +5,7 @@ import * as RX from "rxjs";
 import { assertDefined } from "../utils";
 import Viewer from "./viewer";
 import ViewFilterExtension from "@/components/services/extensions/view-filter/view-filter-extension";
+import PointCloudExtension from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension";
 
 class ExtensionControl {
   private _viewer: Viewer;
@@ -18,7 +19,6 @@ class ExtensionControl {
 
     this._viewer.sceneService.productService.$widgetProducts.subscribe(
       (products) => {
-        console.log(products);
         products.forEach((data) => {
           if (!this._extensions.has(data.name)) {
             const extension = this.createExtension(data.name);
@@ -82,6 +82,8 @@ class ExtensionControl {
         return new QueryExtension(this._viewer);
       case "views":
         return new CameraViewsExtensions(this._viewer);
+      case "pointcloud-handler":
+        return new PointCloudExtension(this._viewer);
       case "view-filter":
         return new ViewFilterExtension(this._viewer);
       default:

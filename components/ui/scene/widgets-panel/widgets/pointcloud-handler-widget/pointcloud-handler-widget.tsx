@@ -13,45 +13,91 @@ import Slider from "@mui/material/Slider";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import styled from "styled-components";
 import PointDensityForm from "./blocks/point-density-form";
+import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
+import OverallForm from "./blocks/overall-form copy";
 
 const PointCloudHandlerWidget: React.FC<{
   isPreview?: boolean;
-}> = ({ isPreview }) => {
-  const { sceneService } = useScene();
-  const [extension, setExtension] = useState<PointCloudExtension | null>(null);
-  const [points, setPoints] = useState<PointCloudFieldHandler[]>([]);
+  extension: ExtensionEntityInterface;
+}> = ({ isPreview, extension: ext }) => {
+  const extension = ext as PointCloudExtension;
 
-  useEffect(() => {
-    const extension = sceneService.extensions.get(
-      "PointCloudExtension"
-    ) as PointCloudExtension;
-    setExtension(extension);
-  }, [sceneService]);
+  const [points, setPoints] = useState<PointCloudFieldHandler[]>([]);
+  const [expanded, setExpanded] = useState<string | false>(false);
 
   useEffect(() => {
     if (extension) {
-      extension.points$.subscribe((points) => {
-        setPoints(Array.from(points.values()));
-      });
+      extension.points$.subscribe(
+        (points: Map<string, PointCloudFieldHandler>) => {
+          setPoints(Array.from(points.values()));
+        }
+      );
     }
   }, [extension]);
+
+  const [cameraState, setCameraState] = useState<any>(null);
+
+  const handleChange =
+    (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+      if (isExpanded) {
+        console.log("panel", panel, isExpanded);
+
+        if (cameraState === null) setCameraState(extension?.getCameraState());
+
+        setExpanded(panel);
+        extension?.enableTopView();
+        extension?.hoverPoint(panel);
+      } else {
+        setExpanded(false);
+        extension?.hoverPoint(null);
+        extension?.restoreCameraState(cameraState);
+
+        setCameraState(null);
+      }
+    };
 
   return (
     <WidgetPaper isPreview={isPreview} title={"Point density"}>
       <Wrapper>
+        <Accordion
+          sx={{ display: "flex", flexDirection: "column" }}
+          expanded={true}
+        >
+          <AccordionSummary>
+            <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <Box
+                sx={{
+                  width: "18px",
+                  height: "18px",
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(68, 68, 68, 1)",
+                }}
+              ></Box>
+              <Typography>Basic values</Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <OverallForm extension={extension} />
+          </AccordionDetails>
+        </Accordion>
+
         {points.map((point: PointCloudFieldHandler) => (
           <Accordion
             key={point.id}
             sx={{ display: "flex", flexDirection: "column" }}
+            expanded={expanded === point.id}
+            onChange={handleChange(point.id)}
             onMouseEnter={() => {
-              extension?.hoverPoint(point.id);
+              ///if (expanded === point.id) extension?.hoverPoint(point.id);
             }}
-            onMouseLeave={() => {
+            /* onMouseLeave={() => {
               extension?.hoverPoint(null);
-            }}
+            }} */
           >
             <AccordionSummary
-              expandIcon={
+              expandIcon={<ExpandMoreIcon />}
+              /*  expandIcon={
+                
                 <Button
                   color="secondary"
                   variant="contained"
@@ -67,9 +113,19 @@ const PointCloudHandlerWidget: React.FC<{
                 >
                   Edit
                 </Button>
-              }
+              } */
             >
-              <Typography>{point.name}</Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <Box
+                  sx={{
+                    width: "18px",
+                    height: "18px",
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(68, 68, 68, 1)",
+                  }}
+                ></Box>
+                <Typography>{point.name}</Typography>
+              </Box>
             </AccordionSummary>
             <AccordionDetails>
               <PointDensityForm point={point} extension={extension} />
@@ -112,10 +168,6 @@ const Wrapper = styled.div`
     &.Mui-expanded {
       margin: 0;
     }
-  }
-
-  & .Mui-expanded {
-    transform: none !important;
   }
 `;
 
