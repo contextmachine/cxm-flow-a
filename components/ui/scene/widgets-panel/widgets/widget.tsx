@@ -3,9 +3,10 @@ import BarChartWidget from "./bar-widget";
 import ChartWidget from "./chart-widget";
 import DummyWidget from "./dummy-widget";
 import MappingWidget from "./mapping-widget";
+import PointCloudHandlerWidget from "./pointcloud-handler-widget/pointcloud-handler-widget";
 import StatisticsWidget from "./statistics-widget";
 import ToolsetWidget from "./toolset-widget";
-import ViewsWidget from "./views-widget";
+import ViewsWidget from "./views-widget/views-widget";
 import { WidgetType } from "./widget.types";
 import {
   useScene,
@@ -53,6 +54,10 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
       return <ViewsWidget isPreview={isPreview} extension={extension!} />;
     case "view-filter":
       return <ViewFilterWidget isPreview={isPreview} extension={extension!} />;
+    case "pointcloud-handler":
+      return (
+        <PointCloudHandlerWidget isPreview={isPreview} extension={extension!} />
+      );
     case "chart-widget":
       return <ChartWidget isPreview={isPreview} extension={extension} />;
     case "mapping-widget":

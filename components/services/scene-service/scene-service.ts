@@ -12,6 +12,8 @@ import QueryExtension from "../extensions/query-extension/query-extension";
 import { BehaviorSubject } from "rxjs";
 import CameraViewsExtensions from "../extensions/camera-views-extension/camera-views-extension";
 
+import PointCloudExtension from "../extension-service/extensions/point-cloud-extension/point-cloud-extension";
+
 class SceneService {
   private _workspaceService: WorkspaceService;
   private _metadata: SceneMetadataDto | null;

@@ -72,9 +72,10 @@ export class Viewer {
     this._entityControl = new EntityControl(this);
     // this._taggingService = new TaggingService(this)
 
-    this._scene.background = new THREE.Color(
+    // TODO: Needs to be discussed with Dima
+    /* this._scene.background = new THREE.Color(
       this._projectSettingsService.settings.background_color
-    );
+    ); */
     this._lights.forEach((x) => this._scene.add(x));
 
     this._entityControl = new EntityControl(this);
@@ -90,7 +91,8 @@ export class Viewer {
     );
     this._subscriptions.push(
       this._projectSettingsService.$settings.subscribe((settings) => {
-        this._scene.background = new THREE.Color(settings.background_color);
+        // TODO: Needs to be discussed with Dima
+        //this._scene.background = new THREE.Color(settings.background_color);
         this.updateViewer();
       })
     );

@@ -82,7 +82,7 @@ const BarWrapper = styled.div`
 
   & > *:last-child {
     width: 100%;
-    max-width: ${RIGHT_PANEL_MAXWIDTH}px;
+    max-width: max-content;
   }
 `;
 

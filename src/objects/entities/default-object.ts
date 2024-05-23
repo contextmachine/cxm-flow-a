@@ -40,7 +40,10 @@ export class DefaultObject implements Entity {
         this._id = object.uuid
         this._model = model;
         this._object3d = object
-
+        if (Object.hasOwn('material')){
+            //@ts-ignore
+            this._defaultMaterial=object.material
+        }
         this._name = object.name;
 
         this.initBoundingBox();

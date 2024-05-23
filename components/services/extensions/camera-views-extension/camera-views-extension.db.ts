@@ -34,6 +34,99 @@ class CameraViewsDbService {
     this.fetchViews();
   }
 
+  // update Animation views
+  public async updateAnimationViews(views: ViewStateItem[]) {
+    const mutation = gql`
+      mutation updateOrder(
+        $sceneId: Int!
+        $parentType: String!
+        $objects: [extensionsv3_view_scene_insert_input!]!
+      ) {
+        delete_extensionsv3_view_scene(
+          where: {
+            scene_id: { _eq: $sceneId }
+            parent_type: { _eq: $parentType }
+          }
+        ) {
+          affected_rows
+        }
+
+        insert_extensionsv3_view_scene(objects: $objects) {
+          affected_rows
+        }
+      }
+    `;
+
+    const objects = views.map((view, index) => ({
+      parent_type: "animation",
+      scene_id: this._sceneId,
+      view_id: view.id,
+    }));
+
+    try {
+      await client.mutate({
+        mutation,
+        variables: {
+          sceneId: this._sceneId,
+          parentType: "animation",
+          objects,
+        },
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
+    await this.fetchViews();
+  }
+
+  // change order of views
+  public async updateViewsOrder(
+    views: ViewStateItem[],
+    parentType: "all" | "animation"
+  ) {
+    const mutation = gql`
+      mutation updateOrder(
+        $sceneId: Int!
+        $parentType: String!
+        $objects: [extensionsv3_view_scene_insert_input!]!
+      ) {
+        delete_extensionsv3_view_scene(
+          where: {
+            scene_id: { _eq: $sceneId }
+            parent_type: { _eq: $parentType }
+          }
+        ) {
+          affected_rows
+        }
+
+        insert_extensionsv3_view_scene(objects: $objects) {
+          affected_rows
+        }
+      }
+    `;
+
+    const objects = views.map((view, index) => ({
+      parent_type: parentType,
+      scene_id: this._sceneId,
+      view_id: view.id,
+    }));
+
+    try {
+      await client.mutate({
+        mutation,
+        variables: {
+          sceneId: this._sceneId,
+          parentType,
+          objects,
+        },
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
+    await this.fetchViews();
+  }
+
   public async addView() {
     if (!this._sceneId) return;
 
