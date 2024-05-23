@@ -5,8 +5,6 @@ import { WidgetType } from "../../widgets/widget.types";
 import Widget from "../../widgets/widget";
 import { useToolset } from "@/components/services/toolset-service/toolset-provider";
 import { useEffect, useMemo } from "react";
-import { useViewer } from "@/components/services/scene-service/scene-provider";
-import { useSubscribe } from "@/src/hooks";
 
 const InUseGrid = () => {
   const { activeProducts, toolsetService } = useToolset();

@@ -34,7 +34,7 @@ class CameraViewsExtensions
   constructor(viewer: Viewer) {
     super(viewer);
 
-    this._dbService = new CameraViewsDbService(this);
+    this._dbService = new CameraViewsDbService(this, viewer);
 
     this.id = uuidv4();
     this.name = "views";

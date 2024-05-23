@@ -37,7 +37,6 @@ class ProductService {
     this.init();
 
     this._outputProducts$.subscribe(() => this.updateWidgetProducts());
-    // this._sceneService.extensions$.subscribe(() => this.updateWidgetProducts());
   }
 
   public updateWidgetProducts() {
@@ -358,6 +357,14 @@ class ProductService {
 
   public get $products() {
     return this._products$.asObservable();
+  }
+
+  public get widgetProducts() {
+    return this._widgetProducts;
+  }
+
+  public get $widgetProducts() {
+    return this._widgetProducts$.asObservable();
   }
 
   public get workspaceProducts$() {

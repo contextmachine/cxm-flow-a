@@ -1,7 +1,4 @@
-import { gql } from "@apollo/client";
 import ExtensionEntity from "../../extension-service/entity/extension-entity";
-import { ExtensionEntityInterface } from "../../extension-service/entity/extension-entity.types";
-import client from "@/components/graphql/client/client";
 import * as RX from "rxjs";
 import {
   QueryEntityTreeItem,
@@ -11,7 +8,6 @@ import {
   QueryRawData,
   addQuery,
   deleteQuery,
-  getQueries,
   updateQuery,
 } from "@/src/data-access/queries";
 import ApiObject from "@/src/viewer/loader/objects/api-object";
@@ -37,8 +33,6 @@ class QueryExtension extends ExtensionEntity {
 
   public async load() {
     console.log("QueryExtension loaded");
-
-    assertDefined(this._viewer);
 
     this._subscriptions.push(
       this._viewer!.loader.$queries.subscribe((queries) => {
@@ -80,15 +74,13 @@ class QueryExtension extends ExtensionEntity {
 
     await updateQuery(data);
 
-    const viewer = assertDefined(this._viewer);
-    viewer.loader.updateFromDb();
+    this._viewer.loader.updateFromDb();
   };
 
   public deleteApiObject = async (queryId: number) => {
     await deleteQuery(queryId);
 
-    const viewer = assertDefined(this._viewer);
-    viewer.loader.updateFromDb();
+    this._viewer.loader.updateFromDb();
   };
 
   public assembleTreeData = () => {

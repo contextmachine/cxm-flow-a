@@ -6,28 +6,28 @@ import { ViewState } from "@/src/viewer/camera-control.types";
 import { BehaviorSubject } from "rxjs";
 import html2canvas from "html2canvas";
 import { sanityClient } from "@/components/uploader/sanity/client";
+import Viewer from "@/src/viewer/viewer";
 
 class CameraViewsDbService {
-  private _sceneService: SceneService | null = null;
+  private _viewer: Viewer;
 
-  private _sceneId: number | null = null;
+  private _sceneId: number;
   private _allViews$: BehaviorSubject<ViewStateItem[]> | null = null;
   private _animationViews$: BehaviorSubject<ViewStateItem[]> | null = null;
 
   private _adding$ = new BehaviorSubject<boolean>(false);
   private _pending$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private _cameraViewsExtension: CameraViewsExtensions) {
-    const sceneService = this._cameraViewsExtension.sceneService;
-    this._sceneService = sceneService;
+  constructor(
+    private _cameraViewsExtension: CameraViewsExtensions,
+    viewer: Viewer
+  ) {
+    const sceneService = this._cameraViewsExtension;
+    this._viewer = viewer;
+    this._sceneId = this._viewer.sceneService.sceneMetadata!.id;
   }
 
   public load() {
-    this._sceneService = this._cameraViewsExtension.sceneService;
-    const sceneMetadata = this._sceneService?.sceneMetadata;
-    const sceneId = sceneMetadata?.id;
-
-    this._sceneId = sceneId || null;
     this._allViews$ = new BehaviorSubject<ViewStateItem[]>([]);
     this._animationViews$ = new BehaviorSubject<ViewStateItem[]>([]);
 
@@ -39,10 +39,7 @@ class CameraViewsDbService {
 
     this._adding$.next(true);
 
-    const sceneService = this._sceneService!;
-    const viewer = sceneService.viewer!;
-    const cameraControls = viewer.controls;
-    const viewState = cameraControls.getState();
+    const viewState = this._viewer.controls.getState();
 
     const thumbUrl = await this._createThumb();
 
@@ -225,7 +222,7 @@ class CameraViewsDbService {
   }
 
   private async _createThumb() {
-    const originalCanvas = this._sceneService?.viewer?.canvas;
+    const originalCanvas = this._viewer.canvas;
     if (!originalCanvas) {
       console.error("Original canvas is not available.");
       return "";
@@ -260,9 +257,6 @@ class CameraViewsDbService {
   }
 
   public unload() {
-    this._sceneService = null;
-    this._sceneId = null;
-
     this._allViews$?.complete();
     this._allViews$ = null;
     this._animationViews$?.complete();

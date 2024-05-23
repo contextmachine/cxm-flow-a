@@ -13,6 +13,7 @@ import {
 } from "@/components/services/scene-service/scene-provider";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import QueryWidget from "@/components/services/extensions/query-extension/query-widget/query-widget";
+import ViewFilterWidget from "@/components/services/extensions/view-filter/filter-widget/filter-widget";
 
 const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
   if (type.toLowerCase().startsWith("product")) {
@@ -28,6 +29,8 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
 
   useEffect(() => {
     const extension = viewer.extensionControl.getExtension(type);
+
+    console.log("widget", type, extension);
     if (extension) {
       setExtension(extension as any);
     }
@@ -48,6 +51,8 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
       return <QueryWidget isPreview={isPreview} extension={extension!} />;
     case "views":
       return <ViewsWidget isPreview={isPreview} extension={extension!} />;
+    case "view-filter":
+      return <ViewFilterWidget isPreview={isPreview} extension={extension!} />;
     case "chart-widget":
       return <ChartWidget isPreview={isPreview} extension={extension} />;
     case "mapping-widget":
