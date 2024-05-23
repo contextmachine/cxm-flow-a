@@ -154,6 +154,3 @@ class Loader {
 }
 
 export default Loader;
-
-// https://storage.yandexcloud.net/lahta.contextmachine.online/files/pretty_celling.json
-// https://storage.yandexcloud.net/lahta.contextmachine.online/files/sbm_lengths1.json
