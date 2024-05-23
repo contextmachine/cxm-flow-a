@@ -7,6 +7,18 @@ import { Group } from "./entities/group";
 import { Mesh } from "./entities/mesh";
 import { DefaultObject } from "./entities/default-object";
 
+function isGroupMeshOnly(grp:THREE.Group):boolean{
+  let result = true;
+  let i=0;
+  while (i<grp.children.length){
+
+    if  (grp.children[i].type!='Mesh'){
+      result=false
+      break
+    }
+  }
+  return result
+}
 // сущность проекта, загружаемая с сервера за один импорт
 export class ProjectModel {
   protected _id: string;
@@ -61,10 +73,17 @@ export class ProjectModel {
 
   public initModel(object: THREE.Object3D): Entity {
     if (object instanceof THREE.Group) {
-      this._unionMesh = new UnionMesh(object, this);
-      this._objects = this._unionMesh.objects;
+      if (isGroupMeshOnly(object)){
+        this._unionMesh = new UnionMesh(object, this);
+        this._objects = this._unionMesh.objects;
 
+      }
+      else {
+        this._objects=[...object.children]
+      }
       return new Group(object, this, undefined);
+
+
     } else if (object instanceof THREE.Mesh) {
       this._objects = [object];
 
