@@ -290,6 +290,28 @@ const GlobalStyle = createGlobalStyle<{
     }
   }
 
+  // MUI Slider
+  & .MuiSlider-root[data-type='params'] {
+    padding: 0;
+    height: 24px;
+    border-radius: 9px;
+
+    & .MuiSlider-thumb {
+      height: 24px;
+      border-radius: 6px;
+    }
+
+    & .MuiSlider-rail {
+      background-color: var(--select-bg-color);
+      opacity: 1;
+    }
+
+    & .MuiSlider-track {
+      border-radius: 9px 0 0 9px;
+      opacity: 0.35;
+    }
+  }
+
   // MUI TREE GRID
   && .MuiTreeView-root {
     & .Mui-selected {

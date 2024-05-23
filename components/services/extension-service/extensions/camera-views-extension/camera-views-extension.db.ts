@@ -163,8 +163,6 @@ class CameraViewsDbService {
           thumb: thumbUrl || undefined,
         },
       });
-
-      console.log("result", result);
     } catch (e) {
       console.log(e);
     }

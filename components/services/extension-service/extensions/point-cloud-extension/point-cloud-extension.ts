@@ -19,7 +19,9 @@ import { initializeSVGOverlay } from "./blocks/init-svg-overlay";
 import { addPrimitive } from "./blocks/add-primitive";
 import {
   createBlurredCircle,
+  createBlurredRectangle,
   createDashedCircle,
+  createDashedRectangle,
   createPoint,
 } from "./blocks/create-2d-elements";
 import { update2dElement } from "./blocks/update-2d-elements";
@@ -71,8 +73,6 @@ class PointCloudExtension
   }
 
   private _drawCylinders() {
-    console.log("sre");
-
     const camera = this._sceneService?.viewer?.controls.camera!;
     camera.updateMatrixWorld(true);
 
@@ -136,23 +136,46 @@ class PointCloudExtension
         const height = maxY - minY;
         const centerX = (minX + maxX) / 2;
         const centerY = (minY + maxY) / 2;
+        const shape = this._points.get(key)!.shape;
+
+        // TODO: Rewrite logic with center
+        center = [centerX, centerY];
 
         if (!this._pointSvgs.has(key)) {
+          const shape = this._points.get(key)!.shape;
+
           const pointSvg = {
-            blurCircle: createBlurredCircle(svgElement),
-            dashedCircle: createDashedCircle(svgElement),
+            blurred:
+              shape === "rectangle"
+                ? createBlurredRectangle(svgElement)
+                : createBlurredCircle(svgElement),
+            dashed:
+              shape === "rectangle"
+                ? createDashedRectangle(svgElement)
+                : createDashedCircle(svgElement),
             point: createPoint(divElement, this._points.get(key)!.name),
+            shape,
           };
 
-          pointSvg.blurCircle.style.opacity = "0";
-          pointSvg.dashedCircle.style.opacity = "0";
+          console.log("pointSvg:", pointSvg);
+
+          pointSvg.blurred.style.opacity = "0";
+          pointSvg.dashed.style.opacity = "0";
           pointSvg.point.style.opacity = "0";
 
           this._pointSvgs.set(key, pointSvg);
         }
 
         const pointSvg = this._pointSvgs.get(key)!;
-        update2dElement(pointSvg, centerX, centerY, width, height, center);
+        update2dElement(
+          pointSvg,
+          centerX,
+          centerY,
+          width,
+          height,
+          center,
+          shape
+        );
       } catch (error) {
         console.error("Error:", error);
       }
@@ -168,6 +191,9 @@ class PointCloudExtension
 
     if (data.size) {
       this._modifyCylinderSize(id, data.size);
+    } else if (data.shape) {
+      this._clearSVGShapes();
+      this._drawCylinders();
     }
 
     this._points$.next(this._points);
@@ -237,8 +263,6 @@ class PointCloudExtension
 
     // increase size of point cloud
     entities.forEach((entity) => {
-      console.log("entity:", entity);
-
       const model = entity.model;
       const objects = model.objects;
 
@@ -251,8 +275,6 @@ class PointCloudExtension
         }
       });
     });
-
-    console.log("Center:", center);
 
     const camera = controls.camera;
 
@@ -351,8 +373,8 @@ class PointCloudExtension
   public hoverPoint(id: string | null) {
     const pointsSvg = this._pointSvgs;
     pointsSvg.forEach((pointSvg) => {
-      pointSvg.blurCircle.style.opacity = "0";
-      pointSvg.dashedCircle.style.opacity = "0";
+      pointSvg.blurred.style.opacity = "0";
+      pointSvg.dashed.style.opacity = "0";
       pointSvg.point.style.opacity = "0";
     });
 
@@ -362,18 +384,22 @@ class PointCloudExtension
     const pointSvg = pointsSvg.get(id!);
     if (!pointSvg) return;
 
-    pointSvg.blurCircle.style.opacity = "1";
-    pointSvg.dashedCircle.style.opacity = "1";
+    pointSvg.blurred.style.opacity = "1";
+    pointSvg.dashed.style.opacity = "1";
     pointSvg.point.style.opacity = "1";
   }
 
-  public unload() {
+  private _clearSVGShapes() {
     this._pointSvgs.forEach((pointSvg) => {
       pointSvg.point.remove();
-      pointSvg.blurCircle.remove();
-      pointSvg.dashedCircle.remove();
+      pointSvg.blurred.remove();
+      pointSvg.dashed.remove();
     });
     this._pointSvgs.clear();
+  }
+
+  public unload() {
+    this._clearSVGShapes();
 
     this._pointMeshes.forEach((mesh) => {
       this._viewer!.scene.remove(mesh);

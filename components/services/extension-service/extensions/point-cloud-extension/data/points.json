@@ -2,6 +2,7 @@
   {
     "id": "Cylinder_1",
     "name": "Point #1",
+    "shape": "ellipse",
     "position": [160, 20, 20],
     "height": 10,
     "size": [1, 0.3]
@@ -9,6 +10,7 @@
   {
     "id": "Cylinder_2",
     "name": "Point #2",
+    "shape": "rectangle",
     "position": [130, 20, 20],
     "height": 20,
     "size": [2, 0.5]
@@ -16,6 +18,7 @@
   {
     "id": "Cylinder_3",
     "name": "Point #3",
+    "shape": "ellipse",
     "position": [190, 20, 20],
     "height": 30,
     "size": [2, 0.3]

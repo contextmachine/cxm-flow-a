@@ -60,8 +60,6 @@ class AuthService {
   public updateFeatures() {
     const metadata = this.userMetadata;
 
-    console.log("metadata", metadata);
-
     const theme = metadata?.user_theme?.theme?.name || "light";
     const isDarkMode = theme === "dark";
 

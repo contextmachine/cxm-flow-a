@@ -12,6 +12,7 @@ import Typography from "@mui/material/Typography";
 import Slider from "@mui/material/Slider";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import styled from "styled-components";
+import PointDensityForm from "./blocks/point-density-form";
 
 const PointCloudHandlerWidget: React.FC<{
   isPreview?: boolean;
@@ -36,9 +37,9 @@ const PointCloudHandlerWidget: React.FC<{
   }, [extension]);
 
   return (
-    <WidgetPaper isPreview={isPreview} title={"Point Cloud Handler"}>
+    <WidgetPaper isPreview={isPreview} title={"Point density"}>
       <Wrapper>
-        {points.map((point) => (
+        {points.map((point: PointCloudFieldHandler) => (
           <Accordion
             key={point.id}
             sx={{ display: "flex", flexDirection: "column" }}
@@ -71,38 +72,7 @@ const PointCloudHandlerWidget: React.FC<{
               <Typography>{point.name}</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography gutterBottom>Width:</Typography>
-              <Slider
-                defaultValue={point.size[0]}
-                step={0.1}
-                min={0.1}
-                max={5}
-                size="small"
-                valueLabelDisplay="auto"
-                onChange={(e, value) => {
-                  value = value as number;
-
-                  extension?.updatePoint(point.id, {
-                    size: [value, point.size[1]],
-                  });
-                }}
-              />
-              <Typography gutterBottom>Height:</Typography>
-              <Slider
-                defaultValue={point.size[1]}
-                step={0.1}
-                min={0.1}
-                max={5}
-                size="small"
-                valueLabelDisplay="auto"
-                onChange={(e, value) => {
-                  value = value as number;
-
-                  extension?.updatePoint(point.id, {
-                    size: [point.size[0], value],
-                  });
-                }}
-              />
+              <PointDensityForm point={point} extension={extension} />
             </AccordionDetails>
           </Accordion>
         ))}
@@ -117,17 +87,31 @@ const Wrapper = styled.div`
   flex-direction: column;
   gap: 5px;
 
+  & > * {
+    border-top: 1px solid var(--box-border-color);
+  }
+
   && .MuiAccordion-root {
     &::before {
       display: none;
     }
 
+    & {
+      padding: 0 !important;
+      border-radius: 0 !important;
+    }
+
+    & .MuiAccordionSummary-root {
+      padding: 6px 0px;
+    }
+
+    & .MuiAccordionDetails-root {
+      padding: 6px 0px;
+    }
+
     &.Mui-expanded {
       margin: 0;
     }
-
-    border: 1px solid var(--box-border-color);
-    border-radius: 4px !important;
   }
 
   & .Mui-expanded {

@@ -47,8 +47,6 @@ export function AuthProvider({ children }: any) {
     });
   }, [authService]);
 
-  console.log("isDarkMode", isDarkMode);
-
   const isAuthPage =
     router.pathname === "/signin" || router.pathname === "/signup";
 

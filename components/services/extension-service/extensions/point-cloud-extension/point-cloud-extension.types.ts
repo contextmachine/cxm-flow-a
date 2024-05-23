@@ -6,14 +6,18 @@ export interface PointCloudFieldHandler {
   position: PointCloudFieldPosition;
   height: number;
   size: PointCloudFieldSize;
+  shape: "ellipse" | "rectangle";
 }
+
+export type PointCloudFieldShape = "ellipse" | "rectangle";
 
 export type PointCloudFieldSize = [number, number];
 export type PointCloudFieldPosition = [number, number, number];
 
 export interface PointCloudPointSvg {
-  blurCircle: SVGEllipseElement;
-  dashedCircle: SVGEllipseElement;
+  blurred: SVGEllipseElement | SVGRectElement;
+  dashed: SVGEllipseElement | SVGRectElement;
+  shape: PointCloudFieldShape;
   point: HTMLDivElement;
 }
 

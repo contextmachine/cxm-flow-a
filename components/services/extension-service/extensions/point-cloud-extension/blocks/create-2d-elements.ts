@@ -8,7 +8,7 @@ export const createBlurredCircle = (
 
   ellipse.setAttribute(
     "style",
-    "fill: rgba(255, 255, 255, 0.8); stroke: none; stroke-width: 1; filter: blur(10px); transition: opacity 0.3s;"
+    "fill: rgba(189, 189, 189, 0.5); stroke: none; stroke-width: 1; filter: blur(0px); transition: opacity 0.3s;"
   );
 
   svgCanvas.appendChild(ellipse);
@@ -26,12 +26,38 @@ export const createDashedCircle = (
 
   ellipse.setAttribute(
     "style",
-    "fill: none; stroke: rgba(0,0,0,0.8); stroke-width: 1; stroke-dasharray: 5; transition: opacity 0.3s;"
+    "fill: none; stroke: rgba(255, 255, 255); stroke-width: 1.2; stroke-dasharray: 3; transition: opacity 0.3s;"
   );
 
   svgCanvas.appendChild(ellipse);
 
   return ellipse;
+};
+
+export const createBlurredRectangle = (svgCanvas: SVGElement) => {
+  const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+
+  rect.setAttribute(
+    "style",
+    "fill: rgba(189, 189, 189, 0.5); stroke: none; stroke-width: 1; filter: blur(0px); transition: opacity 0.3s;"
+  );
+
+  svgCanvas.appendChild(rect);
+
+  return rect;
+};
+
+export const createDashedRectangle = (svgCanvas: SVGElement) => {
+  const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+
+  rect.setAttribute(
+    "style",
+    "fill: none; stroke: rgba(255, 255, 255); stroke-width: 1.2; stroke-dasharray: 3; transition: opacity 0.3s;"
+  );
+
+  svgCanvas.appendChild(rect);
+
+  return rect;
 };
 
 export const createPoint = (
@@ -53,24 +79,24 @@ export const createPoint = (
   pointWrapper.style.transition = "opacity 0.3s";
 
   // add Text there
-  const text = document.createElement("p");
-  text.style.color = "black";
+  /*  const text = document.createElement("p");
+  text.style.color = "white";
   text.style.fontSize = "10px";
   text.style.fontWeight = "bold";
   text.innerText = name || "Point";
 
-  pointWrapper.appendChild(text);
+  pointWrapper.appendChild(text); */
 
   // add Point there
-  const point = document.createElement("div");
-  point.style.width = "10px";
-  point.style.height = "10px";
+  /* const point = document.createElement("div");
+  point.style.width = "4px";
+  point.style.height = "4px";
   point.style.borderRadius = "50%";
-  point.style.backgroundColor = "black";
+  point.style.backgroundColor = "white";
 
   pointWrapper.appendChild(point);
 
-  divCanvas.appendChild(pointWrapper);
+  divCanvas.appendChild(pointWrapper); */
 
   return pointWrapper;
 };
