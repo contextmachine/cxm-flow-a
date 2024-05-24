@@ -150,7 +150,7 @@ const ViewsWidget: React.FC<{
                   )
                 }
               >
-                + Add view fuck you
+                + Add view
               </Button>
             </Box>
           )}
