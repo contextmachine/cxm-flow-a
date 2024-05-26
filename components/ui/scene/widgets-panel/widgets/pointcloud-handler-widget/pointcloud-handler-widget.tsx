@@ -15,6 +15,7 @@ import styled from "styled-components";
 import PointDensityForm from "./blocks/point-density-form";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import OverallForm from "./blocks/overall-form copy";
+import { ControlsViewState } from "@/src/viewer/camera-control.types";
 
 const PointCloudHandlerWidget: React.FC<{
   isPreview?: boolean;
@@ -35,32 +36,22 @@ const PointCloudHandlerWidget: React.FC<{
     }
   }, [extension]);
 
-  const [cameraState, setCameraState] = useState<any>(null);
-
-  useEffect(() => {
-    if (!cameraState) return;
-    // If cameraState is a string, parse it directly
-    const cst =
-      typeof cameraState === "string" ? JSON.parse(cameraState) : cameraState;
-
-    console.log("After parsing, type of cst", typeof cst); // should log "object"
-    console.log("cameraState22", cst);
-  }, [cameraState]);
+  const [cameraState, setCameraState] = useState<ControlsViewState | null>(
+    null
+  );
 
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       if (isExpanded) {
-        console.log("panel", panel, isExpanded);
-
-        if (cameraState === null) setCameraState(extension?.getCameraState());
+        if (cameraState === null) setCameraState(extension.getCameraState());
 
         setExpanded(panel);
-        extension?.enableTopView();
-        extension?.hoverPoint(panel);
+        extension.enableTopView();
+        extension.selectPoint(panel);
       } else {
         setExpanded(false);
-        extension?.hoverPoint(null);
-        extension?.restoreCameraState(cameraState);
+        extension.selectPoint(null);
+        extension.restoreCameraState(cameraState!);
 
         setCameraState(null);
       }
@@ -98,33 +89,14 @@ const PointCloudHandlerWidget: React.FC<{
             expanded={expanded === point.id}
             onChange={handleChange(point.id)}
             onMouseEnter={() => {
-              ///if (expanded === point.id) extension?.hoverPoint(point.id);
+              if (expanded && expanded !== point.id)
+                extension.hoverPoint(point.id);
             }}
-            /* onMouseLeave={() => {
+            onMouseLeave={() => {
               extension?.hoverPoint(null);
-            }} */
+            }}
           >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              /*  expandIcon={
-                
-                <Button
-                  color="secondary"
-                  variant="contained"
-                  size="medium"
-                  sx={{
-                    width: "100%",
-                    marginTop: "10px",
-                    border: "1px solid grey",
-                  }}
-                  onClick={() => {
-                    extension?.enableTopView();
-                  }}
-                >
-                  Edit
-                </Button>
-              } */
-            >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <Box
                   sx={{

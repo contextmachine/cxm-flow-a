@@ -53,6 +53,9 @@ class PointCloudExtension
 
   private _wireframeDisabled = true;
 
+  private _selectedPointId: string | null = null;
+  private _hoveredPointId: string | null = null;
+
   private _points$ = new BehaviorSubject<Map<string, PointCloudFieldHandler>>(
     new Map()
   );
@@ -240,7 +243,7 @@ class PointCloudExtension
     return this._viewer.controls.getState();
   }
 
-  public restoreCameraState(state: ViewState) {
+  public restoreCameraState(state: ControlsViewState) {
     this._viewer.controls.restoreState(state);
 
     this._topViewEnabled = false;
@@ -361,23 +364,42 @@ class PointCloudExtension
     this._cameraSubscription.clear();
   }
 
-  public hoverPoint(id: string | null) {
-    const pointsSvg = this._pointSvgs;
-    pointsSvg.forEach((pointSvg) => {
-      pointSvg.blurred.style.opacity = "0";
-      pointSvg.dashed.style.opacity = "0";
-      pointSvg.point.style.opacity = "0";
-    });
+  public selectPoint(id: string | null) {
+    if (this._selectedPointId) {
+      this.highlightPoint(this._selectedPointId, true);
+    }
 
-    const point = this._points.get(id!);
+    if (id) {
+      this.highlightPoint(id);
+    }
+
+    this._selectedPointId = id;
+  }
+
+  public hoverPoint(id: string | null) {
+    if (this._hoveredPointId) {
+      if (this._hoveredPointId !== this._selectedPointId) {
+        this.highlightPoint(this._hoveredPointId, true);
+      }
+    }
+
+    if (id) {
+      this.highlightPoint(id);
+    }
+
+    this._hoveredPointId = id;
+  }
+
+  private highlightPoint(id: string, hide: boolean = false) {
+    const point = this._points.get(id);
     if (!point) return;
 
-    const pointSvg = pointsSvg.get(id!);
+    const pointSvg = this._pointSvgs.get(id);
     if (!pointSvg) return;
 
-    pointSvg.blurred.style.opacity = "1";
-    pointSvg.dashed.style.opacity = "1";
-    pointSvg.point.style.opacity = "1";
+    pointSvg.blurred.style.opacity = hide ? "0" : "1";
+    pointSvg.dashed.style.opacity = hide ? "0" : "1";
+    pointSvg.point.style.opacity = hide ? "0" : "1";
   }
 
   private _clearSVGShapes() {
