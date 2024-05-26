@@ -15,7 +15,7 @@ export const addPrimitive = (
   const mesh = new THREE.Mesh(geometry, material);
 
   // Apply non-uniform scaling to create elliptical cross-section
-  mesh.scale.set(size[0], size[1], 1);
+  mesh.scale.set(size[0], 1, size[1]);
 
   // Position randomly within a predefined area
   mesh.position.set(position[0], position[1], position[2]);

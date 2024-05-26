@@ -73,11 +73,33 @@ class PointCloudExtension
 
   private _addPoints() {
     itemData.forEach((item) => {
-      const itemData = item as PointCloudFieldHandler;
+      const itemData = this._translateDtoToHandler(item);
       this._points.set(itemData.id, itemData);
     });
 
     this._points$.next(this._points);
+  }
+
+  private _translateDtoToHandler(dto: any): PointCloudFieldHandler {
+    const shape = dto.shape === "rectangle" ? "rectangle" : "ellipse";
+    let size: PointCloudFieldSize = [1, 1];
+
+    if (typeof dto.width === "number" && typeof dto.height === "number") {
+      size = [dto.width, dto.height];
+    }
+
+    if (typeof dto.radius === "number") {
+      size = [dto.radius, dto.radius];
+    }
+
+    return {
+      id: dto.id,
+      position: dto.position,
+      height: 10,
+      name: dto.name,
+      size,
+      shape: shape,
+    };
   }
 
   private _drawCylinders() {
@@ -200,6 +222,15 @@ class PointCloudExtension
     } else if (data.shape) {
       this._clearSVGShapes();
       this._drawCylinders();
+
+      // TODO: Update SVG shapes
+      if (this._selectedPointId === id) {
+        this.selectPoint(id);
+      }
+
+      if (this._hoveredPointId === id) {
+        this.hoverPoint(id);
+      }
     }
 
     this._points$.next(this._points);
@@ -381,20 +412,24 @@ class PointCloudExtension
       if (this._hoveredPointId !== this._selectedPointId) {
         this.highlightPoint(this._hoveredPointId, true);
       }
+      this._hoveredPointId = null;
     }
 
     if (id) {
       this.highlightPoint(id);
+      this._hoveredPointId = id;
+    } else {
+      this._hoveredPointId = null;
     }
-
-    this._hoveredPointId = id;
   }
 
   private highlightPoint(id: string, hide: boolean = false) {
     const point = this._points.get(id);
+
     if (!point) return;
 
     const pointSvg = this._pointSvgs.get(id);
+
     if (!pointSvg) return;
 
     pointSvg.blurred.style.opacity = hide ? "0" : "1";

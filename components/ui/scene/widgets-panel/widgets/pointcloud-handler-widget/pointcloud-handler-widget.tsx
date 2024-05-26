@@ -47,6 +47,7 @@ const PointCloudHandlerWidget: React.FC<{
 
         setExpanded(panel);
         extension.enableTopView();
+
         extension.selectPoint(panel);
       } else {
         setExpanded(false);
@@ -89,11 +90,14 @@ const PointCloudHandlerWidget: React.FC<{
             expanded={expanded === point.id}
             onChange={handleChange(point.id)}
             onMouseEnter={() => {
-              if (expanded && expanded !== point.id)
+              if (expanded && expanded !== point.id) {
                 extension.hoverPoint(point.id);
+              }
             }}
             onMouseLeave={() => {
-              extension?.hoverPoint(null);
+              if (expanded && expanded !== point.id) {
+                extension.hoverPoint(null);
+              }
             }}
           >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
