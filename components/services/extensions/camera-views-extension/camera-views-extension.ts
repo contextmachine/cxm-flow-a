@@ -109,7 +109,7 @@ class CameraViewsExtensions
     cameraControls.restoreState(viewState as any, animate, duration || 300);
   }
 
-  public async playForward(duration: number = 2000, delay: number = 500) {
+  public async playForward(duration: number = 2000, delay: number = 0) {
     this._isPlaying$.next(true);
 
     const cameraControls = this._viewer!.controls;
@@ -134,14 +134,6 @@ class CameraViewsExtensions
         },
       }); // Animate the transition
 
-      if (to) {
-        this._currentPathLength += from.position.distanceTo(to.position); // Update progress
-      }
-
-      const progressPercentage =
-        (this._currentPathLength / this._totalPathLength) * 100; // Calculate percentage
-      console.log(`Progress: ${progressPercentage.toFixed(2)}%`);
-
       if (i) {
         await this._delay(delay); // Wait before transitioning to the next state
       }
@@ -154,7 +146,7 @@ class CameraViewsExtensions
   }
 
   // Play through all view states in reverse order
-  public async playBackward(duration: number = 2000, delay: number = 500) {
+  public async playBackward(duration: number = 2000, delay: number = 0) {
     this._isPlaying$.next(true);
     const cameraControls = this._viewer!.controls;
 
@@ -181,22 +173,6 @@ class CameraViewsExtensions
   private _formatViewState(viewState: any): any {
     return {
       ...viewState,
-      position: new THREE.Vector3(
-        viewState.position.x,
-        viewState.position.y,
-        viewState.position.z
-      ),
-      quaternion: new THREE.Quaternion(
-        viewState.quaternion[0],
-        viewState.quaternion[1],
-        viewState.quaternion[2],
-        viewState.quaternion[3]
-      ),
-      lookAt: new THREE.Vector3(
-        viewState.lookAt.x,
-        viewState.lookAt.y,
-        viewState.lookAt.z
-      ),
     };
   }
 

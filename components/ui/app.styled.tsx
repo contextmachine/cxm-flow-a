@@ -15,8 +15,11 @@ const GlobalStyle = createGlobalStyle<{
       props.darkMode ? "#444444" : "#F3F3F3"};
     --button-secondary-hover-color: ${(props) =>
       props.darkMode ? "#4F4F4F" : "#F5FAFF"};
-      --button-secondary-border-color: ${(props) =>
-        props.darkMode ? "#444444" : "rgba(0,0,0,0.1)"};
+    --button-secondary-border-color: ${(props) =>
+      props.darkMode ? "#444444" : "rgba(0,0,0,0.1)"};
+
+    --button-secondary-danger-text-color: ${(props) =>
+      props.darkMode ? "#ff6c6c" : "#AA1A1A"};
 
     --button-secondary-active-bg-color: ${(props) =>
       props.darkMode ? "#444444" : "#ECF5FF"};
@@ -73,6 +76,12 @@ const GlobalStyle = createGlobalStyle<{
   // TEXT INPUTS
   & .MuiInputBase-root {
     border-radius: 9px;
+
+    background-color: var(--select-bg-color);
+    &,
+    & * {
+      color: var(--main-text-color);
+    }
 
     & input {
       height: 33px;
@@ -151,6 +160,10 @@ const GlobalStyle = createGlobalStyle<{
     // MUI BUTTONS - SECONDARY
     &.MuiButton-containedSecondary {
       background-color: var(--button-secondary-color);
+
+      &[data-type='danger'] {
+        color: var(--button-secondary-danger-text-color);
+      }
 
       &, & * {
         color: var(--main-text-color);

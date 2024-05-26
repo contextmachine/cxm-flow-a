@@ -19,7 +19,7 @@ const OverallForm: React.FC<{
       }}
     >
       <ParamItem data-type="overall">
-        <Box>Step between chains, mm</Box>
+        <Box>Min step</Box>
         <Box>
           <Slider
             data-type="params"
@@ -34,7 +34,7 @@ const OverallForm: React.FC<{
       </ParamItem>
 
       <ParamItem data-type="overall">
-        <Box>Step between pixels, mm</Box>
+        <Box>Max step</Box>
         <Box>
           <Slider
             data-type="params"
@@ -49,7 +49,7 @@ const OverallForm: React.FC<{
       </ParamItem>
 
       <ParamItem data-type="overall">
-        <Box>Transition Density</Box>
+        <Box>Blur</Box>
         <Box>
           <Slider
             data-type="params"

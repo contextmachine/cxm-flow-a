@@ -27,7 +27,10 @@ import {
 import { update2dElement } from "./blocks/update-2d-elements";
 import { BehaviorSubject } from "rxjs";
 import Viewer from "@/src/viewer/viewer";
-import { ViewState } from "@/src/viewer/camera-control.types";
+import {
+  ControlsViewState,
+  ViewState,
+} from "@/src/viewer/camera-control.types";
 
 class PointCloudExtension
   extends ExtensionEntity
@@ -233,7 +236,7 @@ class PointCloudExtension
     this._divCanvas = divCanvas;
   }
 
-  public getCameraState(): ViewState {
+  public getCameraState(): ControlsViewState {
     return this._viewer.controls.getState();
   }
 
@@ -271,36 +274,7 @@ class PointCloudExtension
       center.divideScalar(count);
     }
 
-    // increase size of point cloud
-    entities.forEach((entity) => {
-      const model = entity.model;
-      const objects = model.objects;
-
-      objects.forEach((object) => {
-        // check if they are point cloud
-        const material = (object as any).material;
-        if (material && material instanceof THREE.PointsMaterial) {
-          //material.size = 20;
-          // update
-        }
-      });
-    });
-
     const camera = controls.camera;
-
-    // Set a small field of view to mimic orthographic projection
-    if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = 1;
-      // set min near and max far to avoid clipping
-      camera.near = 1;
-      camera.far = 10000;
-      camera.updateProjectionMatrix();
-    }
-
-    // Position the camera for top view
-    const distance = 800; // Set this based on your scene size
-    camera.position.set(center.x, center.y, center.z + distance);
-    camera.lookAt(center);
 
     // Update CameraControls
     controls.setLookAt(
@@ -312,6 +286,17 @@ class PointCloudExtension
       center.z,
       true // true to enable damping or false to immediately apply changes
     );
+
+    const distance = 800;
+    controls.setPosition(center.x, center.y, center.z + distance);
+
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.fov = 1;
+      camera.updateProjectionMatrix();
+
+      camera.near = 0.1;
+      camera.far = 10000;
+    }
 
     cameraControl.fitToScene();
 

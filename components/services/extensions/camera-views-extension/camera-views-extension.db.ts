@@ -2,7 +2,10 @@ import SceneService from "@/components/services/scene-service/scene-service";
 import CameraViewsExtensions from "./camera-views-extension";
 import { gql } from "@apollo/client";
 import client from "@/components/graphql/client/client";
-import { ViewState } from "@/src/viewer/camera-control.types";
+import {
+  ControlsViewState,
+  ViewState,
+} from "@/src/viewer/camera-control.types";
 import { BehaviorSubject } from "rxjs";
 import html2canvas from "html2canvas";
 import { sanityClient } from "@/components/uploader/sanity/client";
@@ -390,7 +393,7 @@ export interface ViewStateItem {
   id: number;
   name: string;
   thumb: string;
-  state: ViewState;
+  state: ControlsViewState;
 }
 
 interface ImageResponse {

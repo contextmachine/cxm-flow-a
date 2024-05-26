@@ -3,7 +3,7 @@ import * as RX from "rxjs";
 
 import * as THREE from "three";
 import Viewer from "./viewer";
-import { ViewState } from "./camera-control.types";
+import { ControlsViewState, ViewState } from "./camera-control.types";
 import TWEEN from "@tweenjs/tween.js";
 
 class CameraControl {
@@ -93,8 +93,8 @@ class CameraControl {
   }
 
   public setOrbit(point: THREE.Vector3) {
-    this._controls.setOrbitPoint(point.x, point.y, point.z)
-    this._viewer.updateViewer()
+    this._controls.setOrbitPoint(point.x, point.y, point.z);
+    this._viewer.updateViewer();
   }
 
   public fitToScene() {
@@ -142,35 +142,23 @@ class CameraControl {
     this.fitToBox(bbox);
   }
 
-  public getState(): ViewState {
-    const position = this.cameraPosition;
-    const quaternion = this.camera.quaternion.clone();
-
-    const lookAtDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(
-      quaternion
+  public getState(): ControlsViewState {
+    const _target = this.controls.getTarget(new THREE.Vector3(), true);
+    const _position = this.controls.getPosition(new THREE.Vector3(), true);
+    const _focalOffset = this.controls.getFocalOffset(
+      new THREE.Vector3(),
+      true
     );
-    const lookAt = position.clone().add(lookAtDirection);
 
-    const zoom = position.distanceTo(lookAt);
-
-    const cameraType =
-      this.camera instanceof THREE.PerspectiveCamera
-        ? "perspective"
-        : "orthographic";
-
-    const fieldOfView =
+    const _fov =
       this.camera instanceof THREE.PerspectiveCamera ? this.camera.fov : null;
 
-    const view: ViewState = {
-      position,
-      quaternion,
-      lookAt,
-      fieldOfView,
-      zoom,
-      cameraType,
+    return {
+      target: _target.toArray(),
+      position: _position.toArray(),
+      focalOffset: _focalOffset.toArray(),
+      fov: _fov,
     };
-
-    return view;
   }
 
   private _renderIfTweenRunning() {
@@ -184,129 +172,112 @@ class CameraControl {
   }
 
   public async restoreState(
-    viewState: ViewState,
+    viewState: ControlsViewState | ViewState,
     animate: boolean = false,
     duration: number = 400,
     options?: Record<string, any>
   ): Promise<void> {
+    // Check if the viewState is a ControlsViewState or a ViewState
+    const isControlsViewState = (state: any): state is ControlsViewState => {
+      return (
+        "position" in state &&
+        "target" in state &&
+        "focalOffset" in state &&
+        "fov" in state
+      );
+    };
+
+    if (!isControlsViewState(viewState)) return;
+
     if (animate) {
       return new Promise((resolve) => {
-        // Animate from the current camera state to the new state
-        const currentPosition = this.camera.position.clone();
-        const currentQuaternion = this.camera.quaternion.clone();
-        const currentFieldOfView = (this.camera as THREE.PerspectiveCamera).fov;
-
-        // Start with a forward direction vector
-        const forwardDirection = new THREE.Vector3(0, 0, -1);
-
-        // Apply the quaternion to get the new look-at direction
-        const lookAtDirection = forwardDirection
-          .clone()
-          .applyQuaternion(currentQuaternion);
-
-        // To calculate the zoom or distance between the camera and its look-at point
-        const lookAtPoint = currentPosition.clone().add(lookAtDirection);
-        const currentZoom = currentPosition.distanceTo(lookAtPoint);
-
-        const currentLookAt = currentPosition
-          .clone()
-          .add(forwardDirection.clone().applyQuaternion(currentQuaternion));
-
-        // Now you can use currentZoom to simulate the dolly distance or camera zoom level
-
-        const start = {
-          position: currentPosition,
-          quaternion: currentQuaternion,
-          lookAt: currentLookAt,
-          zoom: currentZoom,
-        };
-
-        const end = {
-          position: viewState.position,
-          quaternion: getShortestQuaternion(
-            normalizeQuaternion(start.quaternion),
-            normalizeQuaternion(viewState.quaternion)
-          ),
-          lookAt: viewState.lookAt,
-          zoom: viewState.zoom,
-        };
+        const start = this.getState();
+        const end = viewState;
 
         const tween = new TWEEN.Tween(start)
           .to(end, duration)
           .easing(TWEEN.Easing.Quadratic.InOut)
           .onStart(() => {
-            this._tweenRunning = true; // Mark that the tween is running
-            this._renderIfTweenRunning(); // Start the rendering loop if not running already
+            this._tweenRunning = true;
+            this._renderIfTweenRunning();
           })
           .onUpdate(() => {
-            const a = {
-              position: start.position.clone(),
-              quaternion: start.quaternion.clone(),
-              zoom: start.zoom,
-            };
+            this.controls.setPosition(
+              start.position[0],
+              start.position[1],
+              start.position[2]
+            );
+            this.controls.setTarget(
+              start.target[0],
+              start.target[1],
+              start.target[2]
+            );
+            this.controls.setFocalOffset(
+              start.focalOffset[0],
+              start.focalOffset[1],
+              start.focalOffset[2]
+            );
 
-            this.camera.position.copy(start.position);
-            this.camera.quaternion.copy(start.quaternion);
-
-            if (viewState.cameraType === "perspective") {
-              (this.camera as THREE.PerspectiveCamera).fov = currentFieldOfView;
+            if (viewState.fov !== null) {
+              (this.camera as THREE.PerspectiveCamera).fov =
+                start.fov as number;
               this.camera.updateProjectionMatrix();
             }
 
-            if (typeof start.zoom === "number") {
-              const lookAtPoint = start.lookAt;
-              const targetX = lookAtPoint.x;
-              const targetY = lookAtPoint.y;
-              const targetZ = lookAtPoint.z;
-
-              this.controls.setLookAt(
-                start.position.x,
-                start.position.y,
-                start.position.z,
-                targetX,
-                targetY,
-                targetZ,
-                false
-              );
-              this.controls.dollyTo(start.zoom, false);
-            }
-
-            // this.controls.update(1 / 60); // Default delta for smooth update
-            this._viewer.updateViewer(); // Ensure the scene is refreshed
+            this._viewer.updateViewer();
           })
           .onComplete(() => {
-            this._tweenRunning = false;
-            this._viewer.updateViewer(); // Ensure the scene is refreshed
+            this.controls.setPosition(
+              end.position[0],
+              end.position[1],
+              end.position[2]
+            );
+            this.controls.setTarget(
+              end.target[0],
+              end.target[1],
+              end.target[2]
+            );
+            this.controls.setFocalOffset(
+              end.focalOffset[0],
+              end.focalOffset[1],
+              end.focalOffset[2]
+            );
 
+            if (viewState.fov !== null) {
+              (this.camera as THREE.PerspectiveCamera).fov = end.fov as number;
+              this.camera.updateProjectionMatrix();
+            }
+
+            this._tweenRunning = false;
+            this._viewer.updateViewer();
             resolve();
           });
 
-        this._tweenRunning = true; // Mark that the tween is running
+        this._tweenRunning = true;
         this._renderIfTweenRunning();
         tween.start();
       });
     } else {
       // Instantly restore the state without animation
-      this.camera.position.copy(viewState.position);
-      this.camera.quaternion.copy(viewState.quaternion);
+      this.controls.setPosition(
+        viewState.position[0],
+        viewState.position[1],
+        viewState.position[2]
+      );
+      this.controls.setTarget(
+        viewState.target[0],
+        viewState.target[1],
+        viewState.target[2]
+      );
+      this.controls.setFocalOffset(
+        viewState.focalOffset[0],
+        viewState.focalOffset[1],
+        viewState.focalOffset[2]
+      );
 
-      if (viewState.cameraType === "perspective" && viewState.fieldOfView) {
-        (this.camera as any).fov = viewState.fieldOfView;
+      if (viewState.fov !== null) {
+        (this.camera as THREE.PerspectiveCamera).fov = viewState.fov;
         this.camera.updateProjectionMatrix();
-      }
-
-      if (typeof viewState.zoom === "number") {
-        const lookAtPoint = viewState.lookAt;
-        this.controls.setLookAt(
-          viewState.position.x,
-          viewState.position.y,
-          viewState.position.z,
-          lookAtPoint.x,
-          lookAtPoint.y,
-          lookAtPoint.z,
-          false
-        );
-        this.controls.dollyTo(viewState.zoom, false);
       }
 
       this._viewer.updateViewer(); // Ensure the scene is refreshed

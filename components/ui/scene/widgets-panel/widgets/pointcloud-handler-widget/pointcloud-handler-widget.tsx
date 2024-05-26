@@ -37,6 +37,16 @@ const PointCloudHandlerWidget: React.FC<{
 
   const [cameraState, setCameraState] = useState<any>(null);
 
+  useEffect(() => {
+    if (!cameraState) return;
+    // If cameraState is a string, parse it directly
+    const cst =
+      typeof cameraState === "string" ? JSON.parse(cameraState) : cameraState;
+
+    console.log("After parsing, type of cst", typeof cst); // should log "object"
+    console.log("cameraState22", cst);
+  }, [cameraState]);
+
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       if (isExpanded) {
