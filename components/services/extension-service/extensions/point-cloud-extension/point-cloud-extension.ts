@@ -63,6 +63,9 @@ class PointCloudExtension
   private _hasUpdated$ = new BehaviorSubject<boolean>(false);
   private _pendingRequest$ = new BehaviorSubject<boolean>(false);
   private _pendingResponse$ = new BehaviorSubject<boolean>(false);
+  private _requestStatus$ = new BehaviorSubject<"success" | "error" | null>(
+    null
+  );
 
   private _pointCloudExtentionDB: PointCloudExtensionDB;
 
@@ -294,6 +297,8 @@ class PointCloudExtension
   }
 
   public saveUpdates() {
+    this._requestStatus$.next(null);
+
     this._pendingRequest$.next(true);
     this._pendingResponse$.next(false);
     this._debouncedUpdate();
@@ -315,6 +320,7 @@ class PointCloudExtension
       const data = result.data;
       this._updateModel(data);
     } catch (error) {
+      this._requestStatus$.next("error");
       console.error("Error posting update:", error);
     }
 
@@ -608,6 +614,10 @@ class PointCloudExtension
 
   public get hasUpdated() {
     return this._hasUpdated$.asObservable();
+  }
+
+  public get requestStatus$() {
+    return this._requestStatus$.asObservable();
   }
 }
 

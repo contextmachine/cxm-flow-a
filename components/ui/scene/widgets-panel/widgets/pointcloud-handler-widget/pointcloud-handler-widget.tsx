@@ -35,6 +35,7 @@ const PointCloudHandlerWidget: React.FC<{
   const [pendingRequest, setPendingRequest] = useState(false);
   const [pendingResponse, setPendingResponse] = useState(false);
   const [hasUpdated, setHasUpdated] = useState(false);
+  const [requestStatus, setRequestStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (extension) {
@@ -61,12 +62,17 @@ const PointCloudHandlerWidget: React.FC<{
         setHasUpdated(hasUpdated)
       );
 
+      const es = extension.requestStatus$.subscribe((status: string | null) =>
+        setRequestStatus(status)
+      );
+
       return () => {
         ps.unsubscribe();
         os.unsubscribe();
         pr.unsubscribe();
         prs.unsubscribe();
         hus.unsubscribe();
+        es.unsubscribe();
       };
     }
   }, [extension]);
@@ -98,6 +104,20 @@ const PointCloudHandlerWidget: React.FC<{
       isPreview={isPreview}
       actionPanel={
         <Box>
+          {requestStatus === "error" && (
+            <Box
+              sx={{
+                border: "1px solid var(--main-text-color)",
+                padding: "2px 5px",
+                borderRadius: "5px",
+                fontSize: "10px !important",
+                opacity: 0.5,
+              }}
+            >
+              Error
+            </Box>
+          )}
+
           <Button
             disabled={!hasUpdated || pendingRequest || pendingResponse}
             variant="contained"
