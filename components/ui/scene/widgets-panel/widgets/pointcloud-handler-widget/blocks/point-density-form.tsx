@@ -53,7 +53,7 @@ const PointDensityForm: React.FC<{
                 value={point.size[0]}
                 step={0.1}
                 min={0.1}
-                max={5}
+                max={15}
                 size="small"
                 valueLabelDisplay="auto"
                 onChange={(e, value) => {
@@ -76,7 +76,7 @@ const PointDensityForm: React.FC<{
                 value={point.size[1]}
                 step={0.1}
                 min={0.1}
-                max={5}
+                max={15}
                 size="small"
                 valueLabelDisplay="auto"
                 onChange={(e, value) => {
@@ -102,7 +102,7 @@ const PointDensityForm: React.FC<{
               value={point.size[0]}
               step={0.1}
               min={0.1}
-              max={5}
+              max={15}
               size="small"
               valueLabelDisplay="auto"
               onChange={(e, value) => {

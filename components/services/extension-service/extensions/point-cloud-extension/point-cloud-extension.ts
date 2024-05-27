@@ -379,6 +379,7 @@ class PointCloudExtension
     if (!mesh) return;
 
     mesh.scale.set(size[0], 1, size[1]);
+
     mesh.updateMatrix();
     mesh.updateMatrixWorld(true);
 
