@@ -7,6 +7,7 @@ export interface PointCloudFieldHandler {
   height: number;
   size: PointCloudFieldSize;
   shape: "ellipse" | "rectangle";
+  active: boolean;
 }
 
 export type PointCloudFieldShape = "ellipse" | "rectangle";
@@ -25,4 +26,17 @@ export interface PointCloudFloarParamWindow {
   position: THREE.Vector3;
   id: string;
   div: HTMLDivElement;
+}
+
+export interface OverallPointCloudField {
+  min_step: OverallPCFConfig;
+  max_step: OverallPCFConfig;
+  blur: OverallPCFConfig;
+}
+
+export interface OverallPCFConfig {
+  min: number;
+  max: number;
+  value: number;
+  step: number;
 }

@@ -9,7 +9,8 @@ import styled from "styled-components";
 const PointDensityForm: React.FC<{
   point: PointCloudFieldHandler;
   extension: PointCloudExtension | null;
-}> = ({ point, extension }) => {
+  disabled: boolean;
+}> = ({ point, extension, disabled }) => {
   return (
     <Box
       sx={{
@@ -23,6 +24,7 @@ const PointDensityForm: React.FC<{
         <Box>Shape</Box>
         <Box>
           <Select
+            disabled={disabled}
             sx={{ width: "144px" }}
             data-type="select"
             value={point.shape}
@@ -46,6 +48,7 @@ const PointDensityForm: React.FC<{
             <Box>Width</Box>
             <Box>
               <Slider
+                disabled={disabled}
                 data-type="params"
                 value={point.size[0]}
                 step={0.1}
@@ -68,6 +71,7 @@ const PointDensityForm: React.FC<{
             <Box>Height</Box>
             <Box>
               <Slider
+                disabled={disabled}
                 data-type="params"
                 value={point.size[1]}
                 step={0.1}
@@ -93,6 +97,7 @@ const PointDensityForm: React.FC<{
           <Box>Radius</Box>
           <Box>
             <Slider
+              disabled={disabled}
               data-type="params"
               value={point.size[0]}
               step={0.1}
@@ -113,12 +118,17 @@ const PointDensityForm: React.FC<{
       )}
 
       <Button
+        disabled={disabled}
         sx={{ marginTop: "6px !important" }}
         variant="contained"
         color="secondary"
-        onClick={() => true}
+        onClick={() =>
+          extension?.updatePoint(point.id, { active: !point.active })
+        }
       >
-        <span style={{ color: "var(--button-primary-color)" }}>Remove</span>
+        <span style={{ color: "var(--main-text-color)" }}>
+          {point.active ? "Disable" : "Enable"}
+        </span>
       </Button>
     </Box>
   );

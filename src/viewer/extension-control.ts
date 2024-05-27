@@ -49,7 +49,10 @@ class ExtensionControl {
       throw new Error(`Extension with name ${extension.name} already exists`);
 
     this._extensions.set(extension.name, extension);
+
     extension.load();
+
+    console.log("this._extensions", this._extensions);
 
     this._$extensions.next(this._extensions);
 

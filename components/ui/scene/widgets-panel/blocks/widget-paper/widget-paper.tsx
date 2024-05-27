@@ -1,5 +1,5 @@
 import MarkedIcon from "@/components/ui/icons/marked-icon";
-import { IconButton, Paper } from "@mui/material";
+import { Box, CircularProgress, IconButton, Paper } from "@mui/material";
 import styled from "styled-components";
 import { Title } from "../../../bar/bar.styled";
 import { useStates } from "@/components/services/state-service/state-provider";
@@ -9,9 +9,17 @@ interface WidgetProps {
   children: React.ReactNode;
   title: string;
   isPreview?: boolean;
+  isLoading?: boolean;
+  actionPanel?: React.ReactNode;
 }
 
-const WidgetPaper: React.FC<WidgetProps> = ({ children, title, isPreview }) => {
+const WidgetPaper: React.FC<WidgetProps> = ({
+  children,
+  title,
+  isPreview,
+  isLoading,
+  actionPanel,
+}) => {
   const { isEditWidgetsOpen } = useStates();
 
   return (
@@ -20,17 +28,29 @@ const WidgetPaper: React.FC<WidgetProps> = ({ children, title, isPreview }) => {
       style={{ flexDirection: "column", alignItems: "flex-start" }}
     >
       <WidgetHeader>
-        {isEditWidgetsOpen && !isPreview ? (
-          <IconButton>
-            <WidgetHandleIcon />
-          </IconButton>
-        ) : (
-          <IconButton>
-            <MarkedIcon />
-          </IconButton>
-        )}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            columnGap: "10px",
+          }}
+        >
+          {isEditWidgetsOpen && !isPreview ? (
+            <IconButton>
+              <WidgetHandleIcon />
+            </IconButton>
+          ) : (
+            <IconButton>
+              <MarkedIcon />
+            </IconButton>
+          )}
 
-        <Title style={{ fontWeight: "500" }}>{title}</Title>
+          <Title style={{ fontWeight: "500" }}>{title}</Title>
+        </Box>
+
+        {isLoading && <CircularProgress data-type="spinner" size={"small"} />}
+
+        {actionPanel}
       </WidgetHeader>
 
       {children}
@@ -41,8 +61,21 @@ const WidgetPaper: React.FC<WidgetProps> = ({ children, title, isPreview }) => {
 const WidgetHeader = styled.div`
   display: flex;
   align-items: center;
+  width: 100%;
 
   column-gap: 10px;
+
+  justify-content: space-between;
+
+  && *[data-type="spinner"] {
+    width: 18px !important;
+    height: 18px !important;
+
+    &,
+    & * {
+      font-size: 12px !important;
+    }
+  }
 `;
 
 export default WidgetPaper;

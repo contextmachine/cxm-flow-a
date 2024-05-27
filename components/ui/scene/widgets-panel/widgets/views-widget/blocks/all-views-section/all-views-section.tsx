@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import ViewItem from "../view-item/view-item";
-import { ViewStateItem } from "@/components/services/extension-service/extensions/camera-views-extension/camera-views-extension.db";
+import { ViewStateItem } from "@/components/services/extensions/camera-views-extension/camera-views-extension.db";
 import { useDragAndDrop } from "@formkit/drag-and-drop/react";
 import { useEffect } from "react";
 import { useViewsWidget } from "../../views-widget";

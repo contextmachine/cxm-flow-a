@@ -6,6 +6,7 @@ export const addPrimitive = (
   visible: boolean
 ): THREE.Mesh<THREE.CylinderGeometry> => {
   const { position, height, size } = point;
+
   const geometry = new THREE.CylinderGeometry(5, 5, height, 5); // Base geometry for cylinder
   const material = new THREE.MeshStandardMaterial({
     color: 0x00ff00,

@@ -8,11 +8,10 @@ import * as THREE from "three";
 import { CameraControlsEventMap } from "camera-controls/dist/types";
 import polygonClipping from "polygon-clipping";
 import * as turf from "@turf/turf";
-import itemData from "./data/points.json";
 import {
+  OverallPointCloudField,
   PointCloudFieldHandler,
   PointCloudFieldSize,
-  PointCloudFloarParamWindow,
   PointCloudPointSvg,
 } from "./point-cloud-extension.types";
 import { initializeSVGOverlay } from "./blocks/init-svg-overlay";
@@ -27,10 +26,9 @@ import {
 import { update2dElement } from "./blocks/update-2d-elements";
 import { BehaviorSubject } from "rxjs";
 import Viewer from "@/src/viewer/viewer";
-import {
-  ControlsViewState,
-  ViewState,
-} from "@/src/viewer/camera-control.types";
+import { ControlsViewState } from "@/src/viewer/camera-control.types";
+import PointCloudExtensionDB from "./point-cloud-extension.db";
+import { debounce } from "lodash";
 
 class PointCloudExtension
   extends ExtensionEntity
@@ -44,6 +42,7 @@ class PointCloudExtension
   private _cameraSubscription: Map<string, any> = new Map();
 
   private _points: Map<string, PointCloudFieldHandler> = new Map();
+  private _overall: OverallPointCloudField | null = null;
 
   private _pointMeshes = new Map<string, THREE.Mesh>();
   private _pointSvgs = new Map<string, PointCloudPointSvg>();
@@ -59,6 +58,13 @@ class PointCloudExtension
   private _points$ = new BehaviorSubject<Map<string, PointCloudFieldHandler>>(
     new Map()
   );
+  private _overall$ = new BehaviorSubject<OverallPointCloudField | null>(null);
+
+  private _hasUpdated$ = new BehaviorSubject<boolean>(false);
+  private _pendingRequest$ = new BehaviorSubject<boolean>(false);
+  private _pendingResponse$ = new BehaviorSubject<boolean>(false);
+
+  private _pointCloudExtentionDB: PointCloudExtensionDB;
 
   constructor(viewer: Viewer) {
     super(viewer);
@@ -66,17 +72,47 @@ class PointCloudExtension
     this.id = uuidv4();
     this.name = "pointcloud-handler";
 
-    this._addPoints();
+    this._pointCloudExtentionDB = new PointCloudExtensionDB(this._viewer);
 
     this._drawCylinders = this._drawCylinders.bind(this);
   }
 
-  private _addPoints() {
-    itemData.forEach((item) => {
-      const itemData = this._translateDtoToHandler(item);
-      this._points.set(itemData.id, itemData);
-    });
+  private async _addPoints() {
+    const primitives =
+      await this._pointCloudExtentionDB.getPointCloudPrimitive();
 
+    primitives
+      .filter(
+        (primitive: any) =>
+          primitive?.shape === "rectangle" || primitive?.shape === "circle"
+      )
+      .forEach((primitive: any) => {
+        const itemData = this._translateDtoToHandler(primitive);
+        this._points.set(itemData.id, itemData);
+      });
+
+    primitives
+      .filter((primitive: any) => primitive?.shape === "overall")
+      .forEach((primitive: any) => {
+        try {
+          const overall: any = {};
+
+          const min_step = primitive.configs?.min_step;
+          const max_step = primitive.configs?.max_step;
+          const blur = primitive.configs?.blur;
+          const min = primitive.configs?.min;
+
+          overall["min_step"] = { ...min_step };
+          overall["max_step"] = { ...max_step };
+          overall["blur"] = { ...blur };
+
+          this._overall = overall as OverallPointCloudField;
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      });
+
+    this._overall$.next(this._overall);
     this._points$.next(this._points);
   }
 
@@ -84,21 +120,27 @@ class PointCloudExtension
     const shape = dto.shape === "rectangle" ? "rectangle" : "ellipse";
     let size: PointCloudFieldSize = [1, 1];
 
-    if (typeof dto.width === "number" && typeof dto.height === "number") {
-      size = [dto.width, dto.height];
+    const configs = dto.configs;
+
+    if (
+      typeof configs?.width === "number" &&
+      typeof configs?.height === "number"
+    ) {
+      size = [configs.width, configs.height];
     }
 
-    if (typeof dto.radius === "number") {
-      size = [dto.radius, dto.radius];
+    if (typeof configs?.radius === "number") {
+      size = [configs.radius, configs.radius];
     }
 
     return {
-      id: dto.id,
-      position: dto.position,
+      id: `${dto.id}`,
+      position: [...dto.position, 20] as [number, number, number],
       height: 10,
       name: dto.name,
       size,
       shape: shape,
+      active: dto.active,
     };
   }
 
@@ -234,6 +276,91 @@ class PointCloudExtension
     }
 
     this._points$.next(this._points);
+    this._hasUpdated$.next(true);
+  }
+
+  public updateOverall(
+    attribute: "min_step" | "max_step" | "blur",
+    value: number
+  ) {
+    const overall = this._overall;
+
+    if (!overall) return;
+
+    overall[attribute].value = value;
+
+    this._overall$.next({ ...overall });
+    this._hasUpdated$.next(true);
+  }
+
+  public saveUpdates() {
+    this._pendingRequest$.next(true);
+    this._pendingResponse$.next(false);
+    this._debouncedUpdate();
+  }
+
+  private _debouncedUpdate = debounce(async () => {
+    try {
+      // Assuming you have a method to prepare the payload for the post request
+      const payload = this._prepareUpdatePayload();
+
+      this._pendingRequest$.next(false);
+      this._pendingResponse$.next(true);
+
+      const result = await axios.post(
+        "https://sbm.dev.contextmachine.cloud/initial_params",
+        payload
+      );
+
+      const data = result.data;
+      this._updateModel(data);
+    } catch (error) {
+      console.error("Error posting update:", error);
+    }
+
+    this._pendingResponse$.next(false);
+    this._pendingRequest$.next(false);
+    this._hasUpdated$.next(false);
+  }, 1500); // Adjust the debounce delay as needed
+
+  private _prepareUpdatePayload() {
+    const overall = this._overall;
+    const points = Array.from(this._points.values());
+
+    const payload = {
+      min_step: overall?.min_step.value,
+      max_step: overall?.max_step.value,
+      blur: overall?.blur.value,
+      shapes: points.map((point) => ({
+        point: [point.position[0], point.position[1]],
+        active: point.active,
+        ...(point.shape === "rectangle"
+          ? { width: point.size[0], height: point.size[1] }
+          : {
+              radius: point.size[0],
+            }),
+      })),
+    };
+
+    return payload;
+  }
+
+  private _updateModel(data: any = {}) {
+    const viewer = this._viewer;
+    const loader = viewer.loader;
+
+    const queries = loader.queries;
+
+    // Find the query that matches the current extension
+    const query = Array.from(queries).find((query) =>
+      query.endpoint.startsWith("http://storage.yandexcloud.net/")
+    );
+
+    if (query) {
+      loader.loadApiObject(query, {
+        useData: data,
+      });
+    }
   }
 
   private _modifyCylinderSize(id: string, size: PointCloudFieldSize) {
@@ -255,7 +382,7 @@ class PointCloudExtension
   private _createPrimitives() {
     const points = this._points;
 
-    points.forEach((point) => {
+    Array.from(points).forEach(([i, point]) => {
       const mesh = addPrimitive(point, !this._wireframeDisabled);
 
       this._viewer!.scene.add(mesh);
@@ -338,6 +465,8 @@ class PointCloudExtension
   }
 
   public async load() {
+    await this._addPoints();
+
     this._initializeSVGOverlay();
     this._createPrimitives();
     this._addCameraSubscription();
@@ -463,6 +592,22 @@ class PointCloudExtension
 
   public get points$() {
     return this._points$.asObservable();
+  }
+
+  public get overall$() {
+    return this._overall$.asObservable();
+  }
+
+  public get pendingRequest$() {
+    return this._pendingRequest$.asObservable();
+  }
+
+  public get pendingResponse$() {
+    return this._pendingResponse$.asObservable();
+  }
+
+  public get hasUpdated() {
+    return this._hasUpdated$.asObservable();
   }
 }
 

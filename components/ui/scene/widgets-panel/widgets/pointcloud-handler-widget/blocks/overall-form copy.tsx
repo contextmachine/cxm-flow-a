@@ -1,14 +1,13 @@
 import PointCloudExtension from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension";
-import {
-  PointCloudFieldHandler,
-  PointCloudFieldShape,
-} from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension.types";
-import { Box, Button, MenuItem, Select, Slider } from "@mui/material";
+import { OverallPointCloudField } from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension.types";
+import { Box, Slider } from "@mui/material";
 import styled from "styled-components";
 
 const OverallForm: React.FC<{
   extension: PointCloudExtension | null;
-}> = ({ extension }) => {
+  data: OverallPointCloudField;
+  disabled: boolean;
+}> = ({ extension, data, disabled }) => {
   return (
     <Box
       sx={{
@@ -22,11 +21,15 @@ const OverallForm: React.FC<{
         <Box>Min step</Box>
         <Box>
           <Slider
+            disabled={disabled}
             data-type="params"
-            value={3}
-            step={0.1}
-            min={0.1}
-            max={5}
+            value={data.min_step.value}
+            step={data.min_step.step}
+            min={data.min_step.min}
+            max={data.min_step.max}
+            onChange={(e, value) => {
+              extension?.updateOverall("min_step", value as number);
+            }}
             size="small"
             valueLabelDisplay="auto"
           />
@@ -37,11 +40,15 @@ const OverallForm: React.FC<{
         <Box>Max step</Box>
         <Box>
           <Slider
+            disabled={disabled}
             data-type="params"
-            value={3}
-            step={0.1}
-            min={0.1}
-            max={5}
+            value={data.max_step.value}
+            step={data.max_step.step}
+            min={data.max_step.min}
+            max={data.max_step.max}
+            onChange={(e, value) => {
+              extension?.updateOverall("max_step", value as number);
+            }}
             size="small"
             valueLabelDisplay="auto"
           />
@@ -52,11 +59,15 @@ const OverallForm: React.FC<{
         <Box>Blur</Box>
         <Box>
           <Slider
+            disabled={disabled}
             data-type="params"
-            value={2}
-            step={0.1}
-            min={0.1}
-            max={5}
+            value={data.blur.value}
+            step={data.blur.step}
+            min={data.blur.min}
+            max={data.blur.max}
+            onChange={(e, value) => {
+              extension?.updateOverall("blur", value as number);
+            }}
             size="small"
             valueLabelDisplay="auto"
           />

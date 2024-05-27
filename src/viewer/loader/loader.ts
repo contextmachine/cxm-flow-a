@@ -126,7 +126,10 @@ class Loader {
     }
   }
 
-  private async loadApiObject(apiObject: ApiObject) {
+  public async loadApiObject(
+    apiObject: ApiObject,
+    options?: { useData?: any }
+  ) {
     const exsisting = this._queries.has(apiObject);
 
     if (exsisting) {
@@ -137,14 +140,27 @@ class Loader {
       this._queries.add(apiObject);
     }
 
-    const response = await axios.get(apiObject.endpoint);
-    const jsonObject = findThreeJSJSON(response.data);
+    let data;
+    if (options?.useData) {
+      // use data from options
+      data = options.useData;
+    } else {
+      // fetch data from endpoint
+      const response = await axios.get(apiObject.endpoint);
+      data = response.data;
+    }
+
+    const jsonObject = findThreeJSJSON(data);
     const object3d = await parseJSON(jsonObject);
 
     const model = new ProjectModel(this._viewer, object3d, apiObject);
     this._viewer.entityControl.addModel(model);
 
     return model;
+  }
+
+  public get queries() {
+    return this._queries;
   }
 
   public dispose() {

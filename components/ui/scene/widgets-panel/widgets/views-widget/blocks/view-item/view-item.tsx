@@ -1,4 +1,4 @@
-import { ViewStateItem } from "@/components/services/extension-service/extensions/camera-views-extension/camera-views-extension.db";
+import { ViewStateItem } from "@/components/services/extensions/camera-views-extension/camera-views-extension.db";
 import { useState } from "react";
 import { Box, CircularProgress, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";

@@ -3,7 +3,10 @@ import WidgetPaper from "../../blocks/widget-paper/widget-paper";
 import { Box, Button } from "@mui/material";
 import PointCloudExtension from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension";
 import { useScene } from "@/components/services/scene-service/scene-provider";
-import { PointCloudFieldHandler } from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension.types";
+import {
+  OverallPointCloudField,
+  PointCloudFieldHandler,
+} from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension.types";
 
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -16,6 +19,7 @@ import PointDensityForm from "./blocks/point-density-form";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import OverallForm from "./blocks/overall-form copy";
 import { ControlsViewState } from "@/src/viewer/camera-control.types";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const PointCloudHandlerWidget: React.FC<{
   isPreview?: boolean;
@@ -23,16 +27,47 @@ const PointCloudHandlerWidget: React.FC<{
 }> = ({ isPreview, extension: ext }) => {
   const extension = ext as PointCloudExtension;
 
+  const [overall, setOverall] = useState<OverallPointCloudField | null>(null);
   const [points, setPoints] = useState<PointCloudFieldHandler[]>([]);
+
   const [expanded, setExpanded] = useState<string | false>(false);
+
+  const [pendingRequest, setPendingRequest] = useState(false);
+  const [pendingResponse, setPendingResponse] = useState(false);
+  const [hasUpdated, setHasUpdated] = useState(false);
 
   useEffect(() => {
     if (extension) {
-      extension.points$.subscribe(
+      const ps = extension.points$.subscribe(
         (points: Map<string, PointCloudFieldHandler>) => {
           setPoints(Array.from(points.values()));
         }
       );
+
+      const os = extension.overall$.subscribe(
+        (overall: OverallPointCloudField | null) => {
+          setOverall(overall);
+        }
+      );
+
+      const pr = extension.pendingRequest$.subscribe((pending: boolean) =>
+        setPendingRequest(pending)
+      );
+      const prs = extension.pendingResponse$.subscribe((pending: boolean) =>
+        setPendingResponse(pending)
+      );
+
+      const hus = extension.hasUpdated.subscribe((hasUpdated: boolean) =>
+        setHasUpdated(hasUpdated)
+      );
+
+      return () => {
+        ps.unsubscribe();
+        os.unsubscribe();
+        pr.unsubscribe();
+        prs.unsubscribe();
+        hus.unsubscribe();
+      };
     }
   }, [extension]);
 
@@ -59,7 +94,26 @@ const PointCloudHandlerWidget: React.FC<{
     };
 
   return (
-    <WidgetPaper isPreview={isPreview} title={"Point density"}>
+    <WidgetPaper
+      isPreview={isPreview}
+      actionPanel={
+        <Box>
+          <Button
+            disabled={!hasUpdated || pendingRequest || pendingResponse}
+            variant="contained"
+            color="primary"
+            onClick={() => extension.saveUpdates()}
+          >
+            {pendingRequest || pendingResponse ? (
+              <CircularProgress size={16} />
+            ) : (
+              "Save"
+            )}
+          </Button>
+        </Box>
+      }
+      title={"Point density"}
+    >
       <Wrapper>
         <Accordion
           sx={{ display: "flex", flexDirection: "column" }}
@@ -79,7 +133,13 @@ const PointCloudHandlerWidget: React.FC<{
             </Box>
           </AccordionSummary>
           <AccordionDetails>
-            <OverallForm extension={extension} />
+            {overall && (
+              <OverallForm
+                disabled={pendingRequest || pendingResponse}
+                extension={extension}
+                data={overall}
+              />
+            )}
           </AccordionDetails>
         </Accordion>
 
@@ -110,11 +170,35 @@ const PointCloudHandlerWidget: React.FC<{
                     backgroundColor: "rgba(68, 68, 68, 1)",
                   }}
                 ></Box>
-                <Typography>{point.name}</Typography>
+                <Typography
+                  sx={{
+                    opacity: point.active ? 1 : 0.5,
+                  }}
+                >
+                  {point.name}
+                </Typography>
+
+                {!point.active && (
+                  <Box
+                    sx={{
+                      border: "1px solid var(--main-text-color)",
+                      padding: "2px 5px",
+                      borderRadius: "5px",
+                      fontSize: "10px !important",
+                      opacity: 0.5,
+                    }}
+                  >
+                    Disabled
+                  </Box>
+                )}
               </Box>
             </AccordionSummary>
             <AccordionDetails>
-              <PointDensityForm point={point} extension={extension} />
+              <PointDensityForm
+                disabled={pendingRequest || pendingResponse}
+                point={point}
+                extension={extension}
+              />
             </AccordionDetails>
           </Accordion>
         ))}

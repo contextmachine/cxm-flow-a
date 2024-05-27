@@ -7,7 +7,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import styled from "styled-components";
 import { useViewsWidget } from "../../views-widget";
-import { ViewStateItem } from "@/components/services/extension-service/extensions/camera-views-extension/camera-views-extension.db";
+import { ViewStateItem } from "@/components/services/extensions/camera-views-extension/camera-views-extension.db";
 
 function not(a: readonly number[], b: readonly number[]) {
   return a.filter((value) => b.indexOf(value) === -1);
