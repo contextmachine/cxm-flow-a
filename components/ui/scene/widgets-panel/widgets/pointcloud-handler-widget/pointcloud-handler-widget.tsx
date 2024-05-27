@@ -20,6 +20,8 @@ import { ExtensionEntityInterface } from "@/components/services/extension-servic
 import OverallForm from "./blocks/overall-form copy";
 import { ControlsViewState } from "@/src/viewer/camera-control.types";
 import CircularProgress from "@mui/material/CircularProgress";
+import OpenFolderIcon from "@/components/ui/icons/open-folder-icon";
+import AtomIcon from "@/components/ui/icons/atom-icon";
 
 const PointCloudHandlerWidget: React.FC<{
   isPreview?: boolean;
@@ -147,8 +149,13 @@ const PointCloudHandlerWidget: React.FC<{
                   height: "18px",
                   borderRadius: "50%",
                   backgroundColor: "rgba(68, 68, 68, 1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              ></Box>
+              >
+                <OpenFolderIcon />
+              </Box>
               <Typography>Basic values</Typography>
             </Box>
           </AccordionSummary>
@@ -188,8 +195,13 @@ const PointCloudHandlerWidget: React.FC<{
                     height: "18px",
                     borderRadius: "50%",
                     backgroundColor: "rgba(68, 68, 68, 1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                ></Box>
+                >
+                  <AtomIcon />
+                </Box>
                 <Typography
                   sx={{
                     opacity: point.active ? 1 : 0.5,
