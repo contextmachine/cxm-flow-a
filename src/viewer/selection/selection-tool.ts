@@ -6,16 +6,13 @@ import Picker from "./picker";
 import { Group } from "@/src/objects/entities/group";
 import { activeGroupBoxHelperColor } from "@/src/objects/materials/object-materials";
 
-
-
 class SelectionControl {
   private _subscriptions: RX.Subscription[] = [];
   private _entitiesMap: Map<string, Entity> = new Map();
 
-  private _selectionSet: Set<string>;
+  private _picker: Picker;
 
-  private _currentGroup: Group | undefined
-  private _currentGroupObservable = new RX.Subject<Group | undefined>()
+  private _selectionSet: Set<string>;
 
   private _selected: Entity[] = [];
   private _selectedSubject = new RX.Subject<Entity[]>();
@@ -28,26 +25,27 @@ class SelectionControl {
   }>();
 
   constructor(private _viewer: Viewer) {
-
-    const picker = new Picker(this._viewer, this)
+    this._picker = new Picker(this._viewer, this);
 
     this._selectionSet = new Set<string>();
 
     this._entitiesMap = this._viewer.entityControl.entities;
     this._subscriptions.push(
-      this._viewer.entityControl.$entities.subscribe(
-        (objects) => {
-          this._entitiesMap = objects;
-          if (this._needsReloadSelection) {
-            const ids = this._needsReloadSelection.filter((x) =>
-              this._entitiesMap.has(x)
-            );
-            this.addToSelection(ids);
-            this._needsReloadSelection = undefined;
-          }
-        })
+      this._viewer.entityControl.$entities.subscribe((objects) => {
+        this._entitiesMap = objects;
+        if (this._needsReloadSelection) {
+          const ids = this._needsReloadSelection.filter((x) =>
+            this._entitiesMap.has(x)
+          );
+          this.addToSelection(ids);
+          this._needsReloadSelection = undefined;
+        }
+      })
     );
+  }
 
+  public get picker(): Picker {
+    return this._picker;
   }
 
   public get selected(): Entity[] {
@@ -64,36 +62,6 @@ class SelectionControl {
 
   public set needsReloadSelection(e: string[] | undefined) {
     this._needsReloadSelection = e;
-  }
-
-  public get currentGroup(): Group | undefined {
-    return this._currentGroup;
-  }
-
-  public get $currentGroup(): RX.Observable<Group | undefined> {
-    return this._currentGroupObservable;
-  }
-
-  public setCurrentGroup(group: Group | undefined) {
-    console.log('current group: ', group, group?.children)
-    this.clearSelection()
-
-    if (this.currentGroup) {
-      this.currentGroup.setBboxVisibilty(false)
-      this._viewer.removeFromScene(this.currentGroup.bbox)
-      this.currentGroup.children.forEach(x => x.onDisable())
-    }
-
-    if (group) {
-      group.setBboxVisibilty(true, activeGroupBoxHelperColor)
-      this._viewer.controls.setOrbit(group.center)
-      group.children.forEach(x => x.onEnable())
-    } else {
-      this._viewer.entityControl.objectsOnCurrentLevel.forEach(x => x.onEnable())
-    }
-
-    this._currentGroupObservable.next(group)
-    this._currentGroup = group
   }
 
   public clearSelection() {
@@ -132,8 +100,6 @@ class SelectionControl {
       projectObject.onSelect();
       this._selectionSet.add(id);
     }
-
-
   }
 
   private deselectObject(id: string) {
@@ -146,8 +112,6 @@ class SelectionControl {
       entity.onDeselect();
       this._selectionSet.delete(id);
     }
-
-
   }
 
   private updateState() {
@@ -157,8 +121,6 @@ class SelectionControl {
       .map((x) => this._entitiesMap.get(x))
       .filter((x) => x !== undefined) as Entity[];
     this._selectedSubject.next(this._selected);
-
-
   }
 
   public dispose() {

@@ -7,7 +7,8 @@ import { Entity, isGroup } from "@/src/objects/entities/entity";
 import UnionMesh from "@/src/objects/entities/utility/union-mesh";
 import { assertDefined } from "@/src/utils";
 import EntityControl from "../entity-control";
-
+import { Group } from "@/src/objects/entities/group";
+import { activeGroupBoxHelperColor } from "@/src/objects/materials/object-materials";
 
 class Picker {
   private _subscriptions: RX.Unsubscribable[] = [];
@@ -16,7 +17,16 @@ class Picker {
 
   private _raycaster: THREE.Raycaster;
   private _camera: THREE.Camera;
-  private _unionMeshes: UnionMesh[]
+  private _unionMeshes: UnionMesh[];
+
+  private _currentGroup: Group | undefined;
+
+  /** набор объектов, который меняет поведение выделения групп
+  если он определен, то его элементы выделяются как плоский список, 
+  вне зависимости от вложенности, можно опуститься ниже, 
+  но нельзя подняться выше этого набора */
+  private _flattenedEntitySet: Set<Entity> | undefined;
+  private _flattenedMode = false;
 
   constructor(
     private _viewer: Viewer,
@@ -28,8 +38,8 @@ class Picker {
 
     this._raycaster.firstHitOnly = false;
     this._unionMeshes = [...this._viewer.entityControl.projectModels.values()]
-      .map(x => x.unionMesh)
-      .filter(x => x !== undefined) as UnionMesh[]
+      .map((x) => x.unionMesh)
+      .filter((x) => x !== undefined) as UnionMesh[];
 
     this._subscriptions.push(
       RX.fromEvent<MouseEvent>(this._domElement, "mousedown")
@@ -48,34 +58,113 @@ class Picker {
     this._subscriptions.push(
       this._viewer.entityControl.$projectModels.subscribe((e) => {
         this._unionMeshes = [...e.values()]
-          .map(x => x.unionMesh)
-          .filter(x => x !== undefined) as UnionMesh[]
+          .map((x) => x.unionMesh)
+          .filter((x) => x !== undefined) as UnionMesh[];
       })
     );
-
   }
 
   public enable(e: boolean) {
     this._enabled = e;
   }
 
+  public setFlattenedEntitySet(set: Set<Entity> | undefined) {
+    this._flattenedEntitySet = set;
+
+    if (set) {
+      const entitiyTree = [
+        ...this._viewer.entityControl.projectModels.values(),
+      ].map((x) => x.entity);
+
+      const onlyHighLevel: Entity[] = [];
+
+      const traverseEntity = (x: Entity) => {
+        if (set.has(x)) {
+          onlyHighLevel.push(x);
+        } else {
+          x.children?.forEach(traverseEntity);
+        }
+      };
+
+      entitiyTree.forEach((x) => {
+        traverseEntity(x);
+      });
+
+      this._flattenedEntitySet = new Set(onlyHighLevel);
+    } else {
+      this._flattenedMode = false;
+    }
+
+    this.activateFlattenedSet();
+  }
+
+  private activateFlattenedSet() {
+    this.setCurrentGroup(undefined);
+
+    if (this._flattenedEntitySet) {
+      this._flattenedMode = true;
+      const enitites = this._flattenedEntitySet;
+
+      const entitiyTree = [
+        ...this._viewer.entityControl.projectModels.values(),
+      ].map((x) => x.entity);
+
+      const traverseEntity = (x: Entity) => {
+        if (enitites.has(x)) {
+          x.onEnable();
+        } else {
+          x.onDisable();
+          x.children?.forEach(traverseEntity);
+        }
+      };
+
+      entitiyTree.forEach((x) => {
+        traverseEntity(x);
+      });
+    }
+  }
+
+  private setCurrentGroup(group: Group | undefined) {
+    console.log("current group: ", group, group?.children);
+    this._selectionControl.clearSelection();
+
+    const currentGroup = this._currentGroup;
+
+    if (currentGroup) {
+      currentGroup.setBboxVisibilty(false);
+      this._viewer.removeFromScene(currentGroup.bbox);
+      currentGroup.children.forEach((x) => x.onDisable());
+    }
+
+    if (group) {
+      group.setBboxVisibilty(true, activeGroupBoxHelperColor);
+      this._viewer.controls.setOrbit(group.center);
+      group.children.forEach((x) => x.onEnable());
+    } else {
+      [...this._viewer.entityControl.projectModels.values()]
+        .map((x) => x.entity)
+        .forEach((x) => x.onEnable());
+    }
+
+    this._currentGroup = group;
+  }
+
   private getObjectUnderMouse(event: MouseEvent): Entity | undefined {
     const raycaster = this._raycaster;
 
     const pointer = getPointer(event, this._domElement);
-    this._camera.updateMatrixWorld()
+    this._camera.updateMatrixWorld();
     raycaster.setFromCamera(pointer, this._camera);
 
     const intersections: { uuid: string; distance: number }[] = [];
 
     this._unionMeshes.forEach((model) => {
-
       // рейкастим по всем unionMeshes в сцене
 
       const collisionMesh = model.collisionMesh!;
       const modelInt = raycaster.intersectObject(collisionMesh, true);
 
-      modelInt.forEach(intersection => {
+      modelInt.forEach((intersection) => {
         // проходимся по всем пересечениям, и фильтурем по тем, которые доступны для выделения
         // отфильтрованные объекты попадают в массив intersections
         if (intersection.face) {
@@ -86,44 +175,37 @@ class Picker {
             model.meshIdMap
           );
 
-          const po = this._viewer.entityControl.entities.get(meshUuid)
+          const po = this._viewer.entityControl.entities.get(meshUuid);
 
           if (po && po.visibility && po.isSelectable) {
-
             intersections.push({
               uuid: meshUuid,
               distance: modelInt[0].distance,
             });
           }
         }
-      })
+      });
     });
 
     if (intersections.length > 0) {
-
       // сортируем пересечения по дистанции, и выбираем объект из тех, что находятся на текущем уровне
       intersections.sort((a, b) => a.distance - b.distance);
       const meshUuid = intersections[0].uuid;
 
-      const entity = this.findObjectOnCurrentLevel(meshUuid, this._viewer.entityControl)
+      const entity = this.findObjectOnCurrentLevel(meshUuid);
 
-      return entity
-
+      return entity;
     } else {
-
-      return undefined
-
+      return undefined;
     }
   }
 
   private mouseDown(event: MouseEvent) {
-
     if (event.button === 0) {
-
-      const entity = this.getObjectUnderMouse(event)
+      const entity = this.getObjectUnderMouse(event);
 
       if (entity) {
-        const objectId = entity.id
+        const objectId = entity.id;
 
         if (objectId) {
           if (!event.shiftKey && !event.ctrlKey) {
@@ -135,33 +217,39 @@ class Picker {
             this._selectionControl.removeFromSelection([objectId]);
           }
         }
-
       } else {
-
-        this._selectionControl.clearSelection()
-
+        this._selectionControl.clearSelection();
       }
     }
   }
 
   private doubleClick(event: MouseEvent) {
-
     if (event.button === 0) {
-
-      const entity = this.getObjectUnderMouse(event)
+      const entity = this.getObjectUnderMouse(event);
 
       if (entity && isGroup(entity)) {
         // если двойной клик по группе, переключаем группу на которую кликнули
-        this._selectionControl.setCurrentGroup(entity)
-
+        if (this._flattenedMode) {
+          this._flattenedMode = false;
+          this._flattenedEntitySet?.forEach((x) => x.onDisable());
+        }
+        this.setCurrentGroup(entity);
       } else if (entity === undefined) {
         // если двойной клик по пустому месту, перекулючаемся на уровень выше
-        const parent = this._selectionControl.currentGroup?.parent
-        if (parent && isGroup(parent)) {
-          this._selectionControl.setCurrentGroup(parent)
+        const parent = this._currentGroup?.parent;
+
+        const flattenedSet = this._flattenedEntitySet;
+        const currentGroup = this._currentGroup;
+
+        if (flattenedSet && currentGroup && flattenedSet.has(currentGroup)) {
+          console.log("activate");
+          this.activateFlattenedSet();
+        } else if (flattenedSet && currentGroup === undefined) {
+        } else if (parent && isGroup(parent)) {
+          this.setCurrentGroup(parent);
         } else {
           // если группы нет, то переключаемся на уровень сцены
-          this._selectionControl.setCurrentGroup(undefined)
+          this.setCurrentGroup(undefined);
         }
       }
     }
@@ -171,28 +259,40 @@ class Picker {
     this._subscriptions.forEach((x) => x.unsubscribe());
   }
 
-  private findObjectOnCurrentLevel(id: string, entityControl: EntityControl): Entity | undefined {
+  public get objectsOnCurrentLevel(): Entity[] {
+    const currentGroup = this._currentGroup;
+    if (this._flattenedEntitySet && this._flattenedMode) {
+      return [...this._flattenedEntitySet];
+    } else if (currentGroup) {
+      return currentGroup.children;
+    } else {
+      return [...this._viewer.entityControl.projectModels.values()].map(
+        (x) => x.entity
+      );
+    }
+  }
 
-    const objects = entityControl.objectsOnCurrentLevel
-    const entity = objects.find(x => x.id === id)
+  private findObjectOnCurrentLevel(id: string): Entity | undefined {
+    const entityControl = this._viewer.entityControl;
+
+    const objects = this.objectsOnCurrentLevel;
+    const entity = objects.find((x) => x.id === id);
 
     if (entity) {
       // объект найден на текущем уровне
-      return entity
+      return entity;
     } else {
       // объект не найдет на текущем уровне, переходим к родителю
-      const parent = assertDefined(entityControl.entities.get(id)).parent
+      const parent = assertDefined(entityControl.entities.get(id)).parent;
       if (parent) {
-        const parentId = parent.id
-        return this.findObjectOnCurrentLevel(parentId, entityControl)
+        const parentId = parent.id;
+        return this.findObjectOnCurrentLevel(parentId);
       } else {
         // дошли до верхнего уровня, родителей нет
-        return undefined
+        return undefined;
       }
     }
   }
 }
 
 export default Picker;
-
-

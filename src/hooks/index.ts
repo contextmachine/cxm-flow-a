@@ -1,5 +1,7 @@
 import * as RX from "rxjs";
 import { useEffect, useState } from "react";
+import React from "react";
+import { useViewer } from "@/components/services/scene-service/scene-provider";
 
 export const useSubscribe = <T>(
   observable: RX.Observable<T>,
@@ -11,4 +13,28 @@ export const useSubscribe = <T>(
     return () => subscription.unsubscribe();
   }, [observable]);
   return state;
+};
+
+export const useClickOutside = (ref: any, callback: () => void) => {
+  const handleClick = (e: MouseEvent) => {
+    if (ref.current && !ref.current.contains(e.target)) {
+      callback();
+    }
+  };
+  React.useEffect(() => {
+    document.addEventListener("click", handleClick);
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  });
+};
+
+export const useEntities = () => {
+  const viewer = useViewer();
+
+  const entities = useSubscribe(
+    viewer.entityControl.$entities,
+    viewer.entityControl.entities
+  );
+  return entities;
 };

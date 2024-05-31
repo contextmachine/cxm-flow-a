@@ -36,15 +36,6 @@ class EntityControl {
     return this._projectModelsObservable;
   }
 
-  public get objectsOnCurrentLevel(): Entity[] {
-    const currentGroup = this._viewer.selectionTool.currentGroup;
-    if (currentGroup) {
-      return currentGroup.children;
-    } else {
-      return [...this._projectModels.values()].map((x) => x.entity);
-    }
-  }
-
   private updateProjectObjects() {
     this._entitiesObservable.next(this._entities);
   }
