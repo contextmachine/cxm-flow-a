@@ -40,3 +40,19 @@ export interface OverallPCFConfig {
   value: number;
   step: number;
 }
+
+export type PCColor = [number, number, number];
+
+export type PCBufferValue = [number, number, PCColor];
+
+export interface PCUserData {
+  bufferProperties: Record<string, PCBufferValue[]>;
+  entries: any[];
+  gui: any[];
+  properties: {
+    name: string;
+    total_cost: number;
+    total_count: number;
+    total_power: number;
+  };
+}

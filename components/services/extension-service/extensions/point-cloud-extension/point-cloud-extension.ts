@@ -10,6 +10,7 @@ import polygonClipping from "polygon-clipping";
 import * as turf from "@turf/turf";
 import {
   OverallPointCloudField,
+  PCUserData,
   PointCloudFieldHandler,
   PointCloudFieldSize,
   PointCloudPointSvg,
@@ -68,6 +69,9 @@ class PointCloudExtension
   );
 
   private _pointCloudExtentionDB: PointCloudExtensionDB;
+
+  private _statistics: PCUserData | null = null;
+  private _statistics$ = new BehaviorSubject<PCUserData | null>(null);
 
   constructor(viewer: Viewer) {
     super(viewer);
@@ -297,6 +301,9 @@ class PointCloudExtension
   }
 
   public saveUpdates() {
+    this._statistics = null;
+    this._statistics$.next(null);
+
     this._requestStatus$.next(null);
 
     this._pendingRequest$.next(true);
@@ -367,6 +374,12 @@ class PointCloudExtension
         useData: data,
       });
     }
+
+    const object = data?.object;
+    const userData = object?.userData;
+
+    this._statistics = userData as PCUserData;
+    this._statistics$.next(this._statistics);
   }
 
   private _modifyCylinderSize(id: string, size: PointCloudFieldSize) {
@@ -477,6 +490,8 @@ class PointCloudExtension
     this._initializeSVGOverlay();
     this._createPrimitives();
     this._addCameraSubscription();
+
+    this.saveUpdates();
 
     try {
       const response = await axios.post(
@@ -619,6 +634,10 @@ class PointCloudExtension
 
   public get requestStatus$() {
     return this._requestStatus$.asObservable();
+  }
+
+  public get statistics$() {
+    return this._statistics$.asObservable();
   }
 }
 

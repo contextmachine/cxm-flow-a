@@ -32,6 +32,8 @@ export function ProductProvider({ children }: any) {
   const [widgetProducts, setWidgetProducts] = useState<ProductsDto[]>([]);
   const [error, setError] = useState<string>("");
 
+  console.log("sceneService", sceneService);
+
   useEffect(() => {
     const ps_sub = productService.$products.subscribe((products) =>
       setProducts(products)

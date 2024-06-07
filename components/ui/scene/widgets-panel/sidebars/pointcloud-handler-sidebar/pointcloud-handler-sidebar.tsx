@@ -1,12 +1,13 @@
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import { Box, MenuItem, Paper, Select, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import WidgetPaper from "../../blocks/widget-paper/widget-paper";
 import styled from "styled-components";
+import { PCUserData } from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension.types";
 
 const PointCloudHandlerSidebar: React.FC<{
   extension: ExtensionEntityInterface;
-}> = () => {
+}> = ({ extension }) => {
   const [section, setSection] = useState<
     "density" | "cost" | "weight" | "capacity"
   >("density");
@@ -20,6 +21,22 @@ const PointCloudHandlerSidebar: React.FC<{
 
   const total = chartData.reduce((sum, data) => sum + data.value, 0);
   let cumulativeValue = 0;
+
+  const [statistics, setStatistics] = useState<PCUserData | null>(null);
+
+  useEffect(() => {
+    const ps = extension.statistics$.subscribe((data: PCUserData | null) => {
+      setStatistics(data);
+    });
+
+    return () => {
+      ps.unsubscribe();
+    };
+  }, []);
+
+  if (!statistics) return null;
+
+  console.log("statistics", statistics);
 
   return (
     <>
@@ -42,15 +59,15 @@ const PointCloudHandlerSidebar: React.FC<{
           >
             {[
               {
-                value: 1933233178,
-                suffix: "",
+                value: statistics.properties.total_cost,
+                suffix: "cost, RUB",
               },
               {
-                value: 502,
+                value: statistics.properties.total_power,
                 suffix: "consumption, kW",
               },
               {
-                value: 697720,
+                value: statistics.properties.total_count,
                 suffix: "number of pixels",
               },
             ].map((item, index) => (

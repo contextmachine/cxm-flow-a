@@ -3,11 +3,52 @@ import { OverallPointCloudField } from "@/components/services/extension-service/
 import { Box, Slider } from "@mui/material";
 import styled from "styled-components";
 
+const valueMap = {
+  1: 0.9,
+  2: 0.7,
+  3: 0.55,
+  4: 0.45,
+  5: 0.4,
+  7: 0.35,
+  9: 0.3,
+  11: 0.275,
+  14: 0.25,
+  17: 0.23,
+  23: 0.2,
+  30: 0.175,
+  40: 0.15,
+  60: 0.125,
+  90: 0.1,
+  175: 0.075,
+  400: 0.05,
+};
+
+const marks = Object.keys(valueMap).map((key) => ({
+  value: Number(key),
+  label: key,
+}));
+
+const getClosestValue = (value: number) => {
+  const keys = Object.keys(valueMap).map(Number);
+  return keys.reduce((prev, curr) =>
+    Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
+  );
+};
+
 const OverallForm: React.FC<{
   extension: PointCloudExtension | null;
   data: OverallPointCloudField;
   disabled: boolean;
 }> = ({ extension, data, disabled }) => {
+  const handleSliderChange = (
+    param: "min_step" | "max_step" | "blur",
+    value: number
+  ) => {
+    const closestValue = getClosestValue(value);
+
+    extension?.updateOverall(param, closestValue);
+  };
+
   return (
     <Box
       sx={{
@@ -27,9 +68,9 @@ const OverallForm: React.FC<{
             step={data.min_step.step}
             min={data.min_step.min}
             max={data.min_step.max}
-            onChange={(e, value) => {
-              extension?.updateOverall("min_step", value as number);
-            }}
+            onChange={(e, value) =>
+              handleSliderChange("min_step", value as number)
+            }
             size="small"
             valueLabelDisplay="auto"
           />
@@ -46,9 +87,9 @@ const OverallForm: React.FC<{
             step={data.max_step.step}
             min={data.max_step.min}
             max={data.max_step.max}
-            onChange={(e, value) => {
-              extension?.updateOverall("max_step", value as number);
-            }}
+            onChange={(e, value) =>
+              handleSliderChange("max_step", value as number)
+            }
             size="small"
             valueLabelDisplay="auto"
           />
