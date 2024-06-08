@@ -1,16 +1,15 @@
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import { Box, MenuItem, Paper, Select, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import WidgetPaper from "../../blocks/widget-paper/widget-paper";
 import styled from "styled-components";
 import { PCUserData } from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension.types";
+import PieChart from "./blocks/pie-chart/pie-chart";
 
 const PointCloudHandlerSidebar: React.FC<{
   extension: ExtensionEntityInterface;
 }> = ({ extension }) => {
-  const [section, setSection] = useState<
-    "density" | "cost" | "weight" | "capacity"
-  >("density");
+  const [section, setSection] = useState<string>("");
 
   const chartData = [
     { value: 0.5, color: "#b8f2e6", percentage: 45 },
@@ -33,6 +32,12 @@ const PointCloudHandlerSidebar: React.FC<{
       ps.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (statistics) {
+      setSection(Object.keys(statistics.bufferProperties)[0] || "");
+    }
+  }, [statistics]);
 
   if (!statistics) return null;
 
@@ -101,20 +106,11 @@ const PointCloudHandlerSidebar: React.FC<{
             sx={{ width: "100%" }}
             data-type="select"
             value={section}
-            onChange={(e) =>
-              setSection(
-                e.target.value as "density" | "cost" | "weight" | "capacity"
-              )
-            }
+            onChange={(e) => setSection(e.target.value as string)}
           >
-            {[
-              { id: "density", name: "Density" },
-              { id: "cost", name: "Cost" },
-              { id: "weight", name: "Weight" },
-              { id: "capacity", name: "Capacity" },
-            ].map((toolset, i) => (
-              <MenuItem value={toolset.id} key={i}>
-                {toolset.name}
+            {Object.keys(statistics.bufferProperties).map((toolset, i) => (
+              <MenuItem value={toolset} key={i}>
+                {toolset}
               </MenuItem>
             ))}
           </Select>
@@ -123,7 +119,12 @@ const PointCloudHandlerSidebar: React.FC<{
             sx={{ display: "flex", justifyContent: "center", width: "100%" }}
           >
             <ChartContainer>
-              <svg
+              <PieChart
+                data={statistics.bufferProperties[section]}
+                key={section}
+              />
+
+              {/* <svg
                 width="100"
                 height="100"
                 viewBox="0 0 36 36"
@@ -157,7 +158,8 @@ const PointCloudHandlerSidebar: React.FC<{
                     <Box sx={{ marginLeft: "auto" }}>{data.percentage}%</Box>
                   </LegendItem>
                 ))}
-              </Legend>
+
+              </Legend> */}
             </ChartContainer>
           </Box>
         </WidgetPaper>

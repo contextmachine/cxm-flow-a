@@ -23,16 +23,10 @@ const valueMap = {
   400: 0.05,
 };
 
-const marks = Object.keys(valueMap).map((key) => ({
-  value: Number(key),
-  label: key,
-}));
+const valueKeys = Object.keys(valueMap).map(Number);
 
 const getClosestValue = (value: number) => {
-  const keys = Object.keys(valueMap).map(Number);
-  return keys.reduce((prev, curr) =>
-    Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
-  );
+  return (valueMap as any)[value as any];
 };
 
 const OverallForm: React.FC<{
@@ -41,13 +35,21 @@ const OverallForm: React.FC<{
   disabled: boolean;
 }> = ({ extension, data, disabled }) => {
   const handleSliderChange = (
-    param: "min_step" | "max_step" | "blur",
+    param: "min_step" | "max_step",
     value: number
   ) => {
-    const closestValue = getClosestValue(value);
+    // const closestValue = getClosestValue(valueKeys[value]);
 
-    extension?.updateOverall(param, closestValue);
+    const _value = valueKeys[value];
+    extension?.updateOverall(param, value);
   };
+
+  console.log("valueMap", valueMap);
+  console.log(
+    "valueKeys.indexOf(data.min_step.value)",
+    valueKeys.indexOf(data.min_step.value)
+  );
+  console.log("data.min_step.value", data.min_step.value);
 
   return (
     <Box
@@ -64,15 +66,16 @@ const OverallForm: React.FC<{
           <Slider
             disabled={disabled}
             data-type="params"
-            value={data.min_step.value}
-            step={data.min_step.step}
-            min={data.min_step.min}
-            max={data.min_step.max}
+            value={valueKeys.indexOf(data.min_step.value)}
+            step={1}
+            min={0}
+            max={valueKeys.length - 1}
             onChange={(e, value) =>
               handleSliderChange("min_step", value as number)
             }
             size="small"
             valueLabelDisplay="auto"
+            valueLabelFormat={(value) => (valueMap as any)[valueKeys[value]]}
           />
         </Box>
       </ParamItem>
@@ -83,15 +86,16 @@ const OverallForm: React.FC<{
           <Slider
             disabled={disabled}
             data-type="params"
-            value={data.max_step.value}
-            step={data.max_step.step}
-            min={data.max_step.min}
-            max={data.max_step.max}
+            value={valueKeys.indexOf(data.max_step.value)}
+            step={1}
+            min={0}
+            max={valueKeys.length - 1}
             onChange={(e, value) =>
               handleSliderChange("max_step", value as number)
             }
             size="small"
             valueLabelDisplay="auto"
+            valueLabelFormat={(value) => (valueMap as any)[valueKeys[value]]}
           />
         </Box>
       </ParamItem>
