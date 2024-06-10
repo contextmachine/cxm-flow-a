@@ -49,13 +49,12 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
           <div>{currentScopeCount}</div>
         </FilteredCountWrapper>
       )}
-      {childrenCount !== 0 ||
-        (childrenCount !== undefined && (
-          <ChildrenCountWrapper>
-            <div>Children which fits condition:</div>
-            <div>{childrenCount}</div>
-          </ChildrenCountWrapper>
-        ))}
+      {childrenCount !== 0 && childrenCount !== undefined && (
+        <ChildrenCountWrapper>
+          <div>Children which fits condition:</div>
+          <div>{childrenCount}</div>
+        </ChildrenCountWrapper>
+      )}
       <FilterList>
         {filters.map((filter) => (
           <FilterItemComponent filter={filter} extension={extension} />
