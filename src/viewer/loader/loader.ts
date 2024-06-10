@@ -57,6 +57,10 @@ class Loader {
     return this._statusSubject;
   }
 
+  public get queries(): Set<ApiObject> {
+    return this._queries;
+  }
+
   public get $queries(): RX.Observable<ApiObject[]> {
     return this._queriesSubject;
   }

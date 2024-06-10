@@ -16,7 +16,9 @@ const FilterSettings: React.FC<FilterSettingsProps> = (
 ) => {
   const { filter, extension } = props;
 
-  const [filterInput, setFilterInput] = useState("");
+  const [filterInput, setFilterInput] = useState(
+    filter.condition.length > 0 ? filter.condition[0].value.toString() : ""
+  );
 
   const entities = useEntities();
 

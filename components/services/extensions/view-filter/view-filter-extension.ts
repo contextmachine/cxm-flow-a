@@ -5,6 +5,13 @@ import * as RX from "rxjs";
 import { Entity } from "@/src/objects/entities/entity";
 import { assertDefined } from "@/src/utils";
 import { v4 } from "uuid";
+import ViewFilterDbService from "./view-filter-db-service";
+
+export interface FilterPreset {
+  id: number;
+  name: string;
+  filters: Map<string, FilterItem>;
+}
 
 export interface FilterItem {
   id: string;
@@ -24,12 +31,18 @@ class ViewFilterExtension extends ExtensionEntity {
   private _properties = new Map<string, Entity[]>();
   private _$properties = new RX.Subject<Map<string, Entity[]>>();
 
-  private _filters = new Map<string, FilterItem>();
+  private _currentPreset: FilterPreset | undefined;
+
+  private _filters: Map<string, FilterItem> = new Map();
   private _$filters = new RX.Subject<FilterItem[]>();
+
+  private _dbService: ViewFilterDbService;
 
   constructor(viewer: Viewer) {
     super(viewer);
     this.name = "view-filter";
+
+    this._dbService = new ViewFilterDbService(this, this._viewer);
   }
 
   public get properties() {
@@ -61,33 +74,49 @@ class ViewFilterExtension extends ExtensionEntity {
     );
 
     this._subscriptions.push(
-      this._$filters.subscribe((filters) => {
+      this._$filters.subscribe(() => {
         this.executeFiltering();
       })
     );
+
+    const filterPresets = await this._dbService.fetchPresets();
+
+    if (filterPresets.length > 0) {
+      this._currentPreset = filterPresets[0];
+    } else {
+      await this._dbService.addPreset();
+
+      const filterPresets = await this._dbService.fetchPresets();
+
+      if (filterPresets.length === 0) {
+        throw new Error("failed to load filter presets");
+      }
+      this._currentPreset = filterPresets[0];
+    }
+
+    this._filters = this._currentPreset.filters;
+    this._$filters.next([...this._filters.values()]);
   }
 
   private executeFiltering() {
-    const activeFilters = [...this._filters.values()].filter((x) => x.enabled);
+    if (this._currentPreset) {
+      const filterPreset = this._currentPreset;
 
-    if (activeFilters.length > 0) {
-      const entities = [...this._viewer.entityControl.entities.values()];
+      const activeFilters = [...filterPreset.filters.values()].filter(
+        (x) => x.enabled
+      );
 
-      const f = filterEntities(entities, activeFilters);
+      if (activeFilters.length > 0) {
+        const entities = [...this._viewer.entityControl.entities.values()];
 
-      // const entitiesSets: Set<Entity>[] = activeFilters.map((filter) => {
-      //   return new Set(this._properties.get(filter.key));
-      // });
+        const filtered = filterEntities(entities, activeFilters);
 
-      // let filtered = entitiesSets[0];
-
-      // for (let i = 1; i < entitiesSets.length; i++) {
-      //   filtered = new Set([...filtered].filter((x) => entitiesSets[i].has(x)));
-      // }
-
-      this._viewer.selectionTool.picker.setFlattenedEntitySet(new Set(f));
-    } else {
-      this._viewer.selectionTool.picker.setFlattenedEntitySet(undefined);
+        this._viewer.selectionTool.picker.setFlattenedEntitySet(
+          new Set(filtered)
+        );
+      } else {
+        this._viewer.selectionTool.picker.setFlattenedEntitySet(undefined);
+      }
     }
   }
 
@@ -101,18 +130,22 @@ class ViewFilterExtension extends ExtensionEntity {
 
     this._filters.set(filter.id, filter);
     this._$filters.next([...this._filters.values()]);
+
+    this._dbService.updatePreset(this._currentPreset!);
   }
 
   public removeFilter(id: string) {
     this._filters.delete(id);
     this._$filters.next([...this._filters.values()]);
+
+    this._dbService.updatePreset(this._currentPreset!);
   }
 
   public updateFilter(filter: FilterItem) {
-    console.log(filter);
-
-    this._filters.set(filter.id, filter);
+    this.filters.set(filter.id, filter);
     this._$filters.next([...this._filters.values()]);
+
+    this._dbService.updatePreset(this._currentPreset!);
   }
 
   private updatePropsMap() {

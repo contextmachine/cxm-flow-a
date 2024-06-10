@@ -18,7 +18,6 @@ class ExtensionControl {
 
     this._viewer.sceneService.productService.$widgetProducts.subscribe(
       (products) => {
-        console.log(products);
         products.forEach((data) => {
           if (!this._extensions.has(data.name)) {
             const extension = this.createExtension(data.name);
