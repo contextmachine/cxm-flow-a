@@ -36,6 +36,9 @@ class ViewFilterExtension extends ExtensionEntity {
   private _filters: Map<string, FilterItem> = new Map();
   private _$filters = new RX.Subject<FilterItem[]>();
 
+  private _$currentScopeCount = new RX.Subject<number | undefined>();
+  private _$childrenCount = new RX.Subject<number | undefined>();
+
   private _dbService: ViewFilterDbService;
 
   constructor(viewer: Viewer) {
@@ -61,6 +64,13 @@ class ViewFilterExtension extends ExtensionEntity {
     return this._$filters;
   }
 
+  public get $currentScopeCount() {
+    return this._$currentScopeCount;
+  }
+  public get $childrenCount() {
+    return this._$childrenCount;
+  }
+
   public async load() {
     console.log("View Filter extension loaded");
 
@@ -75,6 +85,12 @@ class ViewFilterExtension extends ExtensionEntity {
 
     this._subscriptions.push(
       this._$filters.subscribe(() => {
+        this.executeFiltering();
+      })
+    );
+
+    this._subscriptions.push(
+      this._viewer.selectionTool.picker.$currentGroup.subscribe(() => {
         this.executeFiltering();
       })
     );
@@ -106,18 +122,61 @@ class ViewFilterExtension extends ExtensionEntity {
         (x) => x.enabled
       );
 
+      const objects = this._viewer.selectionTool.picker.objectsOnCurrentLevel;
+
+      [...this._viewer.entityControl.projectModels.values()].forEach((x) =>
+        x.entity.onDisable()
+      );
+
+      console.log(objects);
+
       if (activeFilters.length > 0) {
-        const entities = [...this._viewer.entityControl.entities.values()];
+        const filteredObjects: Entity[] = [];
+        const fittingChildrens: Entity[] = [];
 
-        const filtered = filterEntities(entities, activeFilters);
+        const traverseEntity = (
+          entity: Entity,
+          filterItems: FilterItem[],
+          isParentFits: boolean
+        ) => {
+          const result = filterEntity(entity, filterItems);
 
-        this._viewer.selectionTool.picker.setFlattenedEntitySet(
-          new Set(filtered)
-        );
+          if (result) {
+            if (!isParentFits) {
+              entity.onEnable();
+              filteredObjects.push(entity);
+            }
+            if (isParentFits) {
+              fittingChildrens.push(entity);
+            }
+          } else if (!result && !isParentFits) {
+            entity.onDisable();
+          }
+
+          if (entity.children) {
+            entity.children.forEach((x) =>
+              traverseEntity(x, filterItems, result || isParentFits)
+            );
+          }
+        };
+
+        objects.forEach((x) => traverseEntity(x, activeFilters, false));
+
+        this._viewer.selectionTool.picker.setCustomEntityScope(filteredObjects);
+
+        this._$currentScopeCount.next(filteredObjects.length);
+        this._$childrenCount.next(fittingChildrens.length);
       } else {
-        this._viewer.selectionTool.picker.setFlattenedEntitySet(undefined);
+        this._viewer.selectionTool.picker.setCustomEntityScope(undefined);
+        this._viewer.selectionTool.picker.objectsOnCurrentLevel.forEach((x) =>
+          x.onEnable()
+        );
+        this._$currentScopeCount.next(undefined);
+        this._$childrenCount.next(undefined);
       }
     }
+
+    this._viewer.updateViewer();
   }
 
   public addFilter(key: string) {
@@ -176,41 +235,36 @@ class ViewFilterExtension extends ExtensionEntity {
 
 export default ViewFilterExtension;
 
-function filterEntities(
-  entities: Entity[],
-  filterItems: FilterItem[]
-): Entity[] {
-  return entities.filter((entity) => {
-    return filterItems.every((filterItem) => {
-      const entityValue = entity.props?.get(filterItem.key);
+function filterEntity(entity: Entity, filterItems: FilterItem[]): boolean {
+  return filterItems.every((filterItem) => {
+    const entityValue = entity.props?.get(filterItem.key);
 
-      const conditions =
-        filterItem.condition.length > 0
-          ? filterItem.condition
-          : [{ operator: "DEFINED", value: undefined }];
+    const conditions =
+      filterItem.condition.length > 0
+        ? filterItem.condition
+        : [{ operator: "DEFINED", value: undefined }];
 
-      return conditions.some((condition) => {
-        switch (condition.operator) {
-          case "DEFINED":
-            return entityValue && true;
-          case "EQUAL":
-            return entityValue === condition.value;
-          case "NOT_EQUAL":
-            return entityValue !== condition.value;
-          case "GREATER_THAN":
-            return (
-              typeof entityValue === "number" &&
-              entityValue > (condition.value as number)
-            );
-          case "LESS_THAN":
-            return (
-              typeof entityValue === "number" &&
-              entityValue < (condition.value as number)
-            );
-          default:
-            return false;
-        }
-      });
+    return conditions.some((condition) => {
+      switch (condition.operator) {
+        case "DEFINED":
+          return entityValue && true;
+        case "EQUAL":
+          return entityValue === condition.value;
+        case "NOT_EQUAL":
+          return entityValue !== condition.value;
+        case "GREATER_THAN":
+          return (
+            typeof entityValue === "number" &&
+            entityValue > (condition.value as number)
+          );
+        case "LESS_THAN":
+          return (
+            typeof entityValue === "number" &&
+            entityValue < (condition.value as number)
+          );
+        default:
+          return false;
+      }
     });
   });
 }

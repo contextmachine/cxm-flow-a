@@ -1,12 +1,9 @@
 import styled from "styled-components";
-import { ChangeEvent, useState } from "react";
+import { useState } from "react";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import WidgetPaper from "@/components/ui/scene/widgets-panel/blocks/widget-paper/widget-paper";
 import ViewFilterExtension from "../view-filter-extension";
 import { useSubscribe } from "@/src/hooks";
-
-import { IconButton, InputAdornment, InputBase } from "@mui/material";
-import { SearchOutlined } from "@mui/icons-material";
 
 import FilterItemComponent from "./filtering-item";
 import SelectWithSearch from "@/components/ui/shared/select-with-search";
@@ -27,6 +24,12 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
     ...extension.filters.values(),
   ]);
 
+  const currentScopeCount = useSubscribe(
+    extension.$currentScopeCount,
+    undefined
+  );
+  const childrenCount = useSubscribe(extension.$childrenCount, undefined);
+
   const [options, setOptions] = useState(
     [...properties.keys()].map((x) => ({ value: x }))
   );
@@ -40,6 +43,19 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
 
   return (
     <WidgetPaper isPreview={isPreview} title={"View Filter"}>
+      {currentScopeCount !== undefined && (
+        <FilteredCountWrapper>
+          <div>Available on current level:</div>
+          <div>{currentScopeCount}</div>
+        </FilteredCountWrapper>
+      )}
+      {childrenCount !== 0 ||
+        (childrenCount !== undefined && (
+          <ChildrenCountWrapper>
+            <div>Children which fits condition:</div>
+            <div>{childrenCount}</div>
+          </ChildrenCountWrapper>
+        ))}
       <FilterList>
         {filters.map((filter) => (
           <FilterItemComponent filter={filter} extension={extension} />
@@ -61,4 +77,21 @@ const FilterList = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
+`;
+
+const FilteredCountWrapper = styled.div`
+  padding: 5px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+`;
+
+const ChildrenCountWrapper = styled.div`
+  padding: 5px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  div {
+    color: #ff9a27 !important;
+  }
 `;

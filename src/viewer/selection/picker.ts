@@ -20,13 +20,16 @@ class Picker {
   private _unionMeshes: UnionMesh[];
 
   private _currentGroup: Group | undefined;
+  private _$currentGroup = new RX.Subject<Group | undefined>();
+
+  private _groupStack: Group[] = [];
+
+  private _customEntityScope: Entity[] | undefined;
 
   /** набор объектов, который меняет поведение выделения групп
   если он определен, то его элементы выделяются как плоский список, 
   вне зависимости от вложенности, можно опуститься ниже, 
   но нельзя подняться выше этого набора */
-  private _flattenedEntitySet: Set<Entity> | undefined;
-  private _flattenedMode = false;
 
   constructor(
     private _viewer: Viewer,
@@ -68,60 +71,12 @@ class Picker {
     this._enabled = e;
   }
 
-  public setFlattenedEntitySet(set: Set<Entity> | undefined) {
-    this._flattenedEntitySet = set;
-
-    if (set) {
-      const entitiyTree = [
-        ...this._viewer.entityControl.projectModels.values(),
-      ].map((x) => x.entity);
-
-      const onlyHighLevel: Entity[] = [];
-
-      const traverseEntity = (x: Entity) => {
-        if (set.has(x)) {
-          onlyHighLevel.push(x);
-        } else {
-          x.children?.forEach(traverseEntity);
-        }
-      };
-
-      entitiyTree.forEach((x) => {
-        traverseEntity(x);
-      });
-
-      this._flattenedEntitySet = new Set(onlyHighLevel);
-    } else {
-      this._flattenedMode = false;
-    }
-
-    this.activateFlattenedSet();
+  public get $currentGroup() {
+    return this._$currentGroup;
   }
 
-  private activateFlattenedSet() {
-    this.setCurrentGroup(undefined);
-
-    if (this._flattenedEntitySet) {
-      this._flattenedMode = true;
-      const enitites = this._flattenedEntitySet;
-
-      const entitiyTree = [
-        ...this._viewer.entityControl.projectModels.values(),
-      ].map((x) => x.entity);
-
-      const traverseEntity = (x: Entity) => {
-        if (enitites.has(x)) {
-          x.onEnable();
-        } else {
-          x.onDisable();
-          x.children?.forEach(traverseEntity);
-        }
-      };
-
-      entitiyTree.forEach((x) => {
-        traverseEntity(x);
-      });
-    }
+  public setCustomEntityScope(entities: Entity[] | undefined) {
+    this._customEntityScope = entities;
   }
 
   private setCurrentGroup(group: Group | undefined) {
@@ -147,6 +102,7 @@ class Picker {
     }
 
     this._currentGroup = group;
+    this._$currentGroup.next(group);
   }
 
   private getObjectUnderMouse(event: MouseEvent): Entity | undefined {
@@ -229,28 +185,15 @@ class Picker {
 
       if (entity && isGroup(entity)) {
         // если двойной клик по группе, переключаем группу на которую кликнули
-        if (this._flattenedMode) {
-          this._flattenedMode = false;
-          this._flattenedEntitySet?.forEach((x) => x.onDisable());
-        }
+        this._groupStack.push(entity);
         this.setCurrentGroup(entity);
       } else if (entity === undefined) {
-        // если двойной клик по пустому месту, перекулючаемся на уровень выше
+        // если двойной клик по пустому месту, переключаемся на уровень выше
         const parent = this._currentGroup?.parent;
+        this._groupStack.pop();
+        const group = this._groupStack[this._groupStack.length - 1];
 
-        const flattenedSet = this._flattenedEntitySet;
-        const currentGroup = this._currentGroup;
-
-        if (flattenedSet && currentGroup && flattenedSet.has(currentGroup)) {
-          console.log("activate");
-          this.activateFlattenedSet();
-        } else if (flattenedSet && currentGroup === undefined) {
-        } else if (parent && isGroup(parent)) {
-          this.setCurrentGroup(parent);
-        } else {
-          // если группы нет, то переключаемся на уровень сцены
-          this.setCurrentGroup(undefined);
-        }
+        this.setCurrentGroup(group);
       }
     }
   }
@@ -261,9 +204,7 @@ class Picker {
 
   public get objectsOnCurrentLevel(): Entity[] {
     const currentGroup = this._currentGroup;
-    if (this._flattenedEntitySet && this._flattenedMode) {
-      return [...this._flattenedEntitySet];
-    } else if (currentGroup) {
+    if (currentGroup) {
       return currentGroup.children;
     } else {
       return [...this._viewer.entityControl.projectModels.values()].map(
@@ -275,7 +216,9 @@ class Picker {
   private findObjectOnCurrentLevel(id: string): Entity | undefined {
     const entityControl = this._viewer.entityControl;
 
-    const objects = this.objectsOnCurrentLevel;
+    const objects = this._customEntityScope
+      ? this._customEntityScope
+      : this.objectsOnCurrentLevel;
     const entity = objects.find((x) => x.id === id);
 
     if (entity) {
