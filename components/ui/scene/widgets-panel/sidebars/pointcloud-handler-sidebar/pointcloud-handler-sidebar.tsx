@@ -41,8 +41,6 @@ const PointCloudHandlerSidebar: React.FC<{
 
   if (!statistics) return null;
 
-  console.log("statistics", statistics);
-
   return (
     <>
       <Box

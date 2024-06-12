@@ -52,8 +52,6 @@ class ExtensionControl {
 
     extension.load();
 
-    console.log("this._extensions", this._extensions);
-
     this._$extensions.next(this._extensions);
 
     return extension;

@@ -25,10 +25,6 @@ const valueMap = {
 
 const valueKeys = Object.keys(valueMap).map(Number);
 
-const getClosestValue = (value: number) => {
-  return (valueMap as any)[value as any];
-};
-
 const OverallForm: React.FC<{
   extension: PointCloudExtension | null;
   data: OverallPointCloudField;
@@ -36,20 +32,12 @@ const OverallForm: React.FC<{
 }> = ({ extension, data, disabled }) => {
   const handleSliderChange = (
     param: "min_step" | "max_step",
-    value: number
+    valueIndex: number
   ) => {
-    // const closestValue = getClosestValue(valueKeys[value]);
+    const key = valueKeys[valueIndex];
 
-    const _value = valueKeys[value];
-    extension?.updateOverall(param, value);
+    extension?.updateOverall(param, key);
   };
-
-  console.log("valueMap", valueMap);
-  console.log(
-    "valueKeys.indexOf(data.min_step.value)",
-    valueKeys.indexOf(data.min_step.value)
-  );
-  console.log("data.min_step.value", data.min_step.value);
 
   return (
     <Box
@@ -75,7 +63,9 @@ const OverallForm: React.FC<{
             }
             size="small"
             valueLabelDisplay="auto"
-            valueLabelFormat={(value) => (valueMap as any)[valueKeys[value]]}
+            valueLabelFormat={(valueIndex) =>
+              (valueMap as any)[(valueKeys as any)[valueIndex]]
+            }
           />
         </Box>
       </ParamItem>
@@ -95,7 +85,9 @@ const OverallForm: React.FC<{
             }
             size="small"
             valueLabelDisplay="auto"
-            valueLabelFormat={(value) => (valueMap as any)[valueKeys[value]]}
+            valueLabelFormat={(valueIndex) =>
+              (valueMap as any)[valueKeys[valueIndex]]
+            }
           />
         </Box>
       </ParamItem>

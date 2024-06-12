@@ -132,12 +132,8 @@ class Loader {
   ) {
     const exsisting = this._queries.has(apiObject);
 
-    console.log("exsisting", exsisting);
-
     if (exsisting) {
       if (apiObject.model) {
-        console.log("remove model");
-
         this._viewer.entityControl.removeModel(apiObject.model);
       }
     } else {
@@ -159,9 +155,6 @@ class Loader {
 
     const model = new ProjectModel(this._viewer, object3d, apiObject);
     this._viewer.entityControl.addModel(model);
-
-    console.log("this._viewer.entityControl", this._viewer.entityControl);
-    console.log("thsdf", this._viewer.scene);
 
     return model;
   }
