@@ -30,7 +30,10 @@ const FilterItemComponent: React.FC<FilterItemProps> = (
   };
 
   return (
-    <FilterItemWrapper isParamsOpen={isParamsOpen}>
+    <FilterItemWrapper
+      isParamsOpen={isParamsOpen}
+      isParamDefined={filter.condition.length > 0}
+    >
       <div className="first-line">
         <div className="label">{filter.key}</div>
         <div className="button-block">
@@ -57,7 +60,10 @@ const FilterItemComponent: React.FC<FilterItemProps> = (
 
 export default FilterItemComponent;
 
-const FilterItemWrapper = styled.div<{ isParamsOpen: boolean }>`
+const FilterItemWrapper = styled.div<{
+  isParamsOpen: boolean;
+  isParamDefined: boolean;
+}>`
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -67,6 +73,7 @@ const FilterItemWrapper = styled.div<{ isParamsOpen: boolean }>`
     isParamsOpen ? "#F3F3F3" : "white"};
   transition: background-color 0.5s ease-in-out;
   padding: 5px;
+  margin: 3px;
 
   .first-line {
     display: flex;
@@ -91,6 +98,10 @@ const FilterItemWrapper = styled.div<{ isParamsOpen: boolean }>`
     .add-button {
       display: flex !important;
       fill: #2789ff;
+    }
+
+    .params-button {
+      fill: ${({ isParamDefined }) => (isParamDefined ? "#2789ff" : "black")};
     }
 
     button {

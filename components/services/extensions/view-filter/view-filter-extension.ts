@@ -20,8 +20,14 @@ export interface FilterItem {
   condition: FilterCondition[];
 }
 
+export interface FilterGroup {
+  id: string;
+  type: "any" | "all";
+  condition: FilterCondition;
+}
+
 type FilterCondition = {
-  value: number | string;
+  value: number | string | boolean;
   operator: "EQUAL" | "NOT_EQUAL" | "GREATER_THAN" | "LESS_THAN" | "DEFINED";
 };
 
@@ -128,8 +134,6 @@ class ViewFilterExtension extends ExtensionEntity {
         x.entity.onDisable()
       );
 
-      console.log(objects);
-
       if (activeFilters.length > 0) {
         const filteredObjects: Entity[] = [];
         const fittingChildrens: Entity[] = [];
@@ -201,6 +205,7 @@ class ViewFilterExtension extends ExtensionEntity {
   }
 
   public updateFilter(filter: FilterItem) {
+    console.log(filter);
     this.filters.set(filter.id, filter);
     this._$filters.next([...this._filters.values()]);
 
@@ -229,6 +234,7 @@ class ViewFilterExtension extends ExtensionEntity {
 
   public unload(): void {
     console.log("filter extension unloaded");
+    this._viewer.selectionTool.picker.setCustomEntityScope(undefined);
     this._subscriptions.forEach((x) => x.unsubscribe());
   }
 }

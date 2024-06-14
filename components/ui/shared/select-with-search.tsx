@@ -55,7 +55,7 @@ const SelectWithSearch: React.FC<SelectWithFilterProps> = (
             </InputAdornment>
           }
         />
-        {isOpen && (
+        {isOpen && filteredOptions.length > 0 && (
           <DropdownList>
             {filteredOptions.map((option, index) => (
               <DropdownItem

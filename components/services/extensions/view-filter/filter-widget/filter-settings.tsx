@@ -1,6 +1,5 @@
 import SelectWithSearch from "@/components/ui/shared/select-with-search";
 import { useEntities } from "@/src/hooks";
-import { Typography } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import ViewFilterExtension, { FilterItem } from "../view-filter-extension";
@@ -22,13 +21,14 @@ const FilterSettings: React.FC<FilterSettingsProps> = (
 
   const entities = useEntities();
 
-  const possibleValues = useMemo(() => {
+  const typeAndValues = useMemo(() => {
     return getPropertyValues([...entities.values()], filter.key);
   }, [entities]);
 
   useEffect(() => {
     if (filterInput !== "") {
-      filter.condition = [{ value: filterInput, operator: "EQUAL" }];
+      const value = parseValue(filterInput, typeAndValues.type);
+      filter.condition = [{ value, operator: "EQUAL" }];
       extension.updateFilter(filter);
     } else {
       filter.condition = [];
@@ -41,7 +41,7 @@ const FilterSettings: React.FC<FilterSettingsProps> = (
       <Prefix> = </Prefix>
       <InputWrapper>
         <SelectWithSearch
-          options={possibleValues.map((x) => ({ value: x }))}
+          options={typeAndValues.values.map((x) => ({ value: x }))}
           filterInput={filterInput}
           onSelect={(option) => {
             setFilterInput(option.value);
@@ -73,16 +73,52 @@ const Prefix = styled.div`
   color: gray;
 `;
 
-const getPropertyValues = (entities: Entity[], propertyName: string) => {
-  const values = new Set<string>();
+type PropertyType = "string" | "number" | "boolean";
+const allowedTypes = ["string", "number", "boolean"];
 
-  entities.forEach((x) => {
-    const value = x.props?.get(propertyName);
+const getPropertyValues = (
+  entities: Entity[],
+  propertyName: string
+): { type: PropertyType; values: string[] } => {
+  const values = entities
+    .filter((x) => x.props?.has(propertyName))
+    .map((x) => x.props!.get(propertyName));
 
-    if (value && typeof value === "string") {
-      values.add(value as string);
+  console.log(values);
+
+  const types = values.map((x) => typeof x);
+  let valueList: string[] = [];
+
+  let valueType: PropertyType = "string";
+
+  if (values.length > 0) {
+    const firstType = types[0];
+    if (allowedTypes.includes(firstType)) {
+      let allowedType = firstType as PropertyType;
+
+      if (types.every((x) => types[0] === x)) {
+        valueType = allowedType;
+      }
+    } else {
+      valueType = "string";
     }
-  });
+  }
 
-  return [...values];
+  if (valueType === "string") {
+    valueList = [...new Set(values.map((x) => x.toString()))];
+  }
+
+  return { type: valueType, values: valueList };
+};
+
+const parseValue = (input: string, type: PropertyType) => {
+  switch (type) {
+    case "string":
+      return input;
+    case "number":
+      return parseFloat(input);
+    case "boolean":
+      const x = input.toLowerCase();
+      return x === "true" ? true : x === "false" ? false : input;
+  }
 };
