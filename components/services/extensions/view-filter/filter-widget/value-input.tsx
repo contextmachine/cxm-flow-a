@@ -1,0 +1,166 @@
+import { useClickOutside } from "@/src/hooks";
+import { useEffect, useRef, useState } from "react";
+import styled from "styled-components";
+import ViewFilterExtension, { FilterCondition } from "../view-filter-extension";
+import { PropertyType } from "./filter-condition";
+
+interface ValueInputProps {
+  filterItem: FilterCondition;
+  extension: ViewFilterExtension;
+  values: string[];
+  type: PropertyType;
+}
+
+const ValueInput: React.FC<ValueInputProps> = (props: ValueInputProps) => {
+  const { filterItem, extension, values, type } = props;
+  const [isOpen, setIsOpen] = useState(false);
+  const dropDownRef = useRef(null);
+
+  const handleClose = () => {
+    if (isOpen) {
+      setIsOpen(false);
+    }
+  };
+  useClickOutside(dropDownRef, () => handleClose());
+
+  useEffect(() => {
+    const onKeyPressed = (e: KeyboardEvent): void => {
+      if (e.key === "Enter" || e.key === "Esc") {
+        handleClose();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyPressed);
+    return () => {
+      document.removeEventListener("keydown", onKeyPressed);
+    };
+  });
+
+  const [filteredOptions, setFilteredOptions] = useState(values);
+
+  const [filterInput, setFilterInput] = useState(
+    filterItem.value ? filterItem.value.toString() : ""
+  );
+
+  useEffect(() => {
+    setFilteredOptions(values.filter((x) => filterOption(filterInput, x)));
+    const value = parseValue(filterInput, type);
+    filterItem.value = value;
+    extension.updateFilterCondition(filterItem);
+  }, [filterInput]);
+
+  const filterOption = (input: string, option: string | undefined) =>
+    (option ?? "").toLowerCase().includes(input.toLowerCase());
+
+  const handleOptionClick = (option: any) => {
+    setIsOpen(false);
+    setFilterInput(option);
+  };
+
+  return (
+    <SelectWithSearchWrapper>
+      <DropdownContainer ref={dropDownRef}>
+        <div className="input-field">
+          <input
+            onClick={() => setIsOpen(!isOpen)}
+            value={filterInput}
+            placeholder="Value"
+            onChange={(e) => setFilterInput(e.target.value)}
+          />
+        </div>
+        {isOpen && filteredOptions.length > 0 && (
+          <DropdownList>
+            {filteredOptions.map((option, index) => (
+              <DropdownItem
+                key={index}
+                onClick={() => handleOptionClick(option)}
+              >
+                {option}
+              </DropdownItem>
+            ))}
+          </DropdownList>
+        )}
+      </DropdownContainer>
+    </SelectWithSearchWrapper>
+  );
+};
+
+export default ValueInput;
+
+const SelectWithSearchWrapper = styled.div`
+  width: 150px;
+  font-size: 12px;
+  height: 100%;
+
+  .input-field {
+    width: 100%;
+    height: 25px;
+    display: flex;
+    justify-content: center;
+
+    border: 1px solid #e0e0e0;
+    border-radius: 9px;
+    padding: 0 10px;
+
+    input {
+      border: 0px;
+      background-color: white;
+      &:focus-visible {
+        outline: -webkit-focus-ring-color auto 0px;
+      }
+    }
+
+    .end-icon {
+      padding: 0px;
+
+      svg {
+        fill: #e0e0e0;
+      }
+    }
+  }
+`;
+
+const DropdownContainer = styled.div`
+  width: 100%;
+  position: relative;
+  display: inline-block;
+`;
+
+const DropdownList = styled.ul`
+  z-index: 9999;
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 100%;
+  border-radius: 9px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  list-style-type: none;
+  padding: 0;
+  max-height: 200px;
+  overflow: auto;
+`;
+
+const DropdownItem = styled.li`
+  padding: 10px;
+  margin: 2px;
+  border-radius: 7px;
+
+  cursor: pointer;
+
+  &:hover {
+    background-color: #e0e0e0;
+  }
+`;
+
+const parseValue = (input: string, type: PropertyType) => {
+  switch (type) {
+    case "string":
+      return input;
+    case "number":
+      return parseFloat(input);
+    case "boolean":
+      const x = input.toLowerCase();
+      return x === "true" ? true : x === "false" ? false : input;
+  }
+};

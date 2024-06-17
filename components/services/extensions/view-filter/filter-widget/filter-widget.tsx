@@ -1,12 +1,10 @@
 import styled from "styled-components";
-import { useState } from "react";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import WidgetPaper from "@/components/ui/scene/widgets-panel/blocks/widget-paper/widget-paper";
 import ViewFilterExtension from "../view-filter-extension";
 import { useSubscribe } from "@/src/hooks";
 
-import FilterItemComponent from "./filtering-item";
-import SelectWithSearch from "@/components/ui/shared/select-with-search";
+import FilterItemComponent from "./filter-item-component";
 
 interface ViewFilterWidgetProps {
   isPreview?: boolean;
@@ -19,78 +17,60 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
 }) => {
   const extension = ext as ViewFilterExtension;
 
-  const properties = useSubscribe(extension.$properties, extension.properties);
-  const filters = useSubscribe(extension.$filters, [
-    ...extension.filters.values(),
-  ]);
+  const filterPreset = useSubscribe(extension.$filter, extension.filter);
 
-  const currentScopeCount = useSubscribe(
-    extension.$currentScopeCount,
-    undefined
-  );
+  const currentScopeCount = useSubscribe(extension.$currentScopeCount, 0);
   const childrenCount = useSubscribe(extension.$childrenCount, undefined);
 
-  const [options, setOptions] = useState(
-    [...properties.keys()].map((x) => ({ value: x }))
-  );
+  if (!filterPreset) {
+    return;
+  } else {
+    return (
+      <WidgetPaper isPreview={isPreview} title={"View Filter"}>
+        {currentScopeCount !== undefined && (
+          <FilteredCountWrapper>
+            <div className="count">
+              <div>{currentScopeCount.toLocaleString()}</div>
+              {childrenCount !== undefined && childrenCount !== 0 && (
+                <div style={{ color: "#b3b3b3" }}>
+                  ({childrenCount.toLocaleString()})
+                </div>
+              )}
+            </div>
+            <div className="label">Objects</div>
+          </FilteredCountWrapper>
+        )}
 
-  const [filterInput, setFilterInput] = useState<string>("");
-
-  const onSelectFilter = (option: { value: string }) => {
-    extension.addFilter(option.value);
-    setFilterInput("");
-  };
-
-  return (
-    <WidgetPaper isPreview={isPreview} title={"View Filter"}>
-      {currentScopeCount !== undefined && (
-        <FilteredCountWrapper>
-          <div>Available on current level:</div>
-          <div>{currentScopeCount}</div>
-        </FilteredCountWrapper>
-      )}
-      {childrenCount !== 0 && childrenCount !== undefined && (
-        <ChildrenCountWrapper>
-          <div>Children which fits condition:</div>
-          <div>{childrenCount}</div>
-        </ChildrenCountWrapper>
-      )}
-      <FilterList>
-        {filters.map((filter) => (
-          <FilterItemComponent filter={filter} extension={extension} />
-        ))}
-      </FilterList>
-      <SelectWithSearch
-        options={options}
-        filterInput={filterInput}
-        onSelect={onSelectFilter}
-        setFilterInput={setFilterInput}
-      />
-    </WidgetPaper>
-  );
+        <FilterItemComponent
+          parentGroup={undefined}
+          filterItem={filterPreset.filter}
+          extension={extension}
+          key={0}
+          index={0}
+        />
+      </WidgetPaper>
+    );
+  }
 };
 
 export default ViewFilterWidget;
-
-const FilterList = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-`;
 
 const FilteredCountWrapper = styled.div`
   padding: 5px;
   width: 100%;
   display: flex;
-  justify-content: space-between;
-`;
+  align-items: baseline;
+  background-color: #f3f3f3;
+  border-radius: 10px;
 
-const ChildrenCountWrapper = styled.div`
-  padding: 5px;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  div {
-    color: #ff9a27 !important;
+  .count {
+    display: flex;
+    margin-right: 10px;
+
+    & * {
+      font-size: 24px;
+    }
   }
 `;
+
+const formatNumber = (number: string) => {};

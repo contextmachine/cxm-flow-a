@@ -10,6 +10,7 @@ interface Option {
 
 interface SelectWithFilterProps {
   options: Option[];
+  placeholder: string;
   filterInput: string;
   onSelect: (option: Option) => void;
   setFilterInput: (e: string) => void;
@@ -45,9 +46,8 @@ const SelectWithSearch: React.FC<SelectWithFilterProps> = (
         <InputBase
           className="input-field"
           onClick={() => setIsOpen(!isOpen)}
-          inputProps={{ disableUnderline: true }}
           value={filterInput}
-          placeholder="Add new filter"
+          placeholder={props.placeholder}
           onChange={(e) => setFilterInput(e.target.value)}
           endAdornment={
             <InputAdornment className="end-icon" position="end">
@@ -86,8 +86,12 @@ const SelectWithSearchWrapper = styled.div`
     padding: 0 10px;
     background-color: white;
 
-    .end-icon svg {
-      fill: #e0e0e0;
+    .end-icon {
+      padding: 0px;
+
+      svg {
+        fill: #e0e0e0;
+      }
     }
   }
 `;

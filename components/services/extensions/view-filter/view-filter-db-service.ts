@@ -1,5 +1,6 @@
 import Viewer from "@/src/viewer/viewer";
 import ViewFilterExtension, {
+  FilterGroup,
   FilterItem,
   FilterPreset,
 } from "./view-filter-extension";
@@ -8,6 +9,13 @@ import { gql } from "@apollo/client";
 import { assertDefined } from "@/src/utils";
 import { v4 } from "uuid";
 
+export interface FilterGroupDto {
+  id: string;
+  type: "group";
+  groupType: "any" | "all";
+  conditions: any[];
+}
+
 class ViewFilterDbService {
   private _sceneId: number;
 
@@ -15,11 +23,37 @@ class ViewFilterDbService {
     this._sceneId = assertDefined(viewer.sceneService.sceneId);
   }
 
+  private groupDtoToGroup(group: FilterGroupDto): FilterGroup {
+    const filterGroup: FilterGroup = {
+      ...group,
+      conditions: new Map(
+        group.conditions.map((x) => [
+          x.id,
+          x.type === "group" ? this.groupDtoToGroup(x) : { ...x },
+        ])
+      ),
+    };
+
+    return filterGroup;
+  }
+
+  private groupToGroupDto(group: FilterGroup): FilterGroupDto {
+    const filterGroup: FilterGroupDto = {
+      ...group,
+      conditions: [...group.conditions.values()].map((x) =>
+        x.type === "group" ? this.groupToGroupDto(x) : { ...x }
+      ),
+    };
+
+    return filterGroup;
+  }
+
   public fetchPresets() {
     const query = gql`
       query FetchFilters($scene_id: Int!) {
         extensionsv3_view_filters(where: { scene: { _eq: $scene_id } }) {
           filters
+          enabled
           id
           name
         }
@@ -34,24 +68,13 @@ class ViewFilterDbService {
       .then((e) => e.data.extensionsv3_view_filters as any[])
       .then((data) =>
         data.map((x) => {
-          const filterPreset: FilterPreset = {
+          const filterPreset = {
             id: x.id,
             name: x.name,
-            filters: new Map(
-              x.filters.map((filter: any) => [
-                filter.id,
-                {
-                  id: filter.id,
-                  key: filter.key,
-                  enabled: filter.enabled,
-                  condition: filter.condition.map((condition: any) => ({
-                    value: condition.value,
-                    operator: condition.operator,
-                  })),
-                },
-              ])
-            ),
+            enabled: x.enabled,
+            filter: this.groupDtoToGroup(x.filters),
           };
+
           return filterPreset;
         })
       );
@@ -59,9 +82,19 @@ class ViewFilterDbService {
 
   public addPreset() {
     const query = gql`
-      mutation MyMutation($scene_id: Int!, $name: String!, $filters: jsonb!) {
+      mutation MyMutation(
+        $scene_id: Int!
+        $name: String!
+        $filters: jsonb!
+        $enabled: Boolean!
+      ) {
         insert_extensionsv3_view_filters_one(
-          object: { filters: $filters, name: $name, scene: $scene_id }
+          object: {
+            filters: $filters
+            name: $name
+            scene: $scene_id
+            enabled: $enabled
+          }
         ) {
           id
         }
@@ -71,7 +104,13 @@ class ViewFilterDbService {
     const variables = {
       scene_id: this._sceneId,
       name: "Filter preset",
-      filters: [],
+      enabled: true,
+      filters: {
+        id: v4(),
+        type: "group",
+        groupType: "any",
+        conditions: [],
+      },
     };
 
     return mutateGQLData(query, variables);
@@ -79,10 +118,15 @@ class ViewFilterDbService {
 
   public updatePreset(preset: FilterPreset) {
     const query = gql`
-      mutation MyMutation($filters: jsonb, $name: String, $id: Int!) {
+      mutation MyMutation(
+        $filters: jsonb
+        $name: String
+        $id: Int!
+        $enabled: Boolean!
+      ) {
         update_extensionsv3_view_filters_by_pk(
           pk_columns: { id: $id }
-          _set: { filters: $filters, name: $name }
+          _set: { filters: $filters, name: $name, enabled: $enabled }
         ) {
           id
           filters
@@ -93,7 +137,8 @@ class ViewFilterDbService {
     const variables = {
       id: preset.id,
       name: preset.name,
-      filters: [...preset.filters.values()],
+      enabled: preset.enabled,
+      filters: this.groupToGroupDto(preset.filter),
     };
 
     mutateGQLData(query, variables);

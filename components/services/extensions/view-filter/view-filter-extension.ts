@@ -10,26 +10,36 @@ import ViewFilterDbService from "./view-filter-db-service";
 export interface FilterPreset {
   id: number;
   name: string;
-  filters: Map<string, FilterItem>;
+  enabled: string | undefined;
+  filter: FilterGroup;
 }
 
-export interface FilterItem {
-  id: string;
-  key: string;
-  enabled: boolean;
-  condition: FilterCondition[];
-}
+export type FilterItem = FilterGroup | FilterCondition;
 
 export interface FilterGroup {
   id: string;
-  type: "any" | "all";
-  condition: FilterCondition;
+  type: "group";
+  groupType: "any" | "all";
+  conditions: Map<string, FilterItem>;
 }
 
-type FilterCondition = {
-  value: number | string | boolean;
-  operator: "EQUAL" | "NOT_EQUAL" | "GREATER_THAN" | "LESS_THAN" | "DEFINED";
-};
+export type ConditionOperator =
+  | "EQUAL"
+  | "NOT_EQUAL"
+  | "GREATER_THAN"
+  | "LESS_THAN"
+  | "DEFINED";
+
+export type ParamType = "string" | "number" | "boolean";
+
+export interface FilterCondition {
+  id: string;
+  key: string;
+  type: "condition";
+  // valueType: ParamType;
+  value: number | string | boolean | undefined;
+  operator: ConditionOperator;
+}
 
 class ViewFilterExtension extends ExtensionEntity {
   private _subscriptions: RX.Unsubscribable[] = [];
@@ -37,10 +47,8 @@ class ViewFilterExtension extends ExtensionEntity {
   private _properties = new Map<string, Entity[]>();
   private _$properties = new RX.Subject<Map<string, Entity[]>>();
 
-  private _currentPreset: FilterPreset | undefined;
-
-  private _filters: Map<string, FilterItem> = new Map();
-  private _$filters = new RX.Subject<FilterItem[]>();
+  private _filterPreset: FilterPreset | undefined;
+  private _$filterPreset = new RX.Subject<FilterPreset>();
 
   private _$currentScopeCount = new RX.Subject<number | undefined>();
   private _$childrenCount = new RX.Subject<number | undefined>();
@@ -62,12 +70,12 @@ class ViewFilterExtension extends ExtensionEntity {
     return this._$properties;
   }
 
-  public get filters() {
-    return this._filters;
+  public get filter() {
+    return this._filterPreset;
   }
 
-  public get $filters() {
-    return this._$filters;
+  public get $filter() {
+    return this._$filterPreset;
   }
 
   public get $currentScopeCount() {
@@ -90,7 +98,7 @@ class ViewFilterExtension extends ExtensionEntity {
     );
 
     this._subscriptions.push(
-      this._$filters.subscribe(() => {
+      this._$filterPreset.subscribe(() => {
         this.executeFiltering();
       })
     );
@@ -104,7 +112,7 @@ class ViewFilterExtension extends ExtensionEntity {
     const filterPresets = await this._dbService.fetchPresets();
 
     if (filterPresets.length > 0) {
-      this._currentPreset = filterPresets[0];
+      this._filterPreset = filterPresets[0];
     } else {
       await this._dbService.addPreset();
 
@@ -113,20 +121,18 @@ class ViewFilterExtension extends ExtensionEntity {
       if (filterPresets.length === 0) {
         throw new Error("failed to load filter presets");
       }
-      this._currentPreset = filterPresets[0];
+      this._filterPreset = filterPresets[0];
     }
 
-    this._filters = this._currentPreset.filters;
-    this._$filters.next([...this._filters.values()]);
+    this._$filterPreset.next(this._filterPreset);
   }
 
   private executeFiltering() {
-    if (this._currentPreset) {
-      const filterPreset = this._currentPreset;
+    console.log("execute filtering");
+    if (this._filterPreset && this._filterPreset.enabled) {
+      const filterPreset = this._filterPreset;
 
-      const activeFilters = [...filterPreset.filters.values()].filter(
-        (x) => x.enabled
-      );
+      console.log(this._filterPreset);
 
       const objects = this._viewer.selectionTool.picker.objectsOnCurrentLevel;
 
@@ -134,82 +140,124 @@ class ViewFilterExtension extends ExtensionEntity {
         x.entity.onDisable()
       );
 
-      if (activeFilters.length > 0) {
-        const filteredObjects: Entity[] = [];
-        const fittingChildrens: Entity[] = [];
+      const filteredObjects: Entity[] = [];
+      const fittingChildrens: Entity[] = [];
 
-        const traverseEntity = (
-          entity: Entity,
-          filterItems: FilterItem[],
-          isParentFits: boolean
-        ) => {
-          const result = filterEntity(entity, filterItems);
+      const traverseEntity = (
+        entity: Entity,
+        filterItem: FilterItem,
+        isParentFits: boolean
+      ) => {
+        const result = filterEntity(entity, filterItem);
 
-          if (result) {
-            if (!isParentFits) {
-              entity.onEnable();
-              filteredObjects.push(entity);
-            }
-            if (isParentFits) {
-              fittingChildrens.push(entity);
-            }
-          } else if (!result && !isParentFits) {
-            entity.onDisable();
+        if (result) {
+          if (!isParentFits) {
+            entity.onEnable();
+            filteredObjects.push(entity);
           }
-
-          if (entity.children) {
-            entity.children.forEach((x) =>
-              traverseEntity(x, filterItems, result || isParentFits)
-            );
+          if (isParentFits) {
+            fittingChildrens.push(entity);
           }
-        };
+        } else if (!result && !isParentFits) {
+          entity.onDisable();
+        }
 
-        objects.forEach((x) => traverseEntity(x, activeFilters, false));
+        if (entity.children) {
+          entity.children.forEach((x) =>
+            traverseEntity(x, filterItem, result || isParentFits)
+          );
+        }
+      };
 
-        this._viewer.selectionTool.picker.setCustomEntityScope(filteredObjects);
+      objects.forEach((x) => traverseEntity(x, filterPreset.filter, false));
 
-        this._$currentScopeCount.next(filteredObjects.length);
-        this._$childrenCount.next(fittingChildrens.length);
-      } else {
-        this._viewer.selectionTool.picker.setCustomEntityScope(undefined);
-        this._viewer.selectionTool.picker.objectsOnCurrentLevel.forEach((x) =>
-          x.onEnable()
-        );
-        this._$currentScopeCount.next(undefined);
-        this._$childrenCount.next(undefined);
-      }
+      this._viewer.selectionTool.picker.setCustomEntityScope(filteredObjects);
+
+      this._$currentScopeCount.next(filteredObjects.length);
+      this._$childrenCount.next(fittingChildrens.length);
+    } else {
+      this._viewer.selectionTool.picker.setCustomEntityScope(undefined);
+      this._viewer.selectionTool.picker.objectsOnCurrentLevel.forEach((x) =>
+        x.onEnable()
+      );
+      this._$currentScopeCount.next(undefined);
+      this._$childrenCount.next(undefined);
     }
 
     this._viewer.updateViewer();
   }
 
-  public addFilter(key: string) {
-    const filter: FilterItem = {
-      id: v4(),
-      key,
-      condition: [],
-      enabled: true,
-    };
+  public addCondition(
+    parentGroup: FilterGroup,
+    key: string
+    // valueType: ParamType
+  ) {
+    if (this._filterPreset) {
+      const filter: FilterItem = {
+        id: v4(),
+        type: "condition",
+        key,
+        // valueType,
+        operator: "DEFINED",
+        value: undefined,
+      };
 
-    this._filters.set(filter.id, filter);
-    this._$filters.next([...this._filters.values()]);
+      parentGroup.conditions.set(filter.id, filter);
 
-    this._dbService.updatePreset(this._currentPreset!);
+      this._$filterPreset.next({ ...this._filterPreset });
+      this._dbService.updatePreset(this._filterPreset);
+    }
   }
 
-  public removeFilter(id: string) {
-    this._filters.delete(id);
-    this._$filters.next([...this._filters.values()]);
+  public addGroup(parentGroup: FilterGroup) {
+    if (this._filterPreset) {
+      const group: FilterGroup = {
+        id: v4(),
+        type: "group",
+        groupType: "any",
+        conditions: new Map(),
+      };
 
-    this._dbService.updatePreset(this._currentPreset!);
+      parentGroup.conditions.set(group.id, group);
+
+      console.log("add group", this._filterPreset);
+      console.log("add group", parentGroup);
+
+      this._$filterPreset.next({ ...this._filterPreset });
+      this._dbService.updatePreset(this._filterPreset);
+    }
   }
 
-  public updateFilter(filter: FilterItem) {
-    console.log(filter);
-    this.filters.set(filter.id, filter);
-    this._$filters.next([...this._filters.values()]);
+  public removeFilterItem(parentGroup: FilterGroup, id: string) {
+    if (this._filterPreset) {
+      parentGroup.conditions.delete(id);
+      this._$filterPreset.next({ ...this._filterPreset });
+      this._dbService.updatePreset(this._filterPreset!);
+    }
+  }
 
-    this._dbService.updatePreset(this._currentPreset!);
+  public updateFilterCondition(filter: FilterCondition) {
+    if (this._filterPreset) {
+      this._$filterPreset.next({ ...this._filterPreset });
+      this._dbService.updatePreset(this._filterPreset!);
+    }
+  }
+
+  public updateFilterGroup(
+    parentGroup: FilterGroup | undefined,
+    group: FilterGroup
+  ) {
+    if (this._filterPreset) {
+      if (parentGroup) {
+        parentGroup.conditions.set(group.id, group);
+      } else {
+        this._filterPreset.filter = group;
+      }
+      this._$filterPreset.next({ ...this._filterPreset });
+
+      this.executeFiltering();
+      this._dbService.updatePreset(this._filterPreset!);
+    }
   }
 
   private updatePropsMap() {
@@ -241,36 +289,47 @@ class ViewFilterExtension extends ExtensionEntity {
 
 export default ViewFilterExtension;
 
-function filterEntity(entity: Entity, filterItems: FilterItem[]): boolean {
-  return filterItems.every((filterItem) => {
+function filterEntity(entity: Entity, filterItem: FilterItem): boolean {
+  if (filterItem.type === "group") {
+    if (filterItem.conditions.size === 0) {
+      return true;
+    }
+
+    if (filterItem.groupType === "all") {
+      return [...filterItem.conditions.values()].every((condition) => {
+        return filterEntity(entity, condition);
+      });
+    } else if (filterItem.groupType === "any") {
+      return [...filterItem.conditions.values()].some((condition) => {
+        return filterEntity(entity, condition);
+      });
+    } else {
+      return false;
+    }
+  } else if (filterItem.type === "condition") {
     const entityValue = entity.props?.get(filterItem.key);
 
-    const conditions =
-      filterItem.condition.length > 0
-        ? filterItem.condition
-        : [{ operator: "DEFINED", value: undefined }];
-
-    return conditions.some((condition) => {
-      switch (condition.operator) {
-        case "DEFINED":
-          return entityValue && true;
-        case "EQUAL":
-          return entityValue === condition.value;
-        case "NOT_EQUAL":
-          return entityValue !== condition.value;
-        case "GREATER_THAN":
-          return (
-            typeof entityValue === "number" &&
-            entityValue > (condition.value as number)
-          );
-        case "LESS_THAN":
-          return (
-            typeof entityValue === "number" &&
-            entityValue < (condition.value as number)
-          );
-        default:
-          return false;
-      }
-    });
-  });
+    switch (filterItem.operator) {
+      case "DEFINED":
+        return entityValue !== undefined;
+      case "EQUAL":
+        return entityValue === filterItem.value;
+      case "NOT_EQUAL":
+        return entityValue !== filterItem.value;
+      case "GREATER_THAN":
+        return (
+          typeof entityValue === "number" &&
+          entityValue > (filterItem.value as number)
+        );
+      case "LESS_THAN":
+        return (
+          typeof entityValue === "number" &&
+          entityValue < (filterItem.value as number)
+        );
+      default:
+        return false;
+    }
+  } else {
+    return false;
+  }
 }
