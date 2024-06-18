@@ -58,20 +58,24 @@ const FilterGroupComponent: React.FC<FilterGroupProps> = (
         </ToggleButtonGroup>
         {parentGroup === undefined && (
           <AddGroupButton>
-            <button onClick={() => extension.addGroup(filterItem)}>
+            <button
+              className="add-group-button"
+              onClick={() => extension.addGroup(filterItem)}
+            >
               + Add Group
             </button>
           </AddGroupButton>
         )}
         {parentGroup && (
           <RemoveGroupButton>
-            <IconButton
+            <button
+              className="remove-group-button"
               onClick={() =>
                 extension.removeFilterItem(parentGroup, filterItem.id)
               }
             >
-              <ClearIcon className="item-button" />
-            </IconButton>
+              <ClearIcon />
+            </button>
           </RemoveGroupButton>
         )}
       </div>
@@ -139,14 +143,14 @@ const FilterGroupWrapper = styled.div`
     :last-child {
       border-radius: 0px ${r1}px ${r1}px 0px;
     }
-    button {
+    & button {
       text-transform: capitalize;
     }
   }
 `;
 
 const AddGroupButton = styled.div`
-  button {
+  .add-group-button {
     height: 20px;
     background-color: #f3f3f3;
     border: 0px;
@@ -160,20 +164,24 @@ const AddGroupButton = styled.div`
 `;
 
 const RemoveGroupButton = styled.div`
-  button {
-    height: 18px;
-    width: 18px;
+  display: flex;
+  .remove-group-button {
+    height: 20px;
+    width: 20px;
     background-color: #f3f3f3;
-    border: 0px;
+    border: none;
     border-radius: ${r1}px;
-    font-size: 12px;
-
+    display: flex;
+    justify-content: center;
+    justify-items: center;
     cursor: pointer;
     &:hover {
       background-color: #dbdbdb;
     }
-    svg {
-      width: 16px;
+    & > svg {
+      align-self: center;
+      width: 14px;
+      height: 14px;
     }
   }
 `;

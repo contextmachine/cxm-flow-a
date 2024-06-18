@@ -132,6 +132,7 @@ export default MultipleValueInput;
 const SelectWithSearchWrapper = styled.div`
   width: 100%;
   font-size: 12px;
+  display: flex;
 
   .input-field {
     min-height: 25px;

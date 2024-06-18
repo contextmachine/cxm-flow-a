@@ -58,35 +58,34 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
 
   return (
     <FilterConditionWrapper color={pallete[index % pallete.length]}>
-      <div className="item">
-        <span className="tag" />
-        <div className="label">{filterItem.key}</div>
-        <div className="operator">
-          <OperatorSelect
-            filterItem={filterItem}
-            extension={extension}
-            propertyType={type}
-          />
-        </div>
-        {type !== "string" && (
-          <ValueInput
-            filterItem={filterItem}
-            extension={extension}
-            type={type}
-          />
-        )}
-        {type === "string" && (
-          <MultipleValueInput
-            valueOptions={values}
-            filterItem={filterItem}
-            extension={extension}
-            type={type}
-          />
-        )}
+      <div className="marker">
+        <span className="marker-tag" />
+        <IconButton
+          className="delete-button"
+          onClick={() => onDelete(filterItem.id)}
+        >
+          <ClearIcon className="delete-icon" />
+        </IconButton>
       </div>
-      <IconButton onClick={() => onDelete(filterItem.id)}>
-        <ClearIcon className="item-button" />
-      </IconButton>
+      <div className="label">{filterItem.key}</div>
+      <div className="operator">
+        <OperatorSelect
+          filterItem={filterItem}
+          extension={extension}
+          propertyType={type}
+        />
+      </div>
+      {type !== "string" && (
+        <ValueInput filterItem={filterItem} extension={extension} type={type} />
+      )}
+      {type === "string" && (
+        <MultipleValueInput
+          valueOptions={values}
+          filterItem={filterItem}
+          extension={extension}
+          type={type}
+        />
+      )}
     </FilterConditionWrapper>
   );
 };
@@ -95,35 +94,45 @@ export default FilterConditionComponent;
 
 const FilterConditionWrapper = styled.div<{ color: string }>`
   display: flex;
-  justify-content: space-between;
+  justify-content: start;
   align-items: center;
   width: 100%;
+  flex-direction: row;
 
-  .item {
+  & .label {
+    width: 100px;
+  }
+
+  & .marker {
     display: flex;
-    flex-direction: row;
+    justify-content: center;
     align-items: center;
+    width: 25px;
+    margin-right: 2px;
 
-    span {
-      display: flex;
+    & .marker-tag {
       background: ${({ color }) => color};
       border-radius: 3px;
       height: 6px;
       width: 6px;
-      margin-right: 5px;
     }
-    .label {
-      width: 100px;
+
+    & .delete-button {
+      display: none;
+      height: 20px;
+    }
+
+    & .delete-icon {
+      width: 14px;
     }
   }
 
-  &:hover .item-button {
-    visibility: visible;
+  &:hover .delete-button {
+    display: block;
   }
 
-  .item-button {
-    visibility: hidden;
-    width: 16px;
+  &:hover .marker-tag {
+    display: none;
   }
 `;
 

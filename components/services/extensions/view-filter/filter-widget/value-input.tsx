@@ -43,7 +43,7 @@ const ValueInput: React.FC<ValueInputProps> = (props: ValueInputProps) => {
 export default ValueInput;
 
 const SelectWithSearchWrapper = styled.div`
-  width: 150px;
+  width: 100%;
   font-size: 12px;
   height: 100%;
 
@@ -51,7 +51,7 @@ const SelectWithSearchWrapper = styled.div`
     width: 100%;
     height: 25px;
     display: flex;
-    justify-content: center;
+    justify-content: start;
 
     border: 1px solid #e0e0e0;
     border-radius: 9px;
