@@ -36,9 +36,9 @@ const FilterGroupComponent: React.FC<FilterGroupProps> = (
 
   const entities = useEntities();
   const onSelectFilter = (option: { value: string }) => {
-    // const { type } = getPropertyValues([...entities.values()], option.value);
+    const { type } = getPropertyValues([...entities.values()], option.value);
 
-    extension.addCondition(filterItem, option.value);
+    extension.addCondition(filterItem, option.value, type);
     setFilterInput("");
   };
 

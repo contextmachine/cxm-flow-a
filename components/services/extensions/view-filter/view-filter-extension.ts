@@ -36,8 +36,8 @@ export interface FilterCondition {
   id: string;
   key: string;
   type: "condition";
-  // valueType: ParamType;
-  value: number | string | boolean | undefined;
+  valueType: ParamType;
+  value: number | string[] | boolean | undefined;
   operator: ConditionOperator;
 }
 
@@ -189,17 +189,17 @@ class ViewFilterExtension extends ExtensionEntity {
 
   public addCondition(
     parentGroup: FilterGroup,
-    key: string
-    // valueType: ParamType
+    key: string,
+    valueType: ParamType
   ) {
     if (this._filterPreset) {
       const filter: FilterItem = {
         id: v4(),
         type: "condition",
         key,
-        // valueType,
+        valueType,
         operator: "DEFINED",
-        value: undefined,
+        value: valueType === "string" ? [] : undefined,
       };
 
       parentGroup.conditions.set(filter.id, filter);
@@ -308,6 +308,21 @@ function filterEntity(entity: Entity, filterItem: FilterItem): boolean {
     }
   } else if (filterItem.type === "condition") {
     const entityValue = entity.props?.get(filterItem.key);
+
+    const isArray = Array.isArray(filterItem.value);
+
+    if (isArray) {
+      const values = filterItem.value as string[];
+
+      switch (filterItem.operator) {
+        case "EQUAL":
+          return values.includes(entityValue);
+        case "NOT_EQUAL":
+          return values.every((x) => x !== entityValue);
+        default:
+          return false;
+      }
+    }
 
     switch (filterItem.operator) {
       case "DEFINED":

@@ -10,6 +10,7 @@ import OperatorSelect from "@/components/services/extensions/view-filter/filter-
 import ValueInput from "./value-input";
 import { Entity } from "@/src/objects/entities/entity";
 import { useEntities } from "@/src/hooks";
+import MultipleValueInput from "./multiple-value-input";
 
 interface FilterConditionProps {
   index: number;
@@ -67,13 +68,21 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
             propertyType={type}
           />
         </div>
-
-        <ValueInput
-          filterItem={filterItem}
-          extension={extension}
-          values={values}
-          type={type}
-        />
+        {type !== "string" && (
+          <ValueInput
+            filterItem={filterItem}
+            extension={extension}
+            type={type}
+          />
+        )}
+        {type === "string" && (
+          <MultipleValueInput
+            valueOptions={values}
+            filterItem={filterItem}
+            extension={extension}
+            type={type}
+          />
+        )}
       </div>
       <IconButton onClick={() => onDelete(filterItem.id)}>
         <ClearIcon className="item-button" />
@@ -88,7 +97,6 @@ const FilterConditionWrapper = styled.div<{ color: string }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 25px;
   width: 100%;
 
   .item {
@@ -107,8 +115,6 @@ const FilterConditionWrapper = styled.div<{ color: string }>`
     .label {
       width: 100px;
     }
-    .operator {
-    }
   }
 
   &:hover .item-button {
@@ -118,12 +124,6 @@ const FilterConditionWrapper = styled.div<{ color: string }>`
   .item-button {
     visibility: hidden;
     width: 16px;
-  }
-
-  button {
-    border-radius: 12px;
-    width: 18px;
-    height: 18px;
   }
 `;
 

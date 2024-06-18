@@ -7,79 +7,34 @@ import { PropertyType } from "./filter-condition";
 interface ValueInputProps {
   filterItem: FilterCondition;
   extension: ViewFilterExtension;
-  values: string[];
   type: PropertyType;
 }
 
 const ValueInput: React.FC<ValueInputProps> = (props: ValueInputProps) => {
-  const { filterItem, extension, values, type } = props;
-  const [isOpen, setIsOpen] = useState(false);
+  const { filterItem, extension, type } = props;
   const dropDownRef = useRef(null);
-
-  const handleClose = () => {
-    if (isOpen) {
-      setIsOpen(false);
-    }
-  };
-  useClickOutside(dropDownRef, () => handleClose());
-
-  useEffect(() => {
-    const onKeyPressed = (e: KeyboardEvent): void => {
-      if (e.key === "Enter" || e.key === "Esc") {
-        handleClose();
-      }
-    };
-
-    document.addEventListener("keydown", onKeyPressed);
-    return () => {
-      document.removeEventListener("keydown", onKeyPressed);
-    };
-  });
-
-  const [filteredOptions, setFilteredOptions] = useState(values);
 
   const [filterInput, setFilterInput] = useState(
     filterItem.value ? filterItem.value.toString() : ""
   );
 
   useEffect(() => {
-    setFilteredOptions(values.filter((x) => filterOption(filterInput, x)));
     const value = parseValue(filterInput, type);
-    filterItem.value = value;
+    filterItem.value = value as any;
     extension.updateFilterCondition(filterItem);
   }, [filterInput]);
-
-  const filterOption = (input: string, option: string | undefined) =>
-    (option ?? "").toLowerCase().includes(input.toLowerCase());
-
-  const handleOptionClick = (option: any) => {
-    setIsOpen(false);
-    setFilterInput(option);
-  };
 
   return (
     <SelectWithSearchWrapper>
       <DropdownContainer ref={dropDownRef}>
         <div className="input-field">
           <input
-            onClick={() => setIsOpen(!isOpen)}
+            className="value-input"
             value={filterInput}
             placeholder="Value"
             onChange={(e) => setFilterInput(e.target.value)}
           />
         </div>
-        {isOpen && filteredOptions.length > 0 && (
-          <DropdownList>
-            {filteredOptions.map((option, index) => (
-              <DropdownItem
-                key={index}
-                onClick={() => handleOptionClick(option)}
-              >
-                {option}
-              </DropdownItem>
-            ))}
-          </DropdownList>
-        )}
       </DropdownContainer>
     </SelectWithSearchWrapper>
   );
@@ -102,7 +57,7 @@ const SelectWithSearchWrapper = styled.div`
     border-radius: 9px;
     padding: 0 10px;
 
-    input {
+    .value-input {
       border: 0px;
       background-color: white;
       &:focus-visible {
