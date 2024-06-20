@@ -44,7 +44,7 @@ const FilterGroupComponent: React.FC<FilterGroupProps> = (
 
   return (
     <FilterGroupWrapper>
-      <div className="header">
+      {/* <div className="header">
         <ToggleButtonGroup
           className="group-type"
           color="primary"
@@ -78,7 +78,7 @@ const FilterGroupComponent: React.FC<FilterGroupProps> = (
             </button>
           </RemoveGroupButton>
         )}
-      </div>
+      </div> */}
       {[...filterItem.conditions.values()]
         .sort((a, b) => sortValue(a.type) - sortValue(b.type))
         .map((condition, i) => (
@@ -115,9 +115,9 @@ const FilterGroupWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  border: 1px solid #e7e7e7;
+  /* border: 1px solid #e7e7e7;
   border-radius: 12px;
-  padding: 3px;
+  padding: 3px; */
 
   .header {
     display: flex;

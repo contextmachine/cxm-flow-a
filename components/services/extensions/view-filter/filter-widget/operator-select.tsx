@@ -19,7 +19,6 @@ interface OperatorSelectProps {
 }
 
 const defaultOptions: Option[] = [
-  ["DEFINED", "!"],
   ["EQUAL", "="],
   ["NOT_EQUAL", "≠"],
   ["GREATER_THAN", ">"],

@@ -198,7 +198,7 @@ class ViewFilterExtension extends ExtensionEntity {
         type: "condition",
         key,
         valueType,
-        operator: "DEFINED",
+        operator: "EQUAL",
         value: valueType === "string" ? [] : undefined,
       };
 
@@ -214,7 +214,7 @@ class ViewFilterExtension extends ExtensionEntity {
       const group: FilterGroup = {
         id: v4(),
         type: "group",
-        groupType: "any",
+        groupType: "all",
         conditions: new Map(),
       };
 
@@ -314,7 +314,11 @@ function filterEntity(entity: Entity, filterItem: FilterItem): boolean {
     if (isArray) {
       const values = filterItem.value as string[];
 
-      switch (filterItem.operator) {
+      const operator = values.length > 0 ? filterItem.operator : "DEFINED";
+
+      switch (operator) {
+        case "DEFINED":
+          return entityValue !== undefined;
         case "EQUAL":
           return values.includes(entityValue);
         case "NOT_EQUAL":
@@ -322,27 +326,30 @@ function filterEntity(entity: Entity, filterItem: FilterItem): boolean {
         default:
           return false;
       }
-    }
+    } else {
+      const operator =
+        filterItem.value !== undefined ? filterItem.operator : "DEFINED";
 
-    switch (filterItem.operator) {
-      case "DEFINED":
-        return entityValue !== undefined;
-      case "EQUAL":
-        return entityValue === filterItem.value;
-      case "NOT_EQUAL":
-        return entityValue !== filterItem.value;
-      case "GREATER_THAN":
-        return (
-          typeof entityValue === "number" &&
-          entityValue > (filterItem.value as number)
-        );
-      case "LESS_THAN":
-        return (
-          typeof entityValue === "number" &&
-          entityValue < (filterItem.value as number)
-        );
-      default:
-        return false;
+      switch (operator) {
+        case "DEFINED":
+          return entityValue !== undefined;
+        case "EQUAL":
+          return entityValue === filterItem.value;
+        case "NOT_EQUAL":
+          return entityValue !== filterItem.value;
+        case "GREATER_THAN":
+          return (
+            typeof entityValue === "number" &&
+            entityValue > (filterItem.value as number)
+          );
+        case "LESS_THAN":
+          return (
+            typeof entityValue === "number" &&
+            entityValue < (filterItem.value as number)
+          );
+        default:
+          return false;
+      }
     }
   } else {
     return false;
