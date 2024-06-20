@@ -91,6 +91,14 @@ const GlobalStyle = createGlobalStyle<{
     }
   }
 
+  // FORM LABELS
+  & .MuiFormControlLabel-root, & .MuiFormControlLabel-root .MuiTypography-root {
+    &, & * {
+      color: var(--main-text-color);
+      font-size: 12px;
+    }
+  }
+
   // SNACKBARS
   & .MuiSnackbarContent-root {
     background-color: #333333 !important;

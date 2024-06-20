@@ -1,27 +1,25 @@
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import { Box, MenuItem, Paper, Select, Typography } from "@mui/material";
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useMemo, useRef, useState } from "react";
 import WidgetPaper from "../../blocks/widget-paper/widget-paper";
 import styled from "styled-components";
 import { PCUserData } from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension.types";
-import PieChart from "./blocks/pie-chart/pie-chart";
+import PieChart, { rgbToHex } from "./blocks/pie-chart/pie-chart";
+import { useViewer } from "@/components/services/scene-service/scene-provider";
+import { DefaultObject } from "@/src/objects/entities/default-object";
+import * as THREE from "three";
+import useLegend from "./hooks/use-legend";
+import { Checkbox, FormControlLabel } from "@mui/material";
 
 const PointCloudHandlerSidebar: React.FC<{
   extension: ExtensionEntityInterface;
 }> = ({ extension }) => {
   const [section, setSection] = useState<string>("");
-
-  const chartData = [
-    { value: 0.5, color: "#b8f2e6", percentage: 45 },
-    { value: 0.42, color: "#5f9ea0", percentage: 15 },
-    { value: 0.37, color: "#20b2aa", percentage: 15 },
-    { value: 0.3, color: "#008080", percentage: 25 },
-  ];
-
-  const total = chartData.reduce((sum, data) => sum + data.value, 0);
-  let cumulativeValue = 0;
+  const viewer = useViewer();
 
   const [statistics, setStatistics] = useState<PCUserData | null>(null);
+  const [isVisualizationEnabled, setIsVisualizationEnabled] =
+    useState<boolean>(false);
 
   useEffect(() => {
     const ps = extension.statistics$.subscribe((data: PCUserData | null) => {
@@ -38,6 +36,65 @@ const PointCloudHandlerSidebar: React.FC<{
       setSection(Object.keys(statistics.bufferProperties)[0] || "");
     }
   }, [statistics]);
+
+  const defaultColorMap = useRef<any>(new Map());
+
+  useEffect(() => {
+    if (!viewer || !statistics) return;
+
+    defaultColorMap.current.clear();
+
+    const entityControl = viewer.entityControl;
+    const entities = Array.from(entityControl.entities.values());
+
+    entities.forEach((entity) => {
+      if (entity instanceof DefaultObject) {
+        const objects = entity.objects;
+        objects.forEach((object) => {
+          if (object instanceof THREE.Points) {
+            // Save default color map
+            defaultColorMap.current.set(
+              object.id,
+              object.geometry.attributes.color
+            );
+          }
+        });
+      }
+    });
+  }, [viewer, statistics]);
+
+  useEffect(() => {
+    if (!viewer || !section.length || !statistics) return;
+
+    const entityControl = viewer.entityControl;
+    const entities = Array.from(entityControl.entities.values());
+
+    entities.forEach((entity) => {
+      if (entity instanceof DefaultObject) {
+        const objects = entity.objects;
+        objects.forEach((object) => {
+          if (object instanceof THREE.Points) {
+            const geometry = object.geometry as THREE.BufferGeometry;
+
+            if (!isVisualizationEnabled) {
+              geometry.attributes.color = defaultColorMap.current.get(
+                object.id
+              );
+              geometry.attributes.color.needsUpdate = true; // Indicate that the color attribute needs an update
+              return;
+            } else {
+              geometry.attributes.color = geometry.attributes[section];
+              geometry.attributes.color.needsUpdate = true; // Indicate that the color attribute needs an update
+            }
+          }
+        });
+      }
+    });
+
+    viewer.updateViewer();
+  }, [viewer, section, statistics, isVisualizationEnabled]);
+
+  const legend = useLegend(section, statistics);
 
   if (!statistics) return null;
 
@@ -113,6 +170,17 @@ const PointCloudHandlerSidebar: React.FC<{
             ))}
           </Select>
 
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={isVisualizationEnabled}
+                onChange={(e) => setIsVisualizationEnabled(e.target.checked)}
+              />
+            }
+            label="Enable"
+          />
+
           <Box
             sx={{ display: "flex", justifyContent: "center", width: "100%" }}
           >
@@ -122,42 +190,25 @@ const PointCloudHandlerSidebar: React.FC<{
                 key={section}
               />
 
-              {/* <svg
-                width="100"
-                height="100"
-                viewBox="0 0 36 36"
-                style={{ transform: "rotate(-90deg)" }}
-              >
-                {chartData.map((data, index) => {
-                  const value = (data.value / total) * 100;
-                  const startAngle = (cumulativeValue / total) * 100;
-                  cumulativeValue += data.value;
-
-                  return (
-                    <circle
-                      key={index}
-                      cx="18"
-                      cy="18"
-                      r="15.9155"
-                      fill="transparent"
-                      stroke={data.color}
-                      strokeWidth="3"
-                      strokeDasharray={`${value} ${100 - value}`}
-                      strokeDashoffset={-startAngle}
-                    />
-                  );
-                })}
-              </svg>
               <Legend>
-                {chartData.map((data, index) => (
-                  <LegendItem key={index}>
-                    <ColorBox color={data.color} />
-                    <Box>{data.value} м</Box>
-                    <Box sx={{ marginLeft: "auto" }}>{data.percentage}%</Box>
-                  </LegendItem>
-                ))}
+                {legend &&
+                  legend.map((item: any, index) => {
+                    const { valueRange, shareRange, colorRange } = item;
 
-              </Legend> */}
+                    const colorStart = rgbToHex(
+                      colorRange[0][0],
+                      colorRange[0][1],
+                      colorRange[0][2]
+                    );
+
+                    return (
+                      <LegendItem key={index}>
+                        <ColorBox color={colorStart} />
+                        <Box sx={{ fontSize: "9px" }}>{valueRange}</Box>
+                      </LegendItem>
+                    );
+                  })}
+              </Legend>
             </ChartContainer>
           </Box>
         </WidgetPaper>
@@ -192,9 +243,9 @@ const ChartContainer = styled(Box)`
   background-color: rgba(255, 255, 255, 0.02);
   padding: 16px;
   border-radius: 8px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   color: white;
   width: 100%;
 `;
