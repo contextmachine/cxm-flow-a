@@ -18,8 +18,6 @@ const PointCloudHandlerSidebar: React.FC<{
   const viewer = useViewer();
 
   const [statistics, setStatistics] = useState<PCUserData | null>(null);
-  const [isVisualizationEnabled, setIsVisualizationEnabled] =
-    useState<boolean>(false);
 
   useEffect(() => {
     const ps = extension.statistics$.subscribe((data: PCUserData | null) => {
@@ -33,7 +31,10 @@ const PointCloudHandlerSidebar: React.FC<{
 
   useEffect(() => {
     if (statistics) {
-      setSection(Object.keys(statistics.bufferProperties)[0] || "");
+      // option 1: set first section
+      const firstSection = Object.keys(statistics.bufferProperties)[0];
+
+      setSection("none");
     }
   }, [statistics]);
 
@@ -76,7 +77,7 @@ const PointCloudHandlerSidebar: React.FC<{
           if (object instanceof THREE.Points) {
             const geometry = object.geometry as THREE.BufferGeometry;
 
-            if (!isVisualizationEnabled) {
+            if (section === "none") {
               geometry.attributes.color = defaultColorMap.current.get(
                 object.id
               );
@@ -92,7 +93,7 @@ const PointCloudHandlerSidebar: React.FC<{
     });
 
     viewer.updateViewer();
-  }, [viewer, section, statistics, isVisualizationEnabled]);
+  }, [viewer, section, statistics]);
 
   const legend = useLegend(section, statistics);
 
@@ -163,54 +164,48 @@ const PointCloudHandlerSidebar: React.FC<{
             value={section}
             onChange={(e) => setSection(e.target.value as string)}
           >
-            {Object.keys(statistics.bufferProperties).map((toolset, i) => (
-              <MenuItem value={toolset} key={i}>
-                {toolset}
-              </MenuItem>
-            ))}
+            {[
+              <MenuItem value={"none"}>{"none"}</MenuItem>,
+              ...Object.keys(statistics.bufferProperties).map((toolset, i) => (
+                <MenuItem value={toolset} key={i}>
+                  {toolset}
+                </MenuItem>
+              )),
+            ]}
           </Select>
 
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={isVisualizationEnabled}
-                onChange={(e) => setIsVisualizationEnabled(e.target.checked)}
-              />
-            }
-            label="Enable"
-          />
+          {section !== "none" && (
+            <Box
+              sx={{ display: "flex", justifyContent: "center", width: "100%" }}
+            >
+              <ChartContainer>
+                <PieChart
+                  data={statistics.bufferProperties[section]}
+                  key={section}
+                />
 
-          <Box
-            sx={{ display: "flex", justifyContent: "center", width: "100%" }}
-          >
-            <ChartContainer>
-              <PieChart
-                data={statistics.bufferProperties[section]}
-                key={section}
-              />
+                <Legend>
+                  {legend &&
+                    legend.map((item: any, index) => {
+                      const { valueRange, shareRange, colorRange } = item;
 
-              <Legend>
-                {legend &&
-                  legend.map((item: any, index) => {
-                    const { valueRange, shareRange, colorRange } = item;
+                      const colorStart = rgbToHex(
+                        colorRange[0][0],
+                        colorRange[0][1],
+                        colorRange[0][2]
+                      );
 
-                    const colorStart = rgbToHex(
-                      colorRange[0][0],
-                      colorRange[0][1],
-                      colorRange[0][2]
-                    );
-
-                    return (
-                      <LegendItem key={index}>
-                        <ColorBox color={colorStart} />
-                        <Box sx={{ fontSize: "9px" }}>{valueRange}</Box>
-                      </LegendItem>
-                    );
-                  })}
-              </Legend>
-            </ChartContainer>
-          </Box>
+                      return (
+                        <LegendItem key={index}>
+                          <ColorBox color={colorStart} />
+                          <Box sx={{ fontSize: "9px" }}>{valueRange}</Box>
+                        </LegendItem>
+                      );
+                    })}
+                </Legend>
+              </ChartContainer>
+            </Box>
+          )}
         </WidgetPaper>
       </Box>
     </>
