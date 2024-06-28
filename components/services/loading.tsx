@@ -8,7 +8,6 @@ export function Loading({ children }: any) {
   const status = useStatus();
 
   useEffect(() => {
-    console.log(status, status === "loading");
     setLoading(status === "loading");
   }, [status]);
 

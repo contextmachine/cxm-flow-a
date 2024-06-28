@@ -5,7 +5,7 @@ import DummyWidget from "./dummy-widget";
 import MappingWidget from "./mapping-widget";
 import StatisticsWidget from "./statistics-widget";
 import ToolsetWidget from "./toolset-widget";
-import ViewsWidget from "./views-widget";
+import ViewsWidget from "./views-widget/views-widget";
 import { WidgetType } from "./widget.types";
 import {
   useScene,
@@ -14,6 +14,7 @@ import {
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import QueryWidget from "@/components/services/extensions/query-extension/query-widget/query-widget";
 import ViewFilterWidget from "@/components/services/extensions/view-filter/filter-widget/filter-widget";
+import PointCloudHandlerWidget from "./pointcloud-handler-widget/pointcloud-handler-widget";
 import OutlinerWidget from "@/components/services/extensions/outliner/outliner-widget/outliner-widget";
 import OutlinerExtension from "@/components/services/extensions/outliner/outliner-extension";
 
@@ -32,7 +33,6 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
   useEffect(() => {
     const extension = viewer.extensionControl.getExtension(type);
 
-    console.log("widget", type, extension);
     if (extension) {
       setExtension(extension as any);
     }
@@ -62,6 +62,10 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
       return <ViewsWidget isPreview={isPreview} extension={extension!} />;
     case "view-filter":
       return <ViewFilterWidget isPreview={isPreview} extension={extension!} />;
+    case "pointcloud-handler":
+      return (
+        <PointCloudHandlerWidget isPreview={isPreview} extension={extension!} />
+      );
     case "chart-widget":
       return <ChartWidget isPreview={isPreview} extension={extension} />;
     case "mapping-widget":

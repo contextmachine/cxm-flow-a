@@ -10,6 +10,13 @@ export interface ViewState {
   cameraType: "perspective" | "orthographic"; // Camera type
 }
 
+export interface ControlsViewState {
+  target: [number, number, number]; // Camera target in 3D space
+  position: [number, number, number]; // Camera position in 3D space
+  focalOffset: [number, number, number]; // Camera focal offset
+  fov: number | null; // Camera field of view
+}
+
 // Extended interface for camera views with metadata
 export interface DetailedViewState extends ViewState {
   id: string; // Unique identifier for the view state

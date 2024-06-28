@@ -5,6 +5,7 @@ import { ExtensionEntityInterface } from "./extension-entity.types";
 
 class ExtensionEntity implements ExtensionEntityInterface {
   protected _viewer: Viewer;
+  protected _sceneService: SceneService;
 
   private _isInitialized: boolean;
 
@@ -13,6 +14,8 @@ class ExtensionEntity implements ExtensionEntityInterface {
 
   constructor(viewer: Viewer) {
     this._viewer = viewer;
+    this._sceneService = viewer.sceneService;
+
     this.name = "default";
 
     this.id = uuidv4();

@@ -41,12 +41,7 @@ const RightBar = () => {
           columnGap: "9px",
         }}
       >
-        <Button
-          variant="contained"
-          color="secondary"
-          size="large"
-          sx={{ backgroundColor: "white !important" }}
-        >
+        <Button variant="contained" color="secondary" size="large">
           Import
         </Button>
 
@@ -168,13 +163,13 @@ const RightBar = () => {
       </Paper>
 
       <Button
-        sx={{ backgroundColor: "white !important" }}
         variant="contained"
         color="secondary"
         size="large"
         onClick={workspaceService.deleteWorkspace}
+        data-type="danger"
       >
-        <span style={{ color: "#AA1A1A" }}>Delete Workspace</span>
+        Delete Workspace
       </Button>
     </>
   );

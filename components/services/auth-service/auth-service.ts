@@ -1,9 +1,10 @@
 import client from "@/components/graphql/client/client";
 import { gql } from "@apollo/client";
-import { UserMetadataResponse } from "./auth-service.types";
+import { FeatureType, UserMetadataResponse } from "./auth-service.types";
 import axios from "axios";
 import Cookie from "js-cookie";
 import WorkspaceService from "../workspace-service/workspace-service";
+import { BehaviorSubject } from "rxjs";
 
 class AuthService {
   private _loading: boolean;
@@ -15,6 +16,10 @@ class AuthService {
   private $setUserMetadata: any;
   private $setIsUnauthorized: any;
   private $setError: any;
+
+  private _featureMap$ = new BehaviorSubject<Map<FeatureType, boolean>>(
+    new Map()
+  );
 
   private _workspaceService: WorkspaceService;
 
@@ -52,6 +57,19 @@ class AuthService {
     }
   }
 
+  public updateFeatures() {
+    const metadata = this.userMetadata;
+
+    const theme = metadata?.user_theme?.theme?.name || "light";
+    const isDarkMode = theme === "dark";
+
+    const featureMap = new Map<FeatureType, boolean>([
+      ["isDarkMode", isDarkMode],
+    ]);
+
+    this._featureMap$.next(featureMap);
+  }
+
   public async getUserMetadata() {
     const userId = this._session!.userId;
 
@@ -63,6 +81,13 @@ class AuthService {
           id
           password
           username
+          user_theme {
+            theme {
+              id
+              name
+            }
+            id
+          }
         }
       }
     `;
@@ -149,6 +174,8 @@ class AuthService {
   public updateUserMetadata(metadata: UserMetadataResponse) {
     this._userMetadata = metadata;
     this.$setUserMetadata(metadata);
+
+    this.updateFeatures();
   }
 
   public updateLoading(loading: boolean) {
@@ -169,7 +196,9 @@ class AuthService {
     return this._workspaceService;
   }
 
-  
+  public get featureMap$() {
+    return this._featureMap$.asObservable();
+  }
 
   dispose() {
     this.updateLoading(true);
