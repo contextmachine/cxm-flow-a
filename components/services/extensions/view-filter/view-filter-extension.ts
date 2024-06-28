@@ -10,7 +10,7 @@ import ViewFilterDbService from "./view-filter-db-service";
 export interface FilterPreset {
   id: number;
   name: string;
-  enabled: string | undefined;
+  enabled: boolean;
   filter: FilterGroup;
 }
 
@@ -36,6 +36,7 @@ export interface FilterCondition {
   id: string;
   key: string;
   type: "condition";
+  enabled: boolean;
   valueType: ParamType;
   value: number | string[] | boolean | undefined;
   operator: ConditionOperator;
@@ -50,8 +51,8 @@ class ViewFilterExtension extends ExtensionEntity {
   private _filterPreset: FilterPreset | undefined;
   private _$filterPreset = new RX.Subject<FilterPreset>();
 
-  private _$currentScopeCount = new RX.Subject<number | undefined>();
-  private _$childrenCount = new RX.Subject<number | undefined>();
+  private _$currentScopeCount = new RX.Subject<number>();
+  private _$childrenCount = new RX.Subject<number>();
 
   private _dbService: ViewFilterDbService;
 
@@ -128,11 +129,8 @@ class ViewFilterExtension extends ExtensionEntity {
   }
 
   private executeFiltering() {
-    console.log("execute filtering");
     if (this._filterPreset && this._filterPreset.enabled) {
       const filterPreset = this._filterPreset;
-
-      console.log(this._filterPreset);
 
       const objects = this._viewer.selectionTool.picker.objectsOnCurrentLevel;
 
@@ -180,11 +178,19 @@ class ViewFilterExtension extends ExtensionEntity {
       this._viewer.selectionTool.picker.objectsOnCurrentLevel.forEach((x) =>
         x.onEnable()
       );
-      this._$currentScopeCount.next(undefined);
-      this._$childrenCount.next(undefined);
+      this._$currentScopeCount.next(0);
+      this._$childrenCount.next(0);
     }
 
     this._viewer.updateViewer();
+  }
+
+  public updatePreset(preset: FilterPreset) {
+    if (this._filterPreset) {
+      this._filterPreset = preset;
+      this._$filterPreset.next({ ...preset });
+      this._dbService.updatePreset(this._filterPreset);
+    }
   }
 
   public addCondition(
@@ -197,6 +203,7 @@ class ViewFilterExtension extends ExtensionEntity {
         id: v4(),
         type: "condition",
         key,
+        enabled: true,
         valueType,
         operator: "EQUAL",
         value: valueType === "string" ? [] : undefined,
@@ -219,9 +226,6 @@ class ViewFilterExtension extends ExtensionEntity {
       };
 
       parentGroup.conditions.set(group.id, group);
-
-      console.log("add group", this._filterPreset);
-      console.log("add group", parentGroup);
 
       this._$filterPreset.next({ ...this._filterPreset });
       this._dbService.updatePreset(this._filterPreset);
@@ -307,6 +311,10 @@ function filterEntity(entity: Entity, filterItem: FilterItem): boolean {
       return false;
     }
   } else if (filterItem.type === "condition") {
+    if (!filterItem.enabled) {
+      return true;
+    }
+
     const entityValue = entity.props?.get(filterItem.key);
 
     const isArray = Array.isArray(filterItem.value);

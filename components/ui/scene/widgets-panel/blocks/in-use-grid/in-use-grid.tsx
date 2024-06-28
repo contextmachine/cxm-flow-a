@@ -14,9 +14,7 @@ const InUseGrid = () => {
     [activeProducts]
   );
 
-  useEffect(() => {
-    console.log("active products", activeProducts);
-  }, [activeProducts]);
+  useEffect(() => {}, [activeProducts]);
 
   const [todoList, todos] = useDragAndDrop<HTMLUListElement, string>(
     todoItems,

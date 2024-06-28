@@ -14,6 +14,8 @@ import {
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import QueryWidget from "@/components/services/extensions/query-extension/query-widget/query-widget";
 import ViewFilterWidget from "@/components/services/extensions/view-filter/filter-widget/filter-widget";
+import OutlinerWidget from "@/components/services/extensions/outliner/outliner-widget/outliner-widget";
+import OutlinerExtension from "@/components/services/extensions/outliner/outliner-extension";
 
 const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
   if (type.toLowerCase().startsWith("product")) {
@@ -47,6 +49,13 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
   if (!extension && !exceptions.includes(type)) return null;
 
   switch (type) {
+    case "outliner":
+      return (
+        <OutlinerWidget
+          isPreview={isPreview}
+          extension={extension! as OutlinerExtension}
+        />
+      );
     case "queries":
       return <QueryWidget isPreview={isPreview} extension={extension!} />;
     case "views":

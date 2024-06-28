@@ -5,6 +5,7 @@ import * as RX from "rxjs";
 import { assertDefined } from "../utils";
 import Viewer from "./viewer";
 import ViewFilterExtension from "@/components/services/extensions/view-filter/view-filter-extension";
+import OutlinerExtension from "@/components/services/extensions/outliner/outliner-extension";
 
 class ExtensionControl {
   private _viewer: Viewer;
@@ -18,6 +19,10 @@ class ExtensionControl {
 
     this._viewer.sceneService.productService.$widgetProducts.subscribe(
       (products) => {
+        console.log(
+          "!!!!",
+          products.map((x) => x.name)
+        );
         products.forEach((data) => {
           if (!this._extensions.has(data.name)) {
             const extension = this.createExtension(data.name);
@@ -64,6 +69,7 @@ class ExtensionControl {
   }
 
   public removeExtension = (name: string) => {
+    console.log("remove extension", name);
     if (!this._extensions.has(name))
       throw new Error(`Extension with name ${name} does not exist`);
 
@@ -83,6 +89,8 @@ class ExtensionControl {
         return new CameraViewsExtensions(this._viewer);
       case "view-filter":
         return new ViewFilterExtension(this._viewer);
+      case "outliner":
+        return new OutlinerExtension(this._viewer);
       default:
         return undefined;
     }

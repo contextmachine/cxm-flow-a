@@ -16,11 +16,19 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
   extension: ext,
 }) => {
   const extension = ext as ViewFilterExtension;
+  const preset = useSubscribe(extension.$filter, extension.filter);
 
   const filterPreset = useSubscribe(extension.$filter, extension.filter);
 
   const currentScopeCount = useSubscribe(extension.$currentScopeCount, 0);
-  const childrenCount = useSubscribe(extension.$childrenCount, undefined);
+  const childrenCount = useSubscribe(extension.$childrenCount, 0);
+
+  const onEnable = () => {
+    if (preset) {
+      preset.enabled = !preset.enabled;
+      extension.updatePreset(preset);
+    }
+  };
 
   if (!filterPreset) {
     return;
@@ -48,12 +56,29 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
           key={0}
           index={0}
         />
+        <FilterButton
+          onClick={() => onEnable()}
+          isActive={preset !== undefined && preset.enabled}
+        ></FilterButton>
       </WidgetPaper>
     );
   }
 };
 
 export default ViewFilterWidget;
+
+const FilterButton = styled.button<{ isActive: boolean }>`
+  width: 100%;
+  height: 27px;
+  background-color: ${({ isActive }) => (isActive ? "#237ef9" : "#f3f3f3")};
+  color: ${({ isActive }) => (isActive ? "white" : "black")};
+  border: 0px;
+  border-radius: 9px;
+
+  &::after {
+    content: ${({ isActive }) => (isActive ? `"Enabled"` : `"Enbale"`)};
+  }
+`;
 
 const FilteredCountWrapper = styled.div`
   padding: 5px;
@@ -72,5 +97,3 @@ const FilteredCountWrapper = styled.div`
     }
   }
 `;
-
-const formatNumber = (number: string) => {};

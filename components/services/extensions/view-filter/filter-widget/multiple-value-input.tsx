@@ -1,9 +1,13 @@
-import { useClickOutside } from "@/src/hooks";
-import { useEffect, useRef, useState } from "react";
+import { useClickOutside, useEnterEsc } from "@/src/hooks";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import ViewFilterExtension, { FilterCondition } from "../view-filter-extension";
 import { PropertyType } from "./filter-condition";
 import ClearIcon from "@mui/icons-material/Clear";
+import { debounce, isEqual } from "lodash";
+import DeleteIcon from "@/components/ui/icons/delete-icon";
+import PlusIcon from "@/components/ui/icons/plus-icon";
+import CheckedIcon from "@/components/ui/icons/checked-icon";
 
 interface MultipleValueInputProps {
   filterItem: FilterCondition;
@@ -23,12 +27,44 @@ const MultipleValueInput: React.FC<MultipleValueInputProps> = (
     filterItem.valueType === "string" ? (filterItem.value as string[]) : []
   );
 
+  const [operator, setOperator] = useState(filterItem.operator);
+  useEffect(() => {
+    setOperator(filterItem.operator);
+  }, [filterItem.operator]);
+
+  useEffect(() => {
+    filterItem.value = values;
+    filterItem.operator = operator;
+    extension.updateFilterCondition(filterItem);
+  }, [values, operator]);
+
   const [filterInput, setFilterInput] = useState("");
   const [filteredOptions, setFilteredOptions] = useState(valueOptions);
 
+  const onOptionClick = (option: string) => {
+    setFilterInput("");
+    if (values.includes(option)) {
+      removeValueFromList(option);
+    } else {
+      addValueToValueList(option);
+    }
+  };
+
+  const onOptionDoubleClick = (option: string) => {
+    const clear = values.includes(option);
+    if (clear) {
+      if (operator === "NOT_EQUAL") {
+        setOperator("EQUAL");
+      } else {
+        setOperator("NOT_EQUAL");
+      }
+    }
+
+    addValueToValueList(option, clear);
+  };
+
   const handleClose = () => {
     const value = parseValue(filterInput, type);
-    console.log("value: ", value);
     addValueToValueList(value as string);
 
     setFilterInput("");
@@ -36,42 +72,19 @@ const MultipleValueInput: React.FC<MultipleValueInputProps> = (
       setIsOpen(false);
     }
   };
-  useClickOutside(dropDownRef, () => handleClose());
 
-  useEffect(() => {
-    filterItem.value = values;
-    extension.updateFilterCondition(filterItem);
-  }, [values]);
-
-  useEffect(() => {
-    const onKeyPressed = (e: KeyboardEvent): void => {
-      if (e.key === "Enter" || e.key === "Esc") {
-        handleClose();
-      }
-    };
-
-    document.addEventListener("keydown", onKeyPressed);
-    return () => {
-      document.removeEventListener("keydown", onKeyPressed);
-    };
-  });
+  useClickOutside(dropDownRef, handleClose);
+  useEnterEsc(handleClose);
+  const onClick = useSingleAndDoubleClick(onOptionClick, onOptionDoubleClick);
 
   useEffect(() => {
     setFilteredOptions(
-      valueOptions
-        .filter((x) => !values.includes(x))
-        .filter((x) => filterOption(filterInput, x))
+      valueOptions.filter((x) => filterOption(filterInput, x))
     );
   }, [filterInput, values]);
 
   const filterOption = (input: string, option: string | undefined) =>
     (option ?? "").toLowerCase().includes(input.toLowerCase());
-
-  const handleOptionClick = (option: any) => {
-    handleClose();
-    setFilterInput("");
-    addValueToValueList(option as string);
-  };
 
   const removeTag = (index: number) => {
     const items = [...values];
@@ -79,16 +92,26 @@ const MultipleValueInput: React.FC<MultipleValueInputProps> = (
     setValues(items);
   };
 
-  const addValueToValueList = (value: string) => {
+  const addValueToValueList = (value: string, clear?: boolean) => {
     if (value !== "") {
-      const items = [...values];
+      const items = clear ? [] : [...values];
       items.push(value);
       setValues(items);
     }
   };
 
+  const removeValueFromList = (value: string) => {
+    if (value !== "") {
+      const items = [...values];
+
+      const i = values.findIndex((x) => x === value);
+      items.splice(i, 1);
+      setValues(items);
+    }
+  };
+
   return (
-    <SelectWithSearchWrapper>
+    <SelectWithSearchWrapper isExclude={operator === "NOT_EQUAL"}>
       <DropdownContainer ref={dropDownRef}>
         <div className="input-field">
           {values.map((x, i) => (
@@ -103,9 +126,9 @@ const MultipleValueInput: React.FC<MultipleValueInputProps> = (
             </div>
           ))}
           <input
+            onClick={() => setIsOpen(!isOpen)}
             className="multiple-input"
             value={filterInput}
-            onClick={() => setIsOpen(!isOpen)}
             placeholder="Value"
             onChange={(e) => setFilterInput(e.target.value)}
           />
@@ -115,8 +138,17 @@ const MultipleValueInput: React.FC<MultipleValueInputProps> = (
             {filteredOptions.map((option, index) => (
               <DropdownItem
                 key={index}
-                onClick={() => handleOptionClick(option)}
+                onClick={() => onClick(option)}
+                isAdded={values.includes(option)}
+                isExclude={operator === "NOT_EQUAL"}
               >
+                {values.includes(option) && operator === "NOT_EQUAL" && (
+                  <DeleteIcon />
+                )}
+                {values.includes(option) && operator === "EQUAL" && (
+                  <CheckedIcon />
+                )}
+                {!values.includes(option) && <PlusIcon />}
                 {option}
               </DropdownItem>
             ))}
@@ -129,7 +161,7 @@ const MultipleValueInput: React.FC<MultipleValueInputProps> = (
 
 export default MultipleValueInput;
 
-const SelectWithSearchWrapper = styled.div`
+const SelectWithSearchWrapper = styled.div<{ isExclude: boolean }>`
   width: 100%;
   font-size: 12px;
   display: flex;
@@ -138,7 +170,8 @@ const SelectWithSearchWrapper = styled.div`
     min-height: 25px;
     display: flex;
     justify-content: start;
-    width: auto;
+    background-color: white;
+    width: 100%;
 
     border: 1px solid #e0e0e0;
     border-radius: 9px;
@@ -151,6 +184,7 @@ const SelectWithSearchWrapper = styled.div`
       background-color: #e0e0e0;
       border-radius: 6px;
       padding: 2px;
+      color: ${({ isExclude }) => (isExclude ? "red" : "#2689FF")};
 
       .delete-tag-button {
         border: 0px;
@@ -173,6 +207,8 @@ const SelectWithSearchWrapper = styled.div`
     }
 
     .multiple-input {
+      min-width: 100px;
+      max-width: 100%;
       border: 0px;
       background-color: white;
       margin-left: 10px;
@@ -212,10 +248,15 @@ const DropdownList = styled.ul`
   overflow: auto;
 `;
 
-const DropdownItem = styled.li`
+const DropdownItem = styled.li<{ isAdded: boolean; isExclude: boolean }>`
   padding: 10px;
   margin: 2px;
   border-radius: 7px;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  color: ${({ isAdded, isExclude }) =>
+    isAdded ? (isExclude ? "red" : "#2689FF") : "black"};
 
   cursor: pointer;
 
@@ -234,4 +275,36 @@ const parseValue = (input: string, type: PropertyType) => {
       const x = input.toLowerCase();
       return x === "true" ? true : x === "false" ? false : input;
   }
+};
+
+const DELAY = 250;
+
+const useSingleAndDoubleClick = (
+  doSingleClickThing: (option: string) => void,
+  onDoubleClick: (option: string) => void
+) => {
+  const [clicks, setClicks] = useState(0);
+
+  const [curOption, setCurOption] = useState("");
+
+  useEffect(() => {
+    let singleClickTimer: any;
+    if (clicks === 1) {
+      singleClickTimer = setTimeout(() => {
+        doSingleClickThing(curOption);
+        setClicks(0);
+      }, 250);
+    } else if (clicks === 2) {
+      onDoubleClick(curOption);
+      setClicks(0);
+    }
+    return () => clearTimeout(singleClickTimer);
+  }, [clicks]);
+
+  const onClick = (option: string) => {
+    setCurOption(option);
+    setClicks(clicks + 1);
+  };
+
+  return onClick;
 };

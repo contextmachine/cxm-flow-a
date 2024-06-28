@@ -1,14 +1,11 @@
-import { Box, MenuItem, Paper, Select } from "@mui/material";
+import { Box } from "@mui/material";
 import { useStates } from "@/components/services/state-service/state-provider";
-import { Title } from "../bar/bar.styled";
 import React from "react";
 
 import dynamic from "next/dynamic";
 import Properties from "./blocks/properties/properties";
 import Widget from "./widgets/widget";
-import OutlinerWidget from "./widgets/outliner-widget";
 import { useToolset } from "@/components/services/toolset-service/toolset-provider";
-import { useScene } from "@/components/services/scene-service/scene-provider";
 
 const InUseGrid = dynamic(() => import("./blocks/in-use-grid/in-use-grid"), {
   ssr: false,
@@ -77,10 +74,6 @@ const WidgetPanelGrid = () => {
               <Widget type="toolset-widget" />
 
               {sectionType === "widgets" && <InUseGrid key={activePLogId} />}
-
-              {sectionType === "outliner" && (
-                <OutlinerWidget key={activePLogId} />
-              )}
             </Box>
 
             {/* Edit Panel */}

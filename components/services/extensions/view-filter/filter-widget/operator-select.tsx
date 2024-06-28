@@ -45,6 +45,10 @@ const OperatorSelect: React.FC<OperatorSelectProps> = (
     defaultOptions.find((x) => x.value === filterItem.operator)!
   );
 
+  useEffect(() => {
+    setOperator(defaultOptions.find((x) => x.value === filterItem.operator)!);
+  }, [filterItem.operator]);
+
   const onOperatorChange = (e: Option) => {
     filterItem.operator = e.value;
     extension.updateFilterCondition(filterItem);

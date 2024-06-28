@@ -29,6 +29,21 @@ export const useClickOutside = (ref: any, callback: () => void) => {
   });
 };
 
+export const useEnterEsc = (onPressed: () => void) => {
+  useEffect(() => {
+    const onKeyPressed = (e: KeyboardEvent): void => {
+      if (e.key === "Enter" || e.key === "Esc") {
+        onPressed();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyPressed);
+    return () => {
+      document.removeEventListener("keydown", onKeyPressed);
+    };
+  });
+};
+
 export const useEntities = () => {
   const viewer = useViewer();
 
