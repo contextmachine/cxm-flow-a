@@ -76,7 +76,7 @@ const FilterButton = styled.button<{ isActive: boolean }>`
   border-radius: 9px;
 
   &::after {
-    content: ${({ isActive }) => (isActive ? `"Enabled"` : `"Enbale"`)};
+    content: ${({ isActive }) => (isActive ? `"Enabled"` : `"Enable"`)};
   }
 `;
 

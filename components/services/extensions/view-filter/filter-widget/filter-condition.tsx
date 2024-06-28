@@ -30,12 +30,7 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
   const [paramsOpen, setParamsOpen] = useState(false);
 
   const { type, values } = useMemo(() => {
-    // return getPropertyValues([...entities.values()], filterItem.key);
-
-    return {
-      type: "string" as PropertyType,
-      values: new Array(10).fill(0).map((x, i) => "value " + i.toString()),
-    };
+    return getPropertyValues([...entities.values()], filterItem.key);
   }, [entities]);
 
   const onDelete = (id: string) => {

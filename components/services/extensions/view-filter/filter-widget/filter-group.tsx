@@ -26,14 +26,9 @@ const FilterGroupComponent: React.FC<FilterGroupProps> = (
     extension.updateFilterGroup(parentGroup, filterItem);
   }, [groupType]);
 
-  // const properties = useSubscribe(extension.$properties, extension.properties);
-  // const [options, setOptions] = useState(
-  //   [...properties.keys()].map((x) => ({ value: x }))
-  // );
-
-  const properties = ["property 1", "property 2"];
+  const properties = useSubscribe(extension.$properties, extension.properties);
   const [options, setOptions] = useState(
-    [...properties].map((x) => ({ value: x }))
+    [...properties.keys()].map((x) => ({ value: x }))
   );
 
   const [filterInput, setFilterInput] = useState<string>("");
