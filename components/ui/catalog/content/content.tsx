@@ -76,14 +76,52 @@ const Content = () => {
                 sx={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: "9px",
-                  padding: "9px",
+                  gap: "0px",
                   maxWidth: "max-content",
                 }}
               >
-                <MenuItem onClick={handleClose}>Rename</MenuItem>
-                <MenuItem onClick={handleClose}>Move</MenuItem>
-                <MenuItem onClick={handleClose}>Delete</MenuItem>
+                <Button
+                  sx={{
+                    width: "100%",
+                    justifyContent: "flex-start",
+                    textTransform: "none",
+                  }}
+                  variant="contained"
+                  data-active={false}
+                  color="secondary"
+                  size="large"
+                  onClick={handleClose}
+                >
+                  Rename
+                </Button>
+                <Button
+                  sx={{
+                    width: "100%",
+                    justifyContent: "flex-start",
+                    textTransform: "none",
+                  }}
+                  variant="contained"
+                  data-active={false}
+                  color="secondary"
+                  size="large"
+                  onClick={handleClose}
+                >
+                  Move
+                </Button>
+                <Button
+                  sx={{
+                    width: "100%",
+                    justifyContent: "flex-start",
+                    textTransform: "none",
+                  }}
+                  variant="contained"
+                  data-active={false}
+                  color="secondary"
+                  size="large"
+                  onClick={handleClose}
+                >
+                  Delete
+                </Button>
               </Box>
             </Popover>
             {/* <EditableTitle

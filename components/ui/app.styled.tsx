@@ -283,6 +283,11 @@ const GlobalStyle = createGlobalStyle<{
   }
 
   // SELECT MENU
+  .MuiPopover-paper {
+      max-width: max-content !important;
+      max-height: max-content !important;
+  }
+
   .MuiPaper-root.MuiPopover-paper.MuiMenu-paper {
     border: 1px solid #EEEEEE;
     border-radius: 13.5px !important;

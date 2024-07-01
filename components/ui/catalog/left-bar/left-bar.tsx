@@ -39,8 +39,6 @@ const LeftBar = () => {
     };
   }, []);
 
-  console.log("collections", collections);
-
   return (
     <>
       <UserProfile />
@@ -318,7 +316,6 @@ const AccordionBox = styled(Box)`
 
     & .MuiAccordionDetails-root {
       padding: 0;
-      padding-top: 10px;
     }
   }
 `;
