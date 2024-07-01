@@ -62,7 +62,7 @@ const entityIcon = (entity: Entity) => {
 
 const TreeItemWrapper = styled.div<{ expanded: boolean }>`
   margin-left: 5px;
-  display: flex;
+  display: block;
   flex-direction: column;
   justify-content: center;
 `;

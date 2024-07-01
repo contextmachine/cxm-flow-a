@@ -29,6 +29,8 @@ const OutlinerWidget: React.FC<OutlinerWidgetProps> = ({
 export default OutlinerWidget;
 
 const TreeContainer = styled.div`
+  width: 100%;
+  display: block;
   flex-direction: column;
   gap: 6px;
   max-height: 500px;

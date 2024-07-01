@@ -39,6 +39,8 @@ export class ProjectModel {
     object3d.traverse((x) => x.updateMatrixWorld());
 
     this._entity = this.initModel(object3d);
+    console.log("result", this._entity);
+
     this._queryEntity.setModel(this);
   }
 
@@ -72,10 +74,16 @@ export class ProjectModel {
 
   public initModel(object: THREE.Object3D): Entity {
     if (object instanceof THREE.Group) {
-      this._unionMesh = new UnionMesh(object, this);
-      this._objects = this._unionMesh.objects;
+      console.log("init model", object);
 
-      return new Group(object, this, undefined);
+      try {
+        this._unionMesh = new UnionMesh(object, this);
+        this._objects = this._unionMesh.objects;
+        return new Group(object, this, undefined);
+      } catch (e) {
+        this._objects = [object];
+        return new Group(object, this, undefined);
+      }
     } else if (object instanceof THREE.Mesh) {
       this._objects = [object];
 
