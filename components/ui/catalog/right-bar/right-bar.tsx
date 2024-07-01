@@ -51,7 +51,7 @@ const RightBar = () => {
           size="large"
           onClick={workspaceService.addScene}
         >
-          New project
+          New scene
         </Button>
       </Box>
 

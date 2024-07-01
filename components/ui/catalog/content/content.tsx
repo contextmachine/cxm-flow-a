@@ -1,12 +1,37 @@
 import styled from "styled-components";
 import CatalogItem from "../catalog-item/catalog-item";
-import { Box, Button, InputBase, Paper, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  InputBase,
+  MenuItem,
+  Paper,
+  Popover,
+  Select,
+  TextField,
+} from "@mui/material";
 import { AvatarCss } from "../left-bar/blocks/user-profile";
 import { useWorkspace } from "@/components/services/workspace-service/workspace-provider";
 import EditableTitle from "../../scene/primitives/dynamic-title/dynamic-title";
+import { Title, TitleWrapper } from "../../scene/bar/bar.styled";
+import { useState } from "react";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 const Content = () => {
   const { activeScenes, activeWorkspace, workspaceService } = useWorkspace();
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleClick = (event: any) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? "simple-popover" : undefined;
 
   return (
     <Wrapper>
@@ -26,12 +51,46 @@ const Content = () => {
             justifyContent: "space-between",
           }}
         >
-          <Box sx={{ padding: "0 18px" }}>
-            <EditableTitle
+          <Box
+            sx={{ padding: "0 18px", display: "flex", alignItems: "center" }}
+          >
+            <Title size={"large"}>{activeWorkspace?.name || ""}</Title>
+
+            <IconButton onClick={handleClick}>
+              <ArrowDropDownIcon />
+            </IconButton>
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
+              sx={{
+                maxWidth: "max-content !important",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "9px",
+                  padding: "9px",
+                  maxWidth: "max-content",
+                }}
+              >
+                <MenuItem onClick={handleClose}>Rename</MenuItem>
+                <MenuItem onClick={handleClose}>Move</MenuItem>
+                <MenuItem onClick={handleClose}>Delete</MenuItem>
+              </Box>
+            </Popover>
+            {/* <EditableTitle
               title={activeWorkspace?.name || ""}
               setTitle={workspaceService.updateTitle}
               size="large"
-            />
+            /> */}
           </Box>
 
           <TextField

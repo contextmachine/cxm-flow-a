@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import WorkspaceService from "./workspace-service";
 import { useAuth } from "../auth-service/auth-provider";
 import {
+  CollectionDto,
   SceneDto,
   WorkspaceDto,
   WorkspaceUserDto,
@@ -26,6 +27,7 @@ export function WorkspaceProvider({ children }: any) {
   const [workspaceService] = useState(() => authService.workspaceService);
 
   const [workspaces, setWorkspaces] = useState<WorkspaceDto[]>([]);
+  const [collections, setCollections] = useState<CollectionDto[]>([]);
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceDto | null>(
     null
   );

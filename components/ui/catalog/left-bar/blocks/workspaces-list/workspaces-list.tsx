@@ -6,9 +6,14 @@ import stc from "string-to-color";
 import { IconBullet } from "../../left-bar";
 import styled from "styled-components";
 import { Box, Button } from "@mui/material";
+import { MinifiedWorkspaceDto } from "@/components/services/workspace-service/workspace-service.types";
 
-const WorkspacesList = () => {
-  const { workspaces, activeWorkspace, workspaceService } = useWorkspace();
+const WorkspacesList: React.FC<{
+  workspaces: MinifiedWorkspaceDto[];
+}> = ({ workspaces }) => {
+  const { activeWorkspace, workspaceService } = useWorkspace();
+
+  console.log("workspaces", workspaces);
 
   return (
     <MenuWrapper>

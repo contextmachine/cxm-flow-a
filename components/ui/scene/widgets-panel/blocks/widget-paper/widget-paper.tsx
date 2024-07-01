@@ -25,7 +25,10 @@ const WidgetPaper: React.FC<WidgetProps> = ({
   return (
     <Paper
       data-type="widget"
-      style={{ flexDirection: "column", alignItems: "flex-start" }}
+      style={{
+        flexDirection: "column",
+        alignItems: "flex-start",
+      }}
     >
       <WidgetHeader>
         <Box

@@ -2,6 +2,7 @@ import { gql } from "@apollo/client";
 import AuthService from "../auth-service/auth-service";
 import client from "@/components/graphql/client/client";
 import {
+  CollectionDto,
   SceneDto,
   WorkspaceDto,
   WorkspaceUserDto,
@@ -9,6 +10,7 @@ import {
 import WorkspaceEntity from "./entities/workspace-entity";
 import SceneEntity from "./entities/scene-entity";
 import UserWorkspaceEntity from "./entities/user-workspace-entity";
+import { BehaviorSubject } from "rxjs";
 
 class WorkspaceService {
   private _workspaces: Map<number, WorkspaceEntity>;
@@ -25,6 +27,8 @@ class WorkspaceService {
   private $setError: any;
   private $setWorkspaceLogId: any;
   private $setIsDataFetched: any;
+
+  private _collections$ = new BehaviorSubject<CollectionDto[]>([]);
 
   constructor(private _authService: AuthService) {
     this._workspaces = new Map();
@@ -86,6 +90,17 @@ class WorkspaceService {
                   }
                 }
               }
+              user_collections {
+                id
+                name
+                tmp_type
+                collection_workspaces {
+                  workspace {
+                    id
+                    name
+                  }
+                }
+              }
             }
           }
         `,
@@ -115,6 +130,12 @@ class WorkspaceService {
 
       this.updateWorkspaces();
 
+      const collections = await this._prepareCollections(
+        response?.data?.appv3_user_by_pk?.user_collections
+      );
+
+      this._collections$.next(collections);
+
       // get initial active workspace
       if (this._workspaces.size > 0) {
         let workspaceId = this._workspaces.keys().next().value;
@@ -134,6 +155,98 @@ class WorkspaceService {
     } catch (error) {
       console.error("Error fetching workspaces:", error);
     }
+  }
+
+  private async fetchCollections(): Promise<CollectionDto[]> {
+    try {
+      const query = gql`
+        query GetCollections($userId: Int!) {
+          appv3_collection(where: { user_id: { _eq: $userId } }) {
+            id
+            name
+            tmp_type
+            collection_workspaces {
+              workspace {
+                id
+                name
+              }
+            }
+          }
+        }
+      `;
+
+      const response = await client.query({
+        query,
+        variables: {
+          userId: this._authService.userMetadata?.id,
+        },
+      });
+
+      const collections = (response?.data?.appv3_collection ||
+        []) as CollectionDto[];
+
+      return collections;
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+      return [];
+    }
+  }
+
+  private async _prepareCollections(collections: CollectionDto[]) {
+    const workspaces = this._workspaces;
+
+    const types = ["Shared", "Favourites", "Trash"];
+    const existingTypes = new Set(collections.map((c) => c.tmp_type));
+
+    const missingTypes = types.filter((type) => !existingTypes.has(type));
+
+    const mutation = gql`
+      mutation AddCollections($objects: [appv3_collection_insert_input!]!) {
+        insert_appv3_collection(objects: $objects) {
+          affected_rows
+        }
+      }
+    `;
+
+    const objects = missingTypes.map((type) => ({
+      name: type,
+      user_id: this._authService.userMetadata?.id,
+      tmp_type: type,
+    }));
+
+    if (objects.length !== 0) {
+      try {
+        await client.mutate({
+          mutation,
+          variables: { objects },
+        });
+
+        const newCollections = await this.fetchCollections();
+        collections = newCollections;
+        return newCollections;
+      } catch (error) {
+        console.error("Error adding default collections:", error);
+      }
+    }
+
+    const restWorkspaces = Array.from(workspaces.keys()).filter((id) => {
+      return !collections.some((c) => {
+        return c.collection_workspaces.some((cw) => cw.workspace.id === id);
+      });
+    });
+
+    const defaultCollection: CollectionDto = {
+      id: -1,
+      name: "Personal",
+      tmp_type: "Personal",
+      created_at: new Date().toISOString(),
+      collection_workspaces: restWorkspaces.map((id) => ({
+        workspace: { id, name: workspaces.get(id)?.name || "" },
+      })),
+      __typename: "appv3_collection",
+    };
+
+    return [defaultCollection, ...collections];
   }
 
   public updateWorkspaces() {
@@ -175,7 +288,7 @@ class WorkspaceService {
     this.updateActiveWorkspaceUsers();
   }
 
-  public async addWorkspace() {
+  public async addWorkspace(collectionId?: number) {
     const mutation = gql`
       mutation AddWorkspace(
         $workspace_name: String!
@@ -188,6 +301,25 @@ class WorkspaceService {
             name: $workspace_name
             user_workspaces: { data: { role_id: $role_id, user_id: $user_id } }
             scenes: { data: { name: $scene_name } }
+          }
+        ) {
+          affected_rows
+          returning {
+            id
+          }
+        }
+      }
+    `;
+
+    const mutation2 = gql`
+      mutation AddCollectionWorkspace(
+        $collection_id: Int!
+        $workspace_id: Int!
+      ) {
+        insert_appv3_collection_workspace(
+          objects: {
+            collection_id: $collection_id
+            workspace_id: $workspace_id
           }
         ) {
           affected_rows
@@ -213,6 +345,16 @@ class WorkspaceService {
           scene_name: "Default Scene",
         },
       });
+
+      if (collectionId && collectionId !== -1) {
+        await client.mutate({
+          mutation: mutation2,
+          variables: {
+            collection_id: collectionId,
+            workspace_id: data.data.insert_appv3_workspace.returning[0].id,
+          },
+        });
+      }
 
       this.fetchWorkspaces();
     } catch (error) {
@@ -318,6 +460,10 @@ class WorkspaceService {
 
   public get setError() {
     return this.$setError;
+  }
+
+  public get collections$() {
+    return this._collections$.asObservable();
   }
 
   public dispose() {
