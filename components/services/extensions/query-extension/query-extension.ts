@@ -34,8 +34,13 @@ class QueryExtension extends ExtensionEntity {
   public async load() {
     console.log("QueryExtension loaded");
 
+    this._queryMap = new Map(
+      [...this._viewer.loader.queries.values()].map((x) => [x.id, x])
+    );
+    this.assembleTreeData();
+
     this._subscriptions.push(
-      this._viewer!.loader.$queries.subscribe((queries) => {
+      this._viewer.loader.$queries.subscribe((queries) => {
         this._queryMap = new Map(queries.map((x) => [x.id, x]));
         this.assembleTreeData();
       })

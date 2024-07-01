@@ -5,6 +5,7 @@ import * as RX from "rxjs";
 import { assertDefined } from "../utils";
 import Viewer from "./viewer";
 import ViewFilterExtension from "@/components/services/extensions/view-filter/view-filter-extension";
+import OutlinerExtension from "@/components/services/extensions/outliner/outliner-extension";
 import PointCloudExtension from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension";
 
 class ExtensionControl {
@@ -66,6 +67,7 @@ class ExtensionControl {
   }
 
   public removeExtension = (name: string) => {
+    console.log("remove extension", name);
     if (!this._extensions.has(name))
       throw new Error(`Extension with name ${name} does not exist`);
 
@@ -87,6 +89,8 @@ class ExtensionControl {
         return new PointCloudExtension(this._viewer);
       case "view-filter":
         return new ViewFilterExtension(this._viewer);
+      case "outliner":
+        return new OutlinerExtension(this._viewer);
       default:
         return undefined;
     }

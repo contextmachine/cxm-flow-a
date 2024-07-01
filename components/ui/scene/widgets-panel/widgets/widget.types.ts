@@ -1,4 +1,5 @@
 export type WidgetType =
+  | "outliner"
   | "views"
   | "queries"
   | "view-filter"

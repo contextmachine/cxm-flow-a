@@ -1,16 +1,10 @@
 import styled from "styled-components";
-import { ChangeEvent, useState } from "react";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import WidgetPaper from "@/components/ui/scene/widgets-panel/blocks/widget-paper/widget-paper";
 import ViewFilterExtension from "../view-filter-extension";
 import { useSubscribe } from "@/src/hooks";
 
-import { IconButton, InputAdornment, InputBase } from "@mui/material";
-import { SearchOutlined } from "@mui/icons-material";
-import ClearIcon from "@mui/icons-material/Clear";
-import AddIcon from "@mui/icons-material/Add";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import TuneIcon from "@mui/icons-material/Tune";
+import FilterItemComponent from "./filter-item-component";
 
 interface ViewFilterWidgetProps {
   isPreview?: boolean;
@@ -22,204 +16,84 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
   extension: ext,
 }) => {
   const extension = ext as ViewFilterExtension;
+  const preset = useSubscribe(extension.$filter, extension.filter);
 
-  const properties = useSubscribe(extension.$properties, extension.properties);
-  const filters = useSubscribe(extension.$filters, [
-    ...extension.filters.values(),
-  ]);
+  const filterPreset = useSubscribe(extension.$filter, extension.filter);
 
-  const [filteredOptions, setFilteredOptions] = useState([
-    ...properties.keys(),
-  ]);
+  const currentScopeCount = useSubscribe(extension.$currentScopeCount, 0);
+  const childrenCount = useSubscribe(extension.$childrenCount, 0);
 
-  const [filterInput, setFilterInput] = useState<string>("");
-
-  const onSelectFilter = (e: string) => {
-    extension.addFilter(e, undefined);
-    setFilterInput("");
-    setFilteredOptions([...properties.keys()]);
+  const onEnable = () => {
+    if (preset) {
+      preset.enabled = !preset.enabled;
+      extension.updatePreset(preset);
+    }
   };
 
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFilterInput(e.target.value);
-    setFilteredOptions(
-      [...properties.keys()].filter((x) => filterOption(filterInput, x))
-    );
-  };
-
-  const onDelete = (id: string) => {
-    extension.removeFilter(id);
-  };
-
-  const onEnable = (id: string) => {
-    const condition = filters.find((x) => x.id === id) as any;
-    condition.enabled = !condition.enabled;
-    extension.updateFilter(id, condition);
-  };
-
-  const filterOption = (input: string, option: string | undefined) =>
-    (option ?? "").toLowerCase().includes(input.toLowerCase());
-
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleOptionClick = (option: any) => {
-    setIsOpen(false);
-    onSelectFilter(option);
-  };
-
-  return (
-    <WidgetPaper isPreview={isPreview} title={"View Filter"}>
-      <FilterList>
-        {filters.map((filter) => (
-          <div className="filter-item" key={filter.id}>
-            <div className="label">{filter.propertyName}</div>
-            <div className="button-block">
-              <IconButton onClick={() => onEnable(filter.id)}>
-                {!filter.enabled && <AddIcon className="item-button" />}
-                {filter.enabled && (
-                  <CheckCircleIcon className="add-button item-button" />
-                )}
-              </IconButton>
-              <IconButton>
-                <TuneIcon className="item-button" />
-              </IconButton>
-              <IconButton onClick={() => onDelete(filter.id)}>
-                <ClearIcon className="item-button" />
-              </IconButton>
+  if (!filterPreset) {
+    return;
+  } else {
+    return (
+      <WidgetPaper isPreview={isPreview} title={"View Filter"}>
+        {currentScopeCount !== undefined && (
+          <FilteredCountWrapper>
+            <div className="count">
+              <div>{currentScopeCount.toLocaleString()}</div>
+              {childrenCount !== undefined && childrenCount !== 0 && (
+                <div style={{ color: "#b3b3b3" }}>
+                  ({childrenCount.toLocaleString()})
+                </div>
+              )}
             </div>
-          </div>
-        ))}
-      </FilterList>
+            <div className="label">Objects</div>
+          </FilteredCountWrapper>
+        )}
 
-      <SelectWrapper>
-        <DropdownContainer>
-          <InputBase
-            className="TriggerButtonIntroduction"
-            onClick={() => setIsOpen(!isOpen)}
-            inputProps={{ disableUnderline: true }}
-            value={filterInput}
-            placeholder="Add new filter"
-            onChange={onChange}
-            endAdornment={
-              <InputAdornment position="end">
-                <SearchOutlined sx={{ fontSize: 16 }} />
-              </InputAdornment>
-            }
-          />
-          {isOpen && (
-            <DropdownList>
-              {filteredOptions.map((option, index) => (
-                <DropdownItem
-                  key={index}
-                  onClick={() => handleOptionClick(option)}
-                >
-                  {option}
-                </DropdownItem>
-              ))}
-            </DropdownList>
-          )}
-        </DropdownContainer>
-      </SelectWrapper>
-    </WidgetPaper>
-  );
+        <FilterItemComponent
+          parentGroup={undefined}
+          filterItem={filterPreset.filter}
+          extension={extension}
+          key={0}
+          index={0}
+        />
+        <FilterButton
+          onClick={() => onEnable()}
+          isActive={preset !== undefined && preset.enabled}
+        ></FilterButton>
+      </WidgetPaper>
+    );
+  }
 };
 
 export default ViewFilterWidget;
 
-const SelectWrapper = styled.div`
+const FilterButton = styled.button<{ isActive: boolean }>`
   width: 100%;
-  font-size: 12px;
+  height: 27px;
+  background-color: ${({ isActive }) => (isActive ? "#237ef9" : "#f3f3f3")};
+  color: ${({ isActive }) => (isActive ? "white" : "black")};
+  border: 0px;
+  border-radius: 9px;
 
-  .MuiInputBase-root {
-    width: 100%;
-    height: 27px;
-    border: 1px solid #e0e0e0;
-    border-radius: 9px;
-    padding: 0 10px;
-
-    .MuiInputAdornment-root svg {
-      fill: #e0e0e0;
-    }
-  }
-
-  .base-Menu-root {
-    z-index: 9999;
-    width: 100%;
-    height: 27px;
-    border: 1px solid #e0e0e0;
-    border-radius: 9px;
-    padding: 0 10px;
-
-    .MuiInputAdornment-root svg {
-      fill: #e0e0e0;
-    }
+  &::after {
+    content: ${({ isActive }) => (isActive ? `"Enabled"` : `"Enable"`)};
   }
 `;
 
-const FilterList = styled.div`
+const FilteredCountWrapper = styled.div`
+  padding: 5px;
   width: 100%;
   display: flex;
-  flex-direction: column;
+  align-items: baseline;
+  background-color: #f3f3f3;
+  border-radius: 10px;
 
-  .filter-item {
+  .count {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 27px;
+    margin-right: 10px;
 
-    .label {
-      justify-self: start;
-      padding: 0 10px;
+    & * {
+      font-size: 24px;
     }
-
-    .button-block {
-      display: flex;
-    }
-
-    .item-button {
-      width: 16px;
-    }
-
-    .add-button {
-      fill: #2789ff;
-    }
-
-    button {
-      border-radius: 12px;
-      font-size: 12px;
-      width: 24px;
-    }
-  }
-`;
-
-const DropdownContainer = styled.div`
-  z-index: 9999;
-  width: 100%;
-  position: relative;
-  display: inline-block;
-`;
-
-const DropdownList = styled.ul`
-  position: absolute;
-  top: 110%;
-  left: 0;
-  width: 100%;
-  border-radius: 9px;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
-  list-style-type: none;
-  padding: 0;
-  max-height: 200px;
-  overflow: auto;
-`;
-
-const DropdownItem = styled.li`
-  padding: 10px;
-  cursor: pointer;
-  margin: 2px;
-  border-radius: 7px;
-
-  &:hover {
-    background-color: #e0e0e0;
   }
 `;

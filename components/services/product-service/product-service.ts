@@ -48,6 +48,10 @@ class ProductService {
     });
     this._widgetProducts = _widgetProducts;
     this._widgetProducts$.next([..._widgetProducts.values()]);
+    console.log(
+      "widget products ",
+      [...this._widgetProducts.values()].map((x) => x.name)
+    );
   }
 
   async fetchProducts(): Promise<ProductsDto[]> {
