@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 interface WorkspaceProviderProps {
   workspaceService: WorkspaceService;
   workspaces: WorkspaceDto[];
+  collections: CollectionDto[];
   activeWorkspace: WorkspaceDto | null;
   activeScenes: SceneDto[];
   activeWorkspaceUsers: WorkspaceUserDto[];
@@ -54,10 +55,23 @@ export function WorkspaceProvider({ children }: any) {
     });
   }, []);
 
+  useEffect(() => {
+    if (!workspaceService) return;
+
+    const co = workspaceService.collections$.subscribe((collections) => {
+      setCollections(collections);
+    });
+
+    return () => {
+      co.unsubscribe();
+    };
+  }, [workspaceService]);
+
   return (
     <WorkspaceContext.Provider
       value={{
         workspaceService,
+        collections,
         workspaces,
         activeWorkspace,
         activeScenes,

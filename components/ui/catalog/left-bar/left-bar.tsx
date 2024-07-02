@@ -22,6 +22,7 @@ import WorkspacesList from "./blocks/workspaces-list/workspaces-list";
 import OpenFolderIcon from "../../icons/open-folder-icon";
 import { CollectionDto } from "@/components/services/workspace-service/workspace-service.types";
 import { useEffect, useState } from "react";
+import CollectionItem from "./blocks/collection-item/collection-item";
 
 const LeftBar = () => {
   const menuItems = ["Personal", "Favourites", "Shared", "Trash"];
@@ -38,8 +39,6 @@ const LeftBar = () => {
       co.unsubscribe();
     };
   }, []);
-
-  console.log("collections", collections);
 
   return (
     <>
@@ -95,66 +94,10 @@ const LeftBar = () => {
                   expanded={true}
                 >
                   <AccordionSummary>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        width: "100%",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}
-                      >
-                        <IconBullet color={stc(collection.name)} />
-                        <Typography>{collection.name}</Typography>
-                      </Box>
-
-                      <Box
-                        sx={{
-                          display: "flex",
-                          gap: "4px",
-                        }}
-                      >
-                        <Button
-                          onClick={() => true}
-                          variant="contained"
-                          color="primary"
-                          size="small"
-                          sx={{
-                            minWidth: "24px",
-                            minHeight: "24px",
-                            borderRadius: "50%",
-                            padding: "0",
-                            fontSize: "12px",
-                          }}
-                        >
-                          ...
-                        </Button>
-
-                        <Button
-                          onClick={() =>
-                            workspaceService.addWorkspace(collection.id)
-                          }
-                          variant="contained"
-                          color="primary"
-                          size="small"
-                          sx={{
-                            minWidth: "24px",
-                            minHeight: "24px",
-                            borderRadius: "50%",
-                            padding: "0",
-                            fontSize: "12px",
-                          }}
-                        >
-                          +
-                        </Button>
-                      </Box>
-                    </Box>
+                    <CollectionItem
+                      collection={collection}
+                      workspaceService={workspaceService}
+                    />
                   </AccordionSummary>
                   <AccordionDetails>
                     <WorkspacesList
@@ -285,14 +228,14 @@ const LeftBar = () => {
           </Accordion>
         </AccordionBox> */}
 
-        {/*  <Button
-          onClick={workspaceService.addWorkspace}
+        <Button
+          onClick={() => workspaceService.addCollection()}
           variant="contained"
           color="primary"
           size="large"
         >
-          + New workspace
-        </Button> */}
+          + New collection
+        </Button>
       </Paper>
     </>
   );
@@ -318,7 +261,6 @@ const AccordionBox = styled(Box)`
 
     & .MuiAccordionDetails-root {
       padding: 0;
-      padding-top: 10px;
     }
   }
 `;

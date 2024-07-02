@@ -288,6 +288,64 @@ class WorkspaceService {
     this.updateActiveWorkspaceUsers();
   }
 
+  public async addCollection() {
+    const mutation = gql`
+      mutation AddCollection($name: String!, $user_id: Int!) {
+        insert_appv3_collection(objects: { name: $name, user_id: $user_id }) {
+          affected_rows
+        }
+      }
+    `;
+
+    // amount of all collections
+    const collections = this._collections$.value;
+    const collectionName = `Collection ${collections.length + 1}`;
+
+    try {
+      const data = await client.mutate({
+        mutation,
+        variables: {
+          name: collectionName,
+          user_id: this._authService.userMetadata?.id,
+        },
+      });
+
+      this.fetchWorkspaces();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  public async deleteCollection(collectionId: number) {
+    // delete and all linked workspaces
+    const mutation = gql`
+      mutation DeleteCollection($collection_id: Int!) {
+        delete_appv3_collection(where: { id: { _eq: $collection_id } }) {
+          affected_rows
+        }
+
+        delete_appv3_collection_workspace(
+          where: { collection_id: { _eq: $collection_id } }
+        ) {
+          affected_rows
+        }
+      }
+    `;
+
+    try {
+      const data = await client.mutate({
+        mutation,
+        variables: {
+          collection_id: collectionId,
+        },
+      });
+
+      this.fetchWorkspaces();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   public async addWorkspace(collectionId?: number) {
     const mutation = gql`
       mutation AddWorkspace(
@@ -362,8 +420,109 @@ class WorkspaceService {
     }
   }
 
-  public async deleteWorkspace() {
-    const workspaceId = this._activeWorkspace?.id;
+  public async renameWorkspace(workspaceId: number, name: string) {
+    const mutation = gql`
+      mutation RenameWorkspace($id: Int!, $name: String!) {
+        update_appv3_workspace_by_pk(
+          pk_columns: { id: $id }
+          _set: { name: $name }
+        ) {
+          id
+        }
+      }
+    `;
+
+    try {
+      const data = await client.mutate({
+        mutation,
+        variables: {
+          id: workspaceId,
+          name,
+        },
+      });
+
+      this.fetchWorkspaces();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  public async renameCollection(collectionId: number, name: string) {
+    const mutation = gql`
+      mutation RenameCollection($id: Int!, $name: String!) {
+        update_appv3_collection_by_pk(
+          pk_columns: { id: $id }
+          _set: { name: $name }
+        ) {
+          id
+        }
+      }
+    `;
+
+    try {
+      const data = await client.mutate({
+        mutation,
+        variables: {
+          id: collectionId,
+          name,
+        },
+      });
+
+      this.fetchWorkspaces();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  public async moveWorkspaceToCollection(
+    workspaceId: number,
+    collectionId: number
+  ) {
+    const mutation = gql`
+      mutation DeleteWorkspaceFromCollections(
+        $collection_id: Int!
+        $workspace_id: Int!
+      ) {
+        delete_appv3_collection_workspace(
+          where: { workspace_id: { _eq: $workspace_id } }
+        ) {
+          affected_rows
+        }
+
+        insert_appv3_collection_workspace(
+          objects: {
+            collection_id: $collection_id
+            workspace_id: $workspace_id
+          }
+        ) {
+          affected_rows
+        }
+      }
+    `;
+
+    try {
+      const data = await client.mutate({
+        mutation,
+        variables: {
+          collection_id: collectionId,
+          workspace_id: workspaceId,
+        },
+      });
+
+      this.fetchWorkspaces();
+    } catch (error) {
+      console.error(error);
+    }
+
+    try {
+      this.fetchWorkspaces();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  public async deleteWorkspace(id?: number) {
+    const workspaceId = typeof id === "number" ? id : this._activeWorkspace?.id;
 
     const mutation = gql`
       mutation DeleteWorkspace($id: Int!) {
