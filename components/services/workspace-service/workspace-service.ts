@@ -223,7 +223,7 @@ class WorkspaceService {
 
         const newCollections = await this.fetchCollections();
         collections = newCollections;
-        return newCollections;
+        //return newCollections;
       } catch (error) {
         console.error("Error adding default collections:", error);
       }
