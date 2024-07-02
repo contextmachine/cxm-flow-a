@@ -7,33 +7,23 @@ import { IconBullet } from "../../left-bar";
 import styled from "styled-components";
 import { Box, Button } from "@mui/material";
 import { MinifiedWorkspaceDto } from "@/components/services/workspace-service/workspace-service.types";
+import WorkspaceItem from "../workspace-item/workspace-item";
 
 const WorkspacesList: React.FC<{
   workspaces: MinifiedWorkspaceDto[];
 }> = ({ workspaces }) => {
-  const { activeWorkspace, workspaceService } = useWorkspace();
-
-  console.log("workspaces", workspaces);
+  const { activeWorkspace, workspaceService, collections } = useWorkspace();
 
   return (
     <MenuWrapper>
       {workspaces.map((item, i) => (
         <Box sx={{ width: "100%" }} key={i}>
-          <Button
-            sx={{
-              width: "100%",
-              justifyContent: "flex-start",
-              textTransform: "none",
-            }}
-            variant="contained"
-            color="secondary"
-            size="large"
-            data-active={item.id === activeWorkspace?.id}
-            onClick={() => workspaceService.setActiveWorkspace(item.id)}
-            startIcon={<IconBullet color={stc(`${item.id}`)} />}
-          >
-            {item?.name}
-          </Button>
+          <WorkspaceItem
+            item={item}
+            activeWorkspace={activeWorkspace}
+            workspaceService={workspaceService}
+            collections={collections}
+          />
         </Box>
       ))}
     </MenuWrapper>
