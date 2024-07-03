@@ -18,6 +18,20 @@ export interface WorkspaceDto {
   __typename: string;
 }
 
+export interface MinifiedWorkspaceDto {
+  id: number;
+  name: string;
+}
+
+export interface CollectionDto {
+  id: number;
+  name: string;
+  tmp_type: string;
+  created_at: string;
+  collection_workspaces: { workspace: MinifiedWorkspaceDto }[];
+  __typename: string;
+}
+
 export interface WorkspaceUserDto {
   user: {
     id: number;

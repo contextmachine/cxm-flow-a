@@ -1,4 +1,13 @@
-import { Box, Button, IconButton, Paper } from "@mui/material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Button,
+  IconButton,
+  Paper,
+  Typography,
+} from "@mui/material";
 import MailIcon from "@mui/icons-material/Mail";
 import { Title } from "../../scene/bar/bar.styled";
 import styled from "styled-components";
@@ -10,17 +19,32 @@ import stc from "string-to-color";
 import { TreeViewBaseItem } from "@mui/x-tree-view/models";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import WorkspacesList from "./blocks/workspaces-list/workspaces-list";
+import OpenFolderIcon from "../../icons/open-folder-icon";
+import { CollectionDto } from "@/components/services/workspace-service/workspace-service.types";
+import { useEffect, useState } from "react";
+import CollectionItem from "./blocks/collection-item/collection-item";
 
 const LeftBar = () => {
   const menuItems = ["Personal", "Favourites", "Shared", "Trash"];
 
   const { workspaces, activeWorkspace, workspaceService } = useWorkspace();
 
+  const [collections, setCollections] = useState<CollectionDto[]>([]);
+  useEffect(() => {
+    const co = workspaceService.collections$.subscribe((collections) => {
+      setCollections(collections);
+    });
+
+    return () => {
+      co.unsubscribe();
+    };
+  }, []);
+
   return (
     <>
       <UserProfile />
 
-      <Paper
+      {/* <Paper
         title="Workspaces"
         sx={{ flexDirection: "column", gap: "3px !important" }}
       >
@@ -40,12 +64,9 @@ const LeftBar = () => {
             </Box>
           ))}
         </MenuWrapper>
-      </Paper>
+      </Paper> */}
 
-      <Paper
-        title="Workspaces"
-        sx={{ flexDirection: "column", maxHeight: "100%" }}
-      >
+      <Paper title="Workspaces" sx={{ flexDirection: "column" }}>
         <WidgetHeader>
           <IconButton>
             <MarkedIcon />
@@ -54,20 +75,195 @@ const LeftBar = () => {
           <Title style={{ fontWeight: "500" }}>Workspaces</Title>
         </WidgetHeader>
 
-        <WorkspacesList />
+        <Box
+          sx={{
+            minHeight: "max-content",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "3px",
+            }}
+          >
+            {collections.map((collection, i) => (
+              <AccordionBox key={i}>
+                <Accordion
+                  sx={{ display: "flex", flexDirection: "column" }}
+                  expanded={true}
+                >
+                  <AccordionSummary>
+                    <CollectionItem
+                      collection={collection}
+                      workspaceService={workspaceService}
+                    />
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <WorkspacesList
+                      workspaces={collection.collection_workspaces.map(
+                        ({ workspace }) => workspace
+                      )}
+                    />
+                  </AccordionDetails>
+                </Accordion>
+              </AccordionBox>
+            ))}
+          </Box>
+        </Box>
+
+        {/* <AccordionBox>
+          <Accordion
+            sx={{ display: "flex", flexDirection: "column" }}
+            expanded={true}
+          >
+            <AccordionSummary>
+              <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <Box
+                  sx={{
+                    width: "18px",
+                    height: "18px",
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(68, 68, 68, 1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <OpenFolderIcon />
+                </Box>
+                <Typography>Personal</Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <WorkspacesList />
+            </AccordionDetails>
+          </Accordion>
+        </AccordionBox>
+
+        <AccordionBox>
+          <Accordion
+            sx={{ display: "flex", flexDirection: "column" }}
+            expanded={true}
+          >
+            <AccordionSummary>
+              <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <Box
+                  sx={{
+                    width: "18px",
+                    height: "18px",
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(68, 68, 68, 1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <OpenFolderIcon />
+                </Box>
+                <Typography>Favourites</Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <WorkspacesList fake={true} />
+            </AccordionDetails>
+          </Accordion>
+        </AccordionBox>
+
+        <AccordionBox>
+          <Accordion
+            sx={{ display: "flex", flexDirection: "column" }}
+            expanded={false}
+          >
+            <AccordionSummary>
+              <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <Box
+                  sx={{
+                    width: "18px",
+                    height: "18px",
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(68, 68, 68, 1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <OpenFolderIcon />
+                </Box>
+                <Typography>Shared</Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <WorkspacesList />
+            </AccordionDetails>
+          </Accordion>
+        </AccordionBox>
+
+        <AccordionBox>
+          <Accordion
+            sx={{ display: "flex", flexDirection: "column" }}
+            expanded={false}
+          >
+            <AccordionSummary>
+              <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <Box
+                  sx={{
+                    width: "18px",
+                    height: "18px",
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(68, 68, 68, 1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <OpenFolderIcon />
+                </Box>
+                <Typography>Trash</Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <WorkspacesList />
+            </AccordionDetails>
+          </Accordion>
+        </AccordionBox> */}
 
         <Button
-          onClick={workspaceService.addWorkspace}
+          onClick={() => workspaceService.addCollection()}
           variant="contained"
           color="primary"
           size="large"
         >
-          + New workspace
+          + New collection
         </Button>
       </Paper>
     </>
   );
 };
+
+const AccordionBox = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  & .MuiAccordion-root {
+    padding: 0;
+
+    & .MuiAccordionSummary-root {
+      padding: 0;
+      height: 33px;
+      border-radius: 18px;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+    }
+
+    & .MuiAccordionDetails-root {
+      padding: 0;
+    }
+  }
+`;
 
 export const IconBullet = styled.div<{
   color: string;

@@ -4,33 +4,44 @@ import ExportIcon from "@/components/ui/icons/export-icon";
 import InfoIcon from "@/components/ui/icons/info-icon";
 import SettingsIcons from "@/components/ui/icons/settings-icon";
 import { IconButton } from "@mui/material";
+import { useState } from "react";
 import styled from "styled-components";
+import SettingsModal from "../../settings/settings";
 
 const BarTools = () => {
   const { stateService, isWidgetsOpen } = useStates();
 
+  const [settingsOpened, setSettingsOpened] = useState<boolean>(false);
+
   return (
-    <Wrapper>
-      <IconButton>
-        <InfoIcon />
-      </IconButton>
+    <>
+      <SettingsModal
+        open={settingsOpened}
+        onClose={() => setSettingsOpened(false)}
+      />
 
-      <IconButton>
-        <ExportIcon />
-      </IconButton>
+      <Wrapper>
+        <IconButton>
+          <InfoIcon />
+        </IconButton>
 
-      <IconButton>
-        <SettingsIcons />
-      </IconButton>
+        <IconButton>
+          <ExportIcon />
+        </IconButton>
 
-      <IconButton
-        data-type="widget"
-        data-open={`${isWidgetsOpen}`}
-        onClick={() => stateService.toogleWidgets()}
-      >
-        <ArrowLeftIcon />
-      </IconButton>
-    </Wrapper>
+        <IconButton onClick={() => setSettingsOpened(true)}>
+          <SettingsIcons />
+        </IconButton>
+
+        <IconButton
+          data-type="widget"
+          data-open={`${isWidgetsOpen}`}
+          onClick={() => stateService.toogleWidgets()}
+        >
+          <ArrowLeftIcon />
+        </IconButton>
+      </Wrapper>
+    </>
   );
 };
 

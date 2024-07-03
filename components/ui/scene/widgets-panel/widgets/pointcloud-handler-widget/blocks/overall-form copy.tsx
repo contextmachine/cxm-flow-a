@@ -114,7 +114,7 @@ const OverallForm: React.FC<{
   );
 };
 
-const ParamItem = styled.div`
+export const ParamItem = styled.div`
   width: 100%;
   display: flex;
   gap: 10px;
