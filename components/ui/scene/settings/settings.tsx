@@ -73,42 +73,93 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
                 <Tab
                   label={
                     <Box
-                      data-type="tab-content"
                       sx={{
                         display: "flex",
-                        flexDirection: "column",
+                        alignContent: "center",
+                        gap: "10px",
                       }}
                     >
-                      <Box>Camera</Box>
-                      <Box>View and angles</Box>
+                      <Box
+                        sx={{
+                          minWidth: "27px",
+                          minHeight: "27px",
+                          borderRadius: "9px",
+                          backgroundColor: "#2689FF",
+                        }}
+                      />
+
+                      <Box
+                        data-type="tab-content"
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                        }}
+                      >
+                        <Box>Camera</Box>
+                        <Box>View and angles</Box>
+                      </Box>
                     </Box>
                   }
                 />
                 <Tab
                   label={
                     <Box
-                      data-type="tab-content"
                       sx={{
                         display: "flex",
-                        flexDirection: "column",
+                        alignContent: "center",
+                        gap: "10px",
                       }}
                     >
-                      <Box>Widgets</Box>
-                      <Box>Available tools</Box>
+                      <Box
+                        sx={{
+                          minWidth: "27px",
+                          minHeight: "27px",
+                          borderRadius: "9px",
+                          backgroundColor: "#2689FF",
+                        }}
+                      />
+
+                      <Box
+                        data-type="tab-content"
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                        }}
+                      >
+                        <Box>Widgets</Box>
+                        <Box>Available tools</Box>
+                      </Box>
                     </Box>
                   }
                 />
                 <Tab
                   label={
                     <Box
-                      data-type="tab-content"
                       sx={{
                         display: "flex",
-                        flexDirection: "column",
+                        alignContent: "center",
+                        gap: "10px",
                       }}
                     >
-                      <Box>Access</Box>
-                      <Box>Access Settings</Box>
+                      <Box
+                        sx={{
+                          minWidth: "27px",
+                          minHeight: "27px",
+                          borderRadius: "9px",
+                          backgroundColor: "#2689FF",
+                        }}
+                      />
+
+                      <Box
+                        data-type="tab-content"
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                        }}
+                      >
+                        <Box>Access</Box>
+                        <Box>Access Settings</Box>
+                      </Box>
                     </Box>
                   }
                 />
