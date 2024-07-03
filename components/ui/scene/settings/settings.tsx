@@ -14,11 +14,14 @@ import {
   AccordionSummary,
   AccordionDetails,
   Divider,
+  Paper,
 } from "@mui/material";
 import styled from "styled-components";
 import TabPanel from "./blocks/tab-panel";
 import OpenFolderIcon from "../../icons/open-folder-icon";
 import { ParamItem } from "../widgets-panel/widgets/pointcloud-handler-widget/blocks/overall-form copy";
+import ProductsSetupPanel from "../products-setup-panel/products-setup-panel";
+import TeamMembers from "../team-members/team-membets";
 
 const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   open,
@@ -115,109 +118,142 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Divider orientation="vertical" flexItem />
 
             <TabPanel value={value} index={0}>
-              <AccordionBox>
-                <AccordionWrapper title={"Scene properties"}>
-                  <ParamItem data-type="overall">
-                    <Box>Background</Box>
-                    <Box>
-                      <TextField
-                        fullWidth
-                        value={backgroundColor}
-                        onChange={(e) => setBackgroundColor(e.target.value)}
-                      />
-                    </Box>
-                  </ParamItem>
-                </AccordionWrapper>
+              <Paper
+                data-type="sec"
+                sx={{
+                  minWidth: "500px",
+                }}
+              >
+                <AccordionBox>
+                  <AccordionWrapper title={"Scene properties"}>
+                    <ParamItem data-type="overall">
+                      <Box>Background</Box>
+                      <Box>
+                        <TextField
+                          fullWidth
+                          value={backgroundColor}
+                          onChange={(e) => setBackgroundColor(e.target.value)}
+                        />
+                      </Box>
+                    </ParamItem>
+                  </AccordionWrapper>
 
-                <AccordionWrapper title={"Camera properties"}>
-                  <ParamItem data-type="overall">
-                    <Box>Camera angle</Box>
-                    <Box>
-                      <TextField
-                        fullWidth
-                        value={backgroundColor}
-                        onChange={(e) => setBackgroundColor(e.target.value)}
-                      />
-                    </Box>
-                  </ParamItem>
+                  <AccordionWrapper title={"Camera properties"}>
+                    <ParamItem data-type="overall">
+                      <Box>Camera angle</Box>
+                      <Box>
+                        <TextField
+                          fullWidth
+                          value={backgroundColor}
+                          onChange={(e) => setBackgroundColor(e.target.value)}
+                        />
+                      </Box>
+                    </ParamItem>
 
-                  <ParamItem data-type="overall">
-                    <Box>Zoom</Box>
-                    <Box>
-                      <TextField
-                        fullWidth
-                        type="number"
-                        value={zoom}
-                        onChange={(e) => setZoom(Number(e.target.value))}
-                      />
-                    </Box>
-                  </ParamItem>
+                    <ParamItem data-type="overall">
+                      <Box>Zoom</Box>
+                      <Box>
+                        <TextField
+                          fullWidth
+                          type="number"
+                          value={zoom}
+                          onChange={(e) => setZoom(Number(e.target.value))}
+                        />
+                      </Box>
+                    </ParamItem>
 
-                  <ParamItem data-type="overall">
-                    <Box>Distance</Box>
-                    <Box>
-                      <TextField
-                        fullWidth
-                        type="number"
-                        value={distance}
-                        onChange={(e) => setDistance(Number(e.target.value))}
-                      />
-                    </Box>
-                  </ParamItem>
-                </AccordionWrapper>
+                    <ParamItem data-type="overall">
+                      <Box>Distance</Box>
+                      <Box>
+                        <TextField
+                          fullWidth
+                          type="number"
+                          value={distance}
+                          onChange={(e) => setDistance(Number(e.target.value))}
+                        />
+                      </Box>
+                    </ParamItem>
+                  </AccordionWrapper>
 
-                <AccordionWrapper title={"Label properties"}>
-                  <ParamItem data-type="overall">
-                    <Box>Size</Box>
-                    <Box>
-                      <Slider
-                        data-type="params"
-                        value={2}
-                        step={1}
-                        min={1}
-                        max={8}
-                        onChange={(e, value) => {}}
-                        size="small"
-                        valueLabelDisplay="auto"
-                      />
-                    </Box>
-                  </ParamItem>
+                  <AccordionWrapper title={"Label properties"}>
+                    <ParamItem data-type="overall">
+                      <Box>Size</Box>
+                      <Box>
+                        <Slider
+                          data-type="params"
+                          value={2}
+                          step={1}
+                          min={1}
+                          max={8}
+                          onChange={(e, value) => {}}
+                          size="small"
+                          valueLabelDisplay="auto"
+                        />
+                      </Box>
+                    </ParamItem>
 
-                  <ParamItem data-type="overall">
-                    <Box>Average</Box>
-                    <Box>
-                      <TextField
-                        fullWidth
-                        type="number"
-                        value={cameraAngle}
-                        onChange={(e) => setCameraAngle(Number(e.target.value))}
-                      />
-                    </Box>
-                  </ParamItem>
+                    <ParamItem data-type="overall">
+                      <Box>Average</Box>
+                      <Box>
+                        <TextField
+                          fullWidth
+                          type="number"
+                          value={cameraAngle}
+                          onChange={(e) =>
+                            setCameraAngle(Number(e.target.value))
+                          }
+                        />
+                      </Box>
+                    </ParamItem>
 
-                  <ParamItem data-type="overall">
-                    <Box>Deviation</Box>
-                    <Box>
-                      <TextField
-                        fullWidth
-                        type="number"
-                        value={cameraAngle}
-                        onChange={(e) => setCameraAngle(Number(e.target.value))}
-                      />
-                    </Box>
-                  </ParamItem>
-                </AccordionWrapper>
+                    <ParamItem data-type="overall">
+                      <Box>Deviation</Box>
+                      <Box>
+                        <TextField
+                          fullWidth
+                          type="number"
+                          value={cameraAngle}
+                          onChange={(e) =>
+                            setCameraAngle(Number(e.target.value))
+                          }
+                        />
+                      </Box>
+                    </ParamItem>
+                  </AccordionWrapper>
 
-                <Button
-                  sx={{
-                    margin: "10px",
-                  }}
-                  variant="contained"
-                  color="primary"
-                >
-                  Save
-                </Button>
-              </AccordionBox>
+                  <Button
+                    sx={{
+                      margin: "10px",
+                    }}
+                    variant="contained"
+                    color="primary"
+                  >
+                    Save
+                  </Button>
+                </AccordionBox>
+              </Paper>
+            </TabPanel>
+
+            <TabPanel value={value} index={1}>
+              <Paper
+                data-type="sec"
+                sx={{
+                  minWidth: "500px",
+                }}
+              >
+                <ProductsSetupPanel />
+              </Paper>
+            </TabPanel>
+
+            <TabPanel value={value} index={2}>
+              <Paper
+                data-type="sec"
+                sx={{
+                  minWidth: "500px",
+                }}
+              >
+                <TeamMembers />
+              </Paper>
             </TabPanel>
           </Box>
         </ModalBox>
@@ -315,7 +351,8 @@ const TabsBox = styled(Box)`
 const AccordionBox = styled(Box)`
   background-color: var(--paper-bg-color);
 
-  min-width: 300px;
+  min-width: 400px;
+  width: 100%;
 
   display: flex;
   flex-direction: column;
@@ -339,6 +376,7 @@ const ModalBox = styled(Box)`
   }
 
   position: relative;
+  backdrop-filter: blur(10px);
 
   padding: 9px;
   border-radius: 27px;

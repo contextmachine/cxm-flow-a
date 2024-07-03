@@ -25,8 +25,6 @@ const BarUser = () => {
       </Box>
 
       <Box sx={{ display: "flex", gap: "9px" }}>
-        <ProductsSetupPanel />
-
         <Button
           variant="contained"
           color="primary"
