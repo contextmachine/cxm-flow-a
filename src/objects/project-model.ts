@@ -39,8 +39,6 @@ export class ProjectModel {
     object3d.traverse((x) => x.updateMatrixWorld());
 
     this._entity = this.initModel(object3d);
-    console.log("result", this._entity);
-
     this._queryEntity.setModel(this);
   }
 
