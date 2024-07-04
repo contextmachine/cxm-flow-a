@@ -17,11 +17,13 @@ const SceneContext = createContext<SceneProviderProps | null>(null);
 
 const CanvasWrapper = styled.div`
   canvas:focus {
-    border-top: 2px solid rgb(0, 153, 255);
+    border: 0px;
+    border-top: 1px solid rgb(0, 153, 255);
   }
 
   canvas {
-    border-top: 2px solid transparent;
+    border: 0px;
+    border-top: 1px solid transparent;
   }
 
   width: 100%;
@@ -74,7 +76,6 @@ export function SceneProvider({ children }: any) {
           </CanvasWrapper>
         </Box>
       </SceneContext.Provider>
-      ыы
     </div>
   );
 }
