@@ -202,9 +202,6 @@ class UnionMesh {
       geometry.computeBoundingBox();
 
       this._collisionMesh = unionMesh;
-
-      this._collisionMesh;
-
       buffers.forEach((x) => x.dispose());
     }
   }
