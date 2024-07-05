@@ -281,7 +281,8 @@ class ViewFilterExtension extends ExtensionEntity {
       }
     });
 
-    this._$properties.next(this._properties);
+    const newProps = new Map(this._properties.entries());
+    this._$properties.next(newProps);
   }
 
   public unload(): void {

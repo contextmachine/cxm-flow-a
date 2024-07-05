@@ -33,7 +33,7 @@ const SelectWithSearch: React.FC<SelectWithFilterProps> = (
     setFilteredOptions(
       options.filter((x) => filterOption(filterInput, x.value))
     );
-  }, [filterInput]);
+  }, [filterInput, options]);
 
   const handleOptionClick = (option: any) => {
     setIsOpen(false);

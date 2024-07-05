@@ -5,8 +5,6 @@ import { useRouter } from "next/router";
 import { useWorkspace } from "../workspace-service/workspace-provider";
 import styled from "styled-components";
 import { Box } from "@mui/material";
-import Viewer from "@/src/viewer/viewer";
-import { Loading } from "../loading";
 
 interface SceneProviderProps {
   sceneService: SceneService;
