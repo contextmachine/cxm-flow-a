@@ -15,26 +15,20 @@ import {
 import { Group } from "./group";
 import { assertDefined } from "@/utils";
 
-
-
-
 export class Mesh implements Entity {
-  private _id: string
+  private _id: string;
   private _model: ProjectModel;
-  private _object3d: THREE.Mesh
+  private _object3d: THREE.Mesh;
 
   private _center = new THREE.Vector3();
-  private _type: ViewerObjectType = 'mesh'
+  private _type: ViewerObjectType = "mesh";
 
   private _name: string;
 
-  private _parent: Entity | undefined
+  private _parent: Entity | undefined;
 
   // private _lineEdges: THREE.LineSegments | undefined;
-  private _bbox = new THREE.Box3Helper(
-    new THREE.Box3(),
-    new THREE.Color()
-  );
+  private _bbox = new THREE.Box3Helper(new THREE.Box3(), new THREE.Color());
 
   private _visibility = true;
   private _bboxVisibility = false;
@@ -42,9 +36,8 @@ export class Mesh implements Entity {
 
   private _selectable = true;
   private _selected = false;
-  private _parentSelected = false
-  private _disable = false
-
+  private _parentSelected = false;
+  private _disable = false;
 
   private _props: ProjectObjectProps | undefined;
 
@@ -52,18 +45,16 @@ export class Mesh implements Entity {
   private _overrideMaterial: THREE.Material | undefined;
 
   constructor(object: THREE.Mesh, model: ProjectModel, parent?: Group) {
-
-    this._id = object.uuid
+    this._id = object.uuid;
     this._model = model;
-    this._object3d = object
-    this._parent = parent
+    this._object3d = object;
+    this._parent = parent;
 
     this._name = object.name;
 
     this.initProperties();
     this.initBoundingBox();
-    this.initMaterial()
-
+    this.initMaterial();
   }
 
   public get id(): string {
@@ -71,7 +62,7 @@ export class Mesh implements Entity {
   }
 
   public get isProjectObject(): boolean {
-    return true
+    return true;
   }
 
   public get name(): string {
@@ -82,12 +73,16 @@ export class Mesh implements Entity {
     return this._model;
   }
 
+  public get objects() {
+    return undefined;
+  }
+
   public get parent() {
-    return this._parent
+    return this._parent;
   }
 
   public get children() {
-    return undefined
+    return undefined;
   }
 
   public get bbox(): THREE.Box3Helper {
@@ -135,18 +130,21 @@ export class Mesh implements Entity {
   }
 
   private initMaterial() {
-    const mesh = this._object3d
+    const mesh = this._object3d;
 
     if (mesh.material) {
-      const material = mesh.material
+      const material = mesh.material;
 
       if (material instanceof THREE.MeshStandardMaterial) {
-        material.flatShading = true
+        material.flatShading = true;
       }
 
-      this._defaultMaterial = material as THREE.Material
+      this._defaultMaterial = material as THREE.Material;
 
-      this._model.unionMesh?.setMeshMaterialToFragment(this._id, this._defaultMaterial)
+      this._model.unionMesh?.setMeshMaterialToFragment(
+        this._id,
+        this._defaultMaterial
+      );
     }
   }
 
@@ -159,9 +157,9 @@ export class Mesh implements Entity {
 
   private updateBbox() {
     if (this._visibility && this._bboxVisibility) {
-      this._model.viewer.addToScene(this._bbox)
+      this._model.viewer.addToScene(this._bbox);
     } else {
-      this._model.viewer.removeFromScene(this._bbox)
+      this._model.viewer.removeFromScene(this._bbox);
     }
   }
 
@@ -171,66 +169,61 @@ export class Mesh implements Entity {
   }
 
   private updateVisibility() {
-    this.updateBbox()
+    this.updateBbox();
     this.updateMaterial();
     this.updateLineMaterial();
   }
 
   public showLineEdges(show: boolean) {
-
     this._linesVisibility = show;
-    this.updateLineMaterial()
+    this.updateLineMaterial();
   }
 
   public setBboxVisibilty(show: boolean) {
     this._bboxVisibility = show;
-    this.updateBbox()
+    this.updateBbox();
   }
 
   private updateMeshMaterial() {
+    const visible = this._visibility && this._parent?.visibility;
 
-    const visible = this._visibility && this._parent?.visibility
-
-    let newMaterial: THREE.Material
+    let newMaterial: THREE.Material;
 
     if (!visible) {
-      newMaterial = transparentMaterial
+      newMaterial = transparentMaterial;
     } else if (this._disable) {
-      newMaterial = transparentMaterial
+      newMaterial = transparentMaterial;
     } else if (this._selected || this._parentSelected) {
-      newMaterial = selectedMaterial
+      newMaterial = selectedMaterial;
     } else if (this._overrideMaterial) {
-      newMaterial = this._overrideMaterial
+      newMaterial = this._overrideMaterial;
     } else {
-      newMaterial = this._defaultMaterial
+      newMaterial = this._defaultMaterial;
     }
 
-    this.setMeshMaterial(newMaterial)
-
+    this.setMeshMaterial(newMaterial);
   }
 
   private updateLineMaterial(material?: THREE.LineBasicMaterial) {
-
-    let newMaterial: THREE.Material
+    let newMaterial: THREE.Material;
 
     if (!this._visibility && !this._linesVisibility) {
-      newMaterial = transparentMaterial
+      newMaterial = transparentMaterial;
     } else if (this._disable) {
-      newMaterial = lineDisabledMaterial
+      newMaterial = lineDisabledMaterial;
     } else if (this._selected || this._parentSelected) {
-      newMaterial = lineSelectedMaterial
+      newMaterial = lineSelectedMaterial;
     } else {
-      newMaterial = lineDefaultMaterial
+      newMaterial = lineDefaultMaterial;
     }
 
-    this.setLineMaterial(newMaterial)
+    this.setLineMaterial(newMaterial);
   }
 
   public updateMaterial(
     material?: THREE.Material,
     linesMaterial?: THREE.LineBasicMaterial
   ) {
-
     if (material) {
       this._overrideMaterial = material;
     } else {
@@ -241,22 +234,20 @@ export class Mesh implements Entity {
     this.updateLineMaterial(linesMaterial);
   }
 
-
   public clearColor() {
-    this.updateMeshMaterial()
-    this.updateLineMaterial()
+    this.updateMeshMaterial();
+    this.updateLineMaterial();
   }
-
 
   private setMeshMaterial(material: THREE.Material) {
     if (this.model.unionMesh) {
-      this.model.unionMesh.setMeshMaterialToFragment(this.id, material)
+      this.model.unionMesh.setMeshMaterialToFragment(this.id, material);
     }
   }
 
   private setLineMaterial(material: THREE.Material) {
     if (this.model.unionMesh) {
-      this.model.unionMesh.setLineMaterialToFragment(this.id, material)
+      this.model.unionMesh.setLineMaterialToFragment(this.id, material);
     }
   }
 
@@ -265,7 +256,6 @@ export class Mesh implements Entity {
 
     this.updateLineMaterial();
     this.updateMeshMaterial();
-
   }
 
   public onDeselect() {
@@ -291,7 +281,7 @@ export class Mesh implements Entity {
 
   public onDisable() {
     this._disable = true;
-    this._selectable = false
+    this._selectable = false;
 
     this.updateLineMaterial();
     this.updateMeshMaterial();
@@ -299,10 +289,9 @@ export class Mesh implements Entity {
 
   public onEnable() {
     this._disable = false;
-    this._selectable = true
+    this._selectable = true;
 
     this.updateLineMaterial();
     this.updateMeshMaterial();
   }
-
 }
