@@ -24,6 +24,9 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
+  Alert,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Check, Close } from "@mui/icons-material";
@@ -39,31 +42,28 @@ const UserSettings: React.FC<{
   };
 
   const [username, setUsername] = useState("");
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
-  const { userMetadata, authService } = useAuth();
-
-  useEffect(() => {
-    authService.updateTheme(isDarkTheme ? 1 : undefined);
-  });
+  const [theme, setTheme] = useState<"default" | number>("default");
+  const { userMetadata, authService, themes } = useAuth();
+  console.log("userMetadata", userMetadata);
 
   useEffect(() => {
     if (!userMetadata) return;
 
     setUsername(userMetadata.username);
+
+    const userTheme = userMetadata.user_theme?.theme?.id;
+    setTheme(typeof userTheme === "number" ? userTheme : "default");
   }, [userMetadata]);
 
-  const [notifications, setNotifications] = useState([
+  console.log("theme", theme);
+
+  const [notifications, setNotifications] = useState<
     {
-      id: 1,
-      from: "user2",
-      message: "Request to join your workspace as Editor",
-    },
-    {
-      id: 2,
-      from: "user8",
-      message: "Request to join your workspace as Viewer",
-    },
-  ]);
+      id: number;
+      from: string;
+      message: string;
+    }[]
+  >([]);
 
   const handleAllow = (id: number) => {
     setNotifications(
@@ -77,6 +77,16 @@ const UserSettings: React.FC<{
       notifications.filter((notification) => notification.id !== id)
     );
     // Here you can add your logic to deny the user request
+  };
+
+  const handleSave = async () => {
+    await authService.updatePartialMetadata({
+      username,
+      theme: theme === "default" ? null : (theme as number),
+    });
+
+    //refresh the page
+    window.location.reload();
   };
 
   return (
@@ -204,7 +214,7 @@ const UserSettings: React.FC<{
                     <ParamItem data-type="overall">
                       <Box>Theme</Box>
                       <Box>
-                        <FormControlLabel
+                        {/* <FormControlLabel
                           control={
                             <Switch
                               checked={isDarkTheme}
@@ -212,7 +222,25 @@ const UserSettings: React.FC<{
                             />
                           }
                           label="Dark Theme"
-                        />
+                        /> */}
+
+                        <Select
+                          sx={{ width: "100%" }}
+                          data-type="select"
+                          value={theme}
+                          onChange={(e) =>
+                            setTheme(e.target.value as "default" | number)
+                          }
+                        >
+                          {[
+                            <MenuItem value={"default"}>{"default"}</MenuItem>,
+                            ...Array.from(themes.values()).map((theme, i) => (
+                              <MenuItem value={theme.id} key={i}>
+                                {theme.name}
+                              </MenuItem>
+                            )),
+                          ]}
+                        </Select>
                       </Box>
                     </ParamItem>
                   </AccordionWrapper>
@@ -223,6 +251,7 @@ const UserSettings: React.FC<{
                     }}
                     variant="contained"
                     color="primary"
+                    onClick={handleSave}
                   >
                     Save
                   </Button>
@@ -243,55 +272,62 @@ const UserSettings: React.FC<{
                     width: "100%",
                   }}
                 >
-                  {notifications.map((notification) => (
-                    <ListItem
-                      key={notification.id}
-                      sx={{
-                        width: "100%",
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box
+                  {notifications && notifications.length === 0 && (
+                    <Alert severity="info">
+                      There are no notifications for now
+                    </Alert>
+                  )}
+
+                  {notifications.length > 0 &&
+                    notifications.map((notification) => (
+                      <ListItem
+                        key={notification.id}
                         sx={{
-                          display: "flex",
-                          gap: "10px",
                           width: "100%",
+                          display: "flex",
                           justifyContent: "space-between",
-                          alignItems: "center",
                         }}
                       >
-                        <ListItemText
-                          sx={{ fontSize: "12px" }}
-                          primary={`From: ${notification.from}`}
-                          secondary={notification.message}
-                        />
                         <Box
                           sx={{
                             display: "flex",
                             gap: "10px",
+                            width: "100%",
+                            justifyContent: "space-between",
                             alignItems: "center",
                           }}
                         >
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleAllow(notification.id)}
+                          <ListItemText
+                            sx={{ fontSize: "12px" }}
+                            primary={`From: ${notification.from}`}
+                            secondary={notification.message}
+                          />
+                          <Box
+                            sx={{
+                              display: "flex",
+                              gap: "10px",
+                              alignItems: "center",
+                            }}
                           >
-                            Allow
-                          </Button>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => handleAllow(notification.id)}
+                            >
+                              Allow
+                            </Button>
 
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            onClick={() => handleAllow(notification.id)}
-                          >
-                            Ignore
-                          </Button>
+                            <Button
+                              variant="contained"
+                              color="secondary"
+                              onClick={() => handleAllow(notification.id)}
+                            >
+                              Ignore
+                            </Button>
+                          </Box>
                         </Box>
-                      </Box>
-                    </ListItem>
-                  ))}
+                      </ListItem>
+                    ))}
                 </List>
               </Paper>
             </TabPanel>

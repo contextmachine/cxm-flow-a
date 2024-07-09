@@ -1,6 +1,6 @@
 import client from "@/components/graphql/client/client";
 import { gql } from "@apollo/client";
-import { FeatureType, UserMetadataResponse } from "./auth-service.types";
+import { FeatureType, Theme, UserMetadataResponse } from "./auth-service.types";
 import axios from "axios";
 import Cookie from "js-cookie";
 import WorkspaceService from "../workspace-service/workspace-service";
@@ -16,6 +16,8 @@ class AuthService {
   private $setUserMetadata: any;
   private $setIsUnauthorized: any;
   private $setError: any;
+
+  private _themes$ = new BehaviorSubject<Map<string, Theme>>(new Map());
 
   private _featureMap$ = new BehaviorSubject<Map<FeatureType, boolean>>(
     new Map()
@@ -137,6 +139,11 @@ class AuthService {
             id
           }
         }
+
+        featuresv3_theme {
+          id
+          name
+        }
       }
     `;
 
@@ -145,6 +152,13 @@ class AuthService {
         query,
         variables: { userId },
       });
+
+      // Map themes by name
+      const themes = new Map<string, Theme>();
+      response.data.featuresv3_theme.forEach((theme: Theme) => {
+        themes.set(theme.name, theme);
+      });
+      this._themes$.next(themes);
 
       return response.data.appv3_user_by_pk;
     } catch (error) {
@@ -201,6 +215,66 @@ class AuthService {
     }
   }
 
+  public async updatePartialMetadata({
+    username,
+    theme,
+  }: {
+    username: string;
+    theme: number | null;
+  }) {
+    const gql1 = gql`
+      mutation UpdateUser($userId: Int!, $username: String!) {
+        update_appv3_user_by_pk(
+          pk_columns: { id: $userId }
+          _set: { username: $username }
+        ) {
+          id
+          username
+        }
+      }
+    `;
+
+    let gql2;
+
+    if (theme) {
+      gql2 = gql`
+        mutation DeleteUserTheme($userId: Int!) {
+          delete_featuresv3_user_theme(where: { user_id: { _eq: $userId } }) {
+            affected_rows
+          }
+
+          insert_featuresv3_user_theme_one(
+            object: { theme_id: ${theme}, user_id: $userId }
+          ) {
+            id
+            user_id
+          }
+        }
+      `;
+    } else {
+      gql2 = gql`
+        mutation DeleteUserTheme($userId: Int!) {
+          delete_featuresv3_user_theme(where: { user_id: { _eq: $userId } }) {
+            affected_rows
+          }
+        }
+      `;
+    }
+
+    await client.mutate({
+      mutation: gql1,
+      variables: { userId: this._session!.userId, username },
+    });
+
+    await client.mutate({
+      mutation: gql2,
+      variables: { userId: this._session!.userId },
+    });
+
+    const userMetadata = await this.getUserMetadata();
+    this.updateUserMetadata(userMetadata);
+  }
+
   public provideStates(states: {
     setLoading: any;
     setUserMetadata: any;
@@ -246,6 +320,10 @@ class AuthService {
 
   public get featureMap$() {
     return this._featureMap$.asObservable();
+  }
+
+  public get themes$() {
+    return this._themes$.asObservable();
   }
 
   dispose() {
