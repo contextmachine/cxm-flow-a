@@ -195,7 +195,7 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
                       <Box>
                         <TextField
                           fullWidth
-                          value={backgroundColor}
+                          value={cameraAngle}
                           onChange={(e) => setBackgroundColor(e.target.value)}
                         />
                       </Box>
@@ -303,7 +303,7 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
                   minWidth: "500px",
                 }}
               >
-                <TeamMembers />
+                <TeamMembers full={true} />
               </Paper>
             </TabPanel>
           </Box>
@@ -313,7 +313,7 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   );
 };
 
-const AccordionWrapper: React.FC<{
+export const AccordionWrapper: React.FC<{
   children: React.ReactNode;
   title: string;
 }> = ({ children, title }) => {
@@ -356,7 +356,7 @@ const AccordionWrapper: React.FC<{
   );
 };
 
-const TabsBox = styled(Box)`
+export const TabsBox = styled(Box)`
   && {
     & .MuiTabs-root {
       min-width: 180px;
@@ -399,7 +399,7 @@ const TabsBox = styled(Box)`
   }
 `;
 
-const AccordionBox = styled(Box)`
+export const AccordionBox = styled(Box)`
   background-color: var(--paper-bg-color);
 
   min-width: 400px;
@@ -414,7 +414,7 @@ const AccordionBox = styled(Box)`
   }
 `;
 
-const ModalBox = styled(Box)`
+export const ModalBox = styled(Box)`
   &::before {
     content: "";
     position: absolute;
