@@ -349,6 +349,61 @@ class WorkspaceService {
     }
   }
 
+  public async deleteScene(sceneId: number) {
+    const mutation = gql`
+      mutation DeleteScene($id: Int!) {
+        delete_appv3_toolset(where: { scene_id: { _eq: $id } }) {
+          affected_rows
+        }
+
+        delete_appv3_scene(where: { id: { _eq: $id } }) {
+          affected_rows
+        }
+      }
+    `;
+
+    try {
+      const data = await client.mutate({
+        mutation,
+        variables: {
+          id: sceneId,
+        },
+      });
+
+      this.fetchWorkspaces();
+
+      this.$setError("Scene deleted successfully.");
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  public async moveSceneToWorkspace(sceneId: number, workspaceId: number) {
+    const mutation = gql`
+      mutation MoveSceneToWorkspace($id: Int!, $workspace_id: Int!) {
+        update_appv3_scene_by_pk(
+          pk_columns: { id: $id }
+          _set: { workspace_id: $workspace_id }
+        ) {
+          id
+        }
+      }
+    `;
+    try {
+      const data = await client.mutate({
+        mutation,
+        variables: {
+          id: sceneId,
+          workspace_id: workspaceId,
+        },
+      });
+
+      this.fetchWorkspaces();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   public async addWorkspace(collectionId?: number) {
     const mutation = gql`
       mutation AddWorkspace(
