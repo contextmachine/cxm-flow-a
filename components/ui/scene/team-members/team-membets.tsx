@@ -15,8 +15,13 @@ import {
 import React, { useMemo } from "react";
 import { Ava } from "../../catalog/styles/styles";
 import stc from "string-to-color";
+import ShareIcon from "@mui/icons-material/Share";
+import CopyIcon from "@mui/icons-material/FileCopy";
+import SettingsIcon from "@mui/icons-material/Settings";
 
-const TeamMembers = () => {
+const TeamMembers: React.FC<{
+  mini?: boolean;
+}> = ({ mini }) => {
   const { workspaceService, activeWorkspaceUsers } = useWorkspace();
   const { userMetadata } = useAuth();
 
@@ -28,7 +33,63 @@ const TeamMembers = () => {
   );
 
   return (
-    <>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+      }}
+    >
+      {!mini && (
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "20px",
+          }}
+        >
+          <Button
+            type="submit"
+            variant="contained"
+            color="secondary"
+            startIcon={<ShareIcon />}
+            onClick={() => {}}
+          >
+            Share workspace
+          </Button>
+
+          <Button
+            type="submit"
+            variant="contained"
+            color="secondary"
+            startIcon={<CopyIcon />}
+            data-active="true"
+            onClick={() => {}}
+          >
+            Copy link
+          </Button>
+        </Box>
+      )}
+
+      {currentUserRole !== RoleTypes.VIEWER && (
+        <Box
+          sx={{
+            marginBottom: "20px",
+          }}
+        >
+          <InviteForm />
+        </Box>
+      )}
+
+      <Box
+        sx={{
+          marginBottom: "10px",
+        }}
+      >
+        Access settings
+      </Box>
+
       <Box sx={{ color: "#999999" }}>
         {activeWorkspaceUsers.map(
           (workspaceUser: WorkspaceUserDto, i: number) => {
@@ -99,13 +160,7 @@ const TeamMembers = () => {
           }
         )}
       </Box>
-
-      {currentUserRole !== RoleTypes.VIEWER && (
-        <Box>
-          <InviteForm />
-        </Box>
-      )}
-    </>
+    </Box>
   );
 };
 
@@ -177,7 +232,7 @@ const UserRole: React.FC<{
 };
 
 const InviteForm = () => {
-  const [isOpened, setIsOpened] = React.useState(false);
+  const [isOpened, setIsOpened] = React.useState(true);
   const [username, setUsername] = React.useState("");
   const [error, setError] = React.useState("");
 
@@ -202,8 +257,10 @@ const InviteForm = () => {
   return (
     <>
       {isOpened ? (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: "9px" }}>
+        <Box sx={{ display: "flex", gap: "9px" }}>
           <TextField
+            fullWidth
+            sx={{ width: "100%" }}
             value={username}
             placeholder="Enter email"
             onChange={(e) => setUsername(e.target.value)}
@@ -212,7 +269,7 @@ const InviteForm = () => {
             variant="contained"
             color="primary"
             size="large"
-            sx={{ width: "100%" }}
+            sx={{ width: "100%", maxWidth: "max-content" }}
             onClick={handleInviteUser}
           >
             Invite

@@ -70,6 +70,54 @@ class AuthService {
     this._featureMap$.next(featureMap);
   }
 
+  public async updateTheme(themeId?: number) {
+    if (typeof themeId === "undefined") {
+      const query = gql`
+        mutation GetUser($user_id: Int!) {
+          delete_featuresv3_user_theme(where: { user_id: { _eq: $_eq } }) {
+            affected_rows
+          }
+        }
+      `;
+
+      try {
+        await client.mutate({
+          mutation: query,
+          variables: { user_id: this._session!.userId },
+        });
+
+        this.updateUserMetadata(await this.getUserMetadata());
+      } catch (error) {
+        console.error("Error updating theme:", error);
+      }
+    } else {
+      const query = gql`
+        mutation GetUser($theme_id: Int!, $user_id: Int!) {
+          delete_featuresv3_user_theme(where: { user_id: { _eq: $_eq } }) {
+            affected_rows
+          }
+          insert_featuresv3_user_theme_one(
+            object: { theme_id: $theme_id, user_id: $user_id }
+          ) {
+            id
+            user_id
+          }
+        }
+      `;
+
+      try {
+        await client.mutate({
+          mutation: query,
+          variables: { theme_id: themeId, user_id: this._session!.userId },
+        });
+
+        this.updateUserMetadata(await this.getUserMetadata());
+      } catch (error) {
+        console.error("Error updating theme:", error);
+      }
+    }
+  }
+
   public async getUserMetadata() {
     const userId = this._session!.userId;
 
