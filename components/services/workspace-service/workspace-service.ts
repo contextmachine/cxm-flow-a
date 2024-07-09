@@ -95,6 +95,7 @@ class WorkspaceService {
                 name
                 tmp_type
                 collection_workspaces {
+                  workspace_id
                   workspace {
                     id
                     name
@@ -231,7 +232,9 @@ class WorkspaceService {
 
     const restWorkspaces = Array.from(workspaces.keys()).filter((id) => {
       return !collections.some((c) => {
-        return c.collection_workspaces.some((cw) => cw.workspace.id === id);
+        return c.collection_workspaces.some((cw) => {
+          return cw.workspace.id === id;
+        });
       });
     });
 
@@ -536,6 +539,16 @@ class WorkspaceService {
 
         delete_appv3_scene(where: { workspace_id: { _eq: $id } }) {
           affected_rows
+        }
+
+        delete_appv3_collection_workspace(
+          where: { workspace_id: { _eq: $id } }
+        ) {
+          affected_rows
+        }
+
+        delete_appv3_workspace_by_pk(id: $id) {
+          id
         }
       }
     `;
