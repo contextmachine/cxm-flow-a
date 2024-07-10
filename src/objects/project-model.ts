@@ -71,15 +71,19 @@ export class ProjectModel {
   }
 
   public initModel(object: THREE.Object3D): Entity {
-    const physicalObjects: THREE.Object3D[] = [];
+    const modelObjects: THREE.Object3D[] = [];
     let entity: Entity;
+
+    // this._viewer.setStatus("compute");
 
     try {
       const unionMesh = new UnionMesh(object, this);
-      unionMesh.objects.forEach((x) => physicalObjects.push(x));
+      unionMesh.objects.forEach((x) => modelObjects.push(x));
 
       this._unionMesh = unionMesh;
     } catch (e) {}
+
+    console.log(this._unionMesh);
 
     if (object instanceof THREE.Group) {
       entity = new Group(object, this, undefined);
@@ -89,18 +93,25 @@ export class ProjectModel {
       entity = new DefaultObject(object, this, undefined);
     }
 
-    getPhysicalObjects(entity).forEach((x) => physicalObjects.push(x));
+    const notUnionOubjects = getNotUnionObjects(entity, this.unionMesh);
+    notUnionOubjects.forEach((x) => modelObjects.push(x));
 
-    this._objects = physicalObjects;
+    this._objects = modelObjects;
     return entity;
   }
 }
 
-const getPhysicalObjects = (entity: Entity) => {
+const getNotUnionObjects = (
+  entity: Entity,
+  unionMesh: UnionMesh | undefined
+) => {
   const objects: THREE.Object3D[] = [];
 
   const traverseObject = (entity: Entity) => {
-    if (entity.objects) {
+    const objectPartOfUnion =
+      unionMesh && unionMesh.entitiesScope.has(entity.id);
+
+    if (!objectPartOfUnion && entity.objects) {
       entity.objects.forEach((x) => objects.push(x));
     }
     if (entity.children) {

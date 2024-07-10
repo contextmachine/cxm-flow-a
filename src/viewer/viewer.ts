@@ -5,7 +5,7 @@ import Stats from "three/examples/jsm/libs/stats.module";
 
 import ComposerPipe from "./composer-pipe";
 import CameraControl from "./camera-control";
-import Loader from "./loader/loader";
+import Loader, { LoaderState } from "./loader/loader";
 import EntityControl from "./entity-control";
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
 import { appLogicError, assertDefined } from "@/utils";
@@ -21,6 +21,9 @@ export class Viewer {
   private _scene = new THREE.Scene();
 
   private _sceneService: SceneService;
+
+  private _status: LoaderState = "idle";
+  private _statusSubject = new RX.Subject<LoaderState>();
 
   private _renderer: THREE.WebGLRenderer;
   private _stats: Stats;
@@ -97,6 +100,19 @@ export class Viewer {
       })
     );
   }
+
+  // public get status(): LoaderState {
+  //   return this._status;
+  // }
+
+  // public get $status(): RX.Observable<LoaderState> {
+  //   return this._statusSubject;
+  // }
+
+  // public setStatus(status: LoaderState) {
+  //   this._status = status;
+  //   this._statusSubject.next(status);
+  // }
 
   public get scene(): THREE.Scene {
     return this._scene;

@@ -8,12 +8,11 @@ import {
   lineSelectedMaterial,
   selectedMaterial,
   transparentMaterial,
-  disabledMaterial,
   lineDisabledMaterial,
-  wireframeMaterial,
 } from "../materials/object-materials";
 import { Group } from "./group";
-import { assertDefined } from "@/utils";
+
+type MeshType = "bvhFragment" | "common";
 
 export class Mesh implements Entity {
   private _id: string;
@@ -27,7 +26,6 @@ export class Mesh implements Entity {
 
   private _parent: Entity | undefined;
 
-  // private _lineEdges: THREE.LineSegments | undefined;
   private _bbox = new THREE.Box3Helper(new THREE.Box3(), new THREE.Color());
 
   private _visibility = true;
@@ -41,6 +39,8 @@ export class Mesh implements Entity {
 
   private _props: ProjectObjectProps | undefined;
 
+  private _meshType: MeshType;
+
   private _defaultMaterial: THREE.Material = meshDefaultMaterial;
   private _overrideMaterial: THREE.Material | undefined;
 
@@ -49,6 +49,10 @@ export class Mesh implements Entity {
     this._model = model;
     this._object3d = object;
     this._parent = parent;
+
+    this._meshType = model.unionMesh?.entitiesScope.has(this._id)
+      ? "bvhFragment"
+      : "common";
 
     this._name = object.name;
 
@@ -74,7 +78,7 @@ export class Mesh implements Entity {
   }
 
   public get objects() {
-    return undefined;
+    return [this._object3d];
   }
 
   public get parent() {

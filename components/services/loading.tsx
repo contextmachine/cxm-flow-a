@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Loader from "../ui/auth/loader/loader";
-import { useScene } from "./scene-service/scene-provider";
+import { useScene, useViewer } from "./scene-service/scene-provider";
+import { useSubscribe } from "@/src/hooks";
 
 export function Loading({ children }: any) {
   const [loading, setLoading] = useState<boolean>(true);
@@ -8,10 +9,11 @@ export function Loading({ children }: any) {
   const status = useStatus();
 
   useEffect(() => {
-    setLoading(status === "loading");
+    console.log("!!!", status);
+    setLoading(status !== "idle");
   }, [status]);
 
-  return <>{loading && <Loader />}</>;
+  return <>{loading && <Loader message={status} />}</>;
 }
 
 export function useStatus() {
@@ -22,10 +24,17 @@ export function useStatus() {
 
   useEffect(() => {
     if (viewer) {
-      const subscription = viewer.loader.$status.subscribe(setState);
+      const subscription = viewer.loader.$status.subscribe((e) => {
+        console.log("status changed, this from subscription", e);
+        setState(e.toString());
+      });
       return () => subscription.unsubscribe();
     }
   }, [viewer]);
+
+  useEffect(() => {
+    console.log("this from useEfffect", state);
+  }, [state]);
 
   return state;
 }
