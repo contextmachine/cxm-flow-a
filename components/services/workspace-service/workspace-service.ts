@@ -249,7 +249,16 @@ class WorkspaceService {
       __typename: "appv3_collection",
     };
 
-    return [defaultCollection, ...collections];
+    // we need to sort collection in that way, that trash is always in the end
+    const sortedCollections = [...collections]?.sort((a, b) => {
+      console.log(a, b);
+
+      if (a?.tmp_type === "Trash") return 1;
+      if (b?.tmp_type === "Trash") return -1;
+      return 0;
+    });
+
+    return [defaultCollection, ...sortedCollections];
   }
 
   public updateWorkspaces() {
@@ -579,6 +588,20 @@ class WorkspaceService {
     }
   }
 
+  public async moveWorkspaceToTrash(workspaceId: number) {
+    const trashCollection = this._collections$.value.find(
+      (c) => c.tmp_type === "Trash"
+    );
+
+    if (!trashCollection) {
+      this.$setError("Trash collection not found.");
+      console.error("Trash collection not found.");
+      return;
+    }
+
+    await this.moveWorkspaceToCollection(workspaceId, trashCollection.id);
+  }
+
   public async deleteWorkspace(id?: number) {
     const workspaceId = typeof id === "number" ? id : this._activeWorkspace?.id;
 
@@ -589,6 +612,10 @@ class WorkspaceService {
         }
 
         delete_appv3_user_workspace(where: { workspace_id: { _eq: $id } }) {
+          affected_rows
+        }
+
+        delete_appv3_toolset(where: { workspace_id: { _eq: $id } }) {
           affected_rows
         }
 
