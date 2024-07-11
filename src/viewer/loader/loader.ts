@@ -17,17 +17,18 @@ THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
-export type LoaderStatus = "loading" | "idle";
+export type LoaderState = "compute" | "loading" | "idle";
+
 export type StatusHistoryEntry = {
-  status: LoaderStatus;
+  status: LoaderState;
   service: string;
 };
 
 class Loader {
   private _subscriptions: RX.Unsubscribable[] = [];
 
-  private _status: LoaderStatus = "idle";
-  private _statusSubject = new RX.Subject<LoaderStatus>();
+  private _status: LoaderState = "idle";
+  private _statusSubject = new RX.Subject<LoaderState>();
 
   private _queries: Set<ApiObject> = new Set();
   private _queriesSubject = new RX.Subject<ApiObject[]>();
@@ -44,25 +45,26 @@ class Loader {
     );
   }
 
-  private setStatus(status: LoaderStatus) {
+  private setStatus(status: LoaderState) {
+    // this._viewer.setStatus(status);
     this._status = status;
     this._statusSubject.next(status);
   }
 
-  public get status(): LoaderStatus {
+  public get status(): LoaderState {
     return this._status;
   }
 
-  public get $status(): RX.Observable<LoaderStatus> {
+  public get $status(): RX.Observable<LoaderState> {
     return this._statusSubject;
-  }
-
-  public get queries(): Set<ApiObject> {
-    return this._queries;
   }
 
   public get $queries(): RX.Observable<ApiObject[]> {
     return this._queriesSubject;
+  }
+
+  public get queries() {
+    return this._queries;
   }
 
   private updateApiObjects() {
@@ -130,6 +132,10 @@ class Loader {
     }
   }
 
+  public setLoaderStatus(status: LoaderState) {
+    this.setStatus(status);
+  }
+
   public async loadApiObject(
     apiObject: ApiObject,
     options?: { useData?: any }
@@ -161,10 +167,6 @@ class Loader {
     this._viewer.entityControl.addModel(model);
 
     return model;
-  }
-
-  public get queries() {
-    return this._queries;
   }
 
   public dispose() {
