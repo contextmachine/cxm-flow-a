@@ -74,8 +74,6 @@ export class ProjectModel {
     const modelObjects: THREE.Object3D[] = [];
     let entity: Entity;
 
-    // this._viewer.setStatus("compute");
-
     try {
       const unionMesh = new UnionMesh(object, this);
       unionMesh.objects.forEach((x) => modelObjects.push(x));

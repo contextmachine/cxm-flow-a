@@ -39,7 +39,7 @@ export class Mesh implements Entity {
 
   private _props: ProjectObjectProps | undefined;
 
-  private _meshType: MeshType;
+  // private _meshType: MeshType;
 
   private _defaultMaterial: THREE.Material = meshDefaultMaterial;
   private _overrideMaterial: THREE.Material | undefined;
@@ -50,9 +50,9 @@ export class Mesh implements Entity {
     this._object3d = object;
     this._parent = parent;
 
-    this._meshType = model.unionMesh?.entitiesScope.has(this._id)
-      ? "bvhFragment"
-      : "common";
+    // this._meshType = model.unionMesh?.entitiesScope.has(this._id)
+    // ? "bvhFragment"
+    // : "common";
 
     this._name = object.name;
 
@@ -189,7 +189,9 @@ export class Mesh implements Entity {
   }
 
   private updateMeshMaterial() {
-    const visible = this._visibility && this._parent?.visibility;
+    const parentVisibilty =
+      this._parent === undefined || (this._parent && this._parent.visibility);
+    const visible = this._visibility && parentVisibilty;
 
     let newMaterial: THREE.Material;
 

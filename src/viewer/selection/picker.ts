@@ -147,7 +147,6 @@ class Picker {
       // сортируем пересечения по дистанции, и выбираем объект из тех, что находятся на текущем уровне
       intersections.sort((a, b) => a.distance - b.distance);
       const meshUuid = intersections[0].uuid;
-
       const entity = this.findObjectOnCurrentLevel(meshUuid);
 
       return entity;

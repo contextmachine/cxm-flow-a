@@ -55,10 +55,10 @@ class UnionMesh {
   ) {
     const index = this._indiciesMap.get(entityId);
 
-    if (index) {
+    if (index !== undefined) {
       // const mat = this._testMaterials[index];
-
       // (this._unionMesh.material as THREE.Material[])[index] = mat;
+
       (this._unionMesh.material as THREE.Material[])[index] = meshMaterial;
     }
   }
