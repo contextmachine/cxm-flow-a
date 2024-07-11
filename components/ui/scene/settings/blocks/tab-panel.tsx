@@ -23,7 +23,16 @@ const TabPanel: React.FC<TabPanelProps> = ({
       }}
       {...other}
     >
-      {value === index && <Box>{children}</Box>}
+      {value === index && (
+        <Box
+          sx={{
+            display: "flex",
+            minHeight: "100%",
+          }}
+        >
+          {children}
+        </Box>
+      )}
     </div>
   );
 };

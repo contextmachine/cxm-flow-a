@@ -44,7 +44,6 @@ class ToolsetService {
     const workspaceId = this._sceneService.sceneMetadata!.workspace_id;
     const sceneId = this._sceneService.sceneMetadata!.id;
 
-    // Load the scene using the sceneId
     const query = gql`
       query getUserToolsets($userId: Int!, $workspaceId: Int!, $sceneId: Int!) {
         appv3_toolset(

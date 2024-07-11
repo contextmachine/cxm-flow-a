@@ -5,9 +5,12 @@ import MarkedIcon from "../../icons/marked-icon";
 import { WidgetHeader } from "../styles/styles";
 import React from "react";
 import TeamMembers from "../../scene/team-members/team-membets";
+import SettingsModal from "../../scene/settings/settings";
 
 const RightBar = () => {
   const { workspaceService } = useWorkspace();
+
+  const [settingsOpened, setSettingsOpened] = React.useState(false);
 
   return (
     <>
@@ -63,7 +66,23 @@ const RightBar = () => {
         </WidgetHeader>
 
         <TeamMembers mini={true} />
+
+        <Button
+          variant="contained"
+          color="primary"
+          security="large"
+          onClick={() => setSettingsOpened(true)}
+          fullWidth
+        >
+          Invite user
+        </Button>
       </Paper>
+
+      <SettingsModal
+        open={settingsOpened}
+        onClose={() => setSettingsOpened(false)}
+        sections={["Access"]}
+      />
     </>
   );
 };
