@@ -1,17 +1,16 @@
-import { useEffect, useState } from "react";
 import { useWorkspace } from "@/components/services/workspace-service/workspace-provider";
-import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
-import { TreeViewBaseItem } from "@mui/x-tree-view/models";
-import stc from "string-to-color";
-import { IconBullet } from "../../left-bar";
 import styled from "styled-components";
-import { Box, Button } from "@mui/material";
-import { MinifiedWorkspaceDto } from "@/components/services/workspace-service/workspace-service.types";
+import { Box } from "@mui/material";
+import {
+  CollectionDto,
+  MinifiedWorkspaceDto,
+} from "@/components/services/workspace-service/workspace-service.types";
 import WorkspaceItem from "../workspace-item/workspace-item";
 
 const WorkspacesList: React.FC<{
+  collection: CollectionDto;
   workspaces: MinifiedWorkspaceDto[];
-}> = ({ workspaces }) => {
+}> = ({ workspaces, collection }) => {
   const { activeWorkspace, workspaceService, collections } = useWorkspace();
 
   return (
@@ -20,6 +19,7 @@ const WorkspacesList: React.FC<{
         <Box sx={{ width: "100%" }} key={i}>
           <WorkspaceItem
             item={item}
+            parentCollection={collection}
             activeWorkspace={activeWorkspace}
             workspaceService={workspaceService}
             collections={collections}

@@ -54,6 +54,8 @@ const CollectionItem: React.FC<{
   const open = Boolean(anchorEl);
   const id = open ? `actions-w-${collection.id}` : undefined;
 
+  const isTrash = collection.tmp_type === "Trash";
+
   return (
     <>
       <BoxWrapper
@@ -75,45 +77,47 @@ const CollectionItem: React.FC<{
           <Typography>{collection.name}</Typography>
         </Box>
 
-        <Box
-          sx={{
-            display: "flex",
-            gap: "4px",
-          }}
-          data-type="actions"
-        >
-          <Button
-            onClick={() => workspaceService.addWorkspace(collection.id)}
-            variant="contained"
-            color="primary"
-            size="small"
+        {!isTrash && (
+          <Box
             sx={{
-              minWidth: "24px",
-              minHeight: "24px",
-              borderRadius: "50%",
-              padding: "0",
-              fontSize: "12px",
+              display: "flex",
+              gap: "4px",
             }}
+            data-type="actions"
           >
-            +
-          </Button>
+            <Button
+              onClick={() => workspaceService.addWorkspace(collection.id)}
+              variant="contained"
+              color="primary"
+              size="small"
+              sx={{
+                minWidth: "24px",
+                minHeight: "24px",
+                borderRadius: "50%",
+                padding: "0",
+                fontSize: "12px",
+              }}
+            >
+              +
+            </Button>
 
-          <Button
-            onClick={handleClick}
-            variant="contained"
-            color="primary"
-            size="small"
-            sx={{
-              minWidth: "24px",
-              minHeight: "24px",
-              borderRadius: "50%",
-              padding: "0",
-              fontSize: "12px",
-            }}
-          >
-            ...
-          </Button>
-        </Box>
+            <Button
+              onClick={handleClick}
+              variant="contained"
+              color="primary"
+              size="small"
+              sx={{
+                minWidth: "24px",
+                minHeight: "24px",
+                borderRadius: "50%",
+                padding: "0",
+                fontSize: "12px",
+              }}
+            >
+              ...
+            </Button>
+          </Box>
+        )}
       </BoxWrapper>
 
       <Popover
