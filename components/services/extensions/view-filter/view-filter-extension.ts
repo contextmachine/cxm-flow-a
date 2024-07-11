@@ -331,7 +331,9 @@ function filterEntity(entity: Entity, filterItem: FilterItem): boolean {
         case "EQUAL":
           return values.includes(entityValue);
         case "NOT_EQUAL":
-          return values.every((x) => x !== entityValue);
+          return values.every(
+            (x) => entityValue !== undefined && x !== entityValue
+          );
         default:
           return false;
       }
