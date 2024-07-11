@@ -5,6 +5,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import styled from "styled-components";
 import { useAuth } from "@/components/services/auth-service/auth-provider";
 import stc from "string-to-color";
+import UserSettings from "./user-settings/user-settings";
 
 const UserProfile = () => {
   const { authService, userMetadata } = useAuth();
@@ -24,48 +25,64 @@ const UserProfile = () => {
     authService.signOut();
   };
 
+  const [openSettings, setOpenSettings] = useState(false);
+
   if (!userMetadata) return null;
 
   return (
-    <Paper
-      sx={{
-        backgroundColor: "transparent",
-        paddingLeft: "0px !important",
-        paddingRight: "0px !important",
-      }}
-    >
-      <Box
+    <>
+      <Paper
         sx={{
-          display: "flex",
-          gap: "9px",
-          alignItems: "center",
-          cursor: "pointer",
-          overflow: "hidden",
-        }}
-        onClick={handleClick}
-      >
-        <AvatarCss color={stc(userMetadata.username)} />
-        <TitleWrapper>
-          <Title size="large">{userMetadata.username}</Title>
-        </TitleWrapper>
-        <ArrowIcon>
-          <ArrowDropDownIcon sx={{ fontSize: 16 }} />
-        </ArrowIcon>
-      </Box>
-      <Menu
-        id="user-profile-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        MenuListProps={{
-          "aria-labelledby": "basic-button",
+          backgroundColor: "transparent !important",
+          paddingLeft: "0px !important",
+          paddingRight: "0px !important",
         }}
       >
-        <MenuItem sx={{ minWidth: "215px" }} onClick={handleSignOut}>
-          Sign Out
-        </MenuItem>
-      </Menu>
-    </Paper>
+        <Box
+          sx={{
+            display: "flex",
+            gap: "9px",
+            alignItems: "center",
+            cursor: "pointer",
+            overflow: "hidden",
+          }}
+          onClick={handleClick}
+        >
+          <AvatarCss color={stc(userMetadata.username)} />
+          <TitleWrapper>
+            <Title size="large">{userMetadata.username}</Title>
+          </TitleWrapper>
+          <ArrowIcon>
+            <ArrowDropDownIcon sx={{ fontSize: 16 }} />
+          </ArrowIcon>
+        </Box>
+        <Menu
+          id="user-profile-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          MenuListProps={{
+            "aria-labelledby": "basic-button",
+          }}
+        >
+          <MenuItem
+            sx={{ minWidth: "215px" }}
+            onClick={() => setOpenSettings(true)}
+          >
+            Settings
+          </MenuItem>
+
+          <MenuItem sx={{ minWidth: "215px" }} onClick={handleSignOut}>
+            Sign Out
+          </MenuItem>
+        </Menu>
+      </Paper>
+
+      <UserSettings
+        open={openSettings}
+        onClose={() => setOpenSettings(false)}
+      />
+    </>
   );
 };
 

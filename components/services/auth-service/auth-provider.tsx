@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import AuthService from "./auth-service";
-import { FeatureType, UserMetadataResponse } from "./auth-service.types";
+import { FeatureType, Theme, UserMetadataResponse } from "./auth-service.types";
 import { useRouter } from "next/router";
 import Loader from "@/components/ui/auth/loader/loader";
 import { Snackbar } from "@mui/material";
@@ -9,6 +9,7 @@ import GlobalStyle from "@/components/ui/app.styled";
 interface AuthProviderProps {
   authService: AuthService;
   userMetadata: UserMetadataResponse;
+  themes: Map<string, Theme>;
 }
 
 const AuthContext = createContext<AuthProviderProps | null>(null);
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: any) {
     new Map()
   );
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [themes, setThemes] = useState<Map<string, Theme>>(new Map());
 
   const [error, setError] = useState<string>("");
 
@@ -41,10 +43,19 @@ export function AuthProvider({ children }: any) {
   useEffect(() => {
     if (!authService) return;
 
-    authService.featureMap$.subscribe((map) => {
+    const fm = authService.featureMap$.subscribe((map) => {
       setFeatureMap(map);
       setIsDarkMode(map.get("isDarkMode") || false);
     });
+
+    const tm = authService.themes$.subscribe((themes) => {
+      setThemes(themes);
+    });
+
+    return () => {
+      fm.unsubscribe();
+      tm.unsubscribe();
+    };
   }, [authService]);
 
   const isAuthPage =
@@ -72,6 +83,7 @@ export function AuthProvider({ children }: any) {
       value={{
         authService,
         userMetadata,
+        themes,
       }}
     >
       {/* {(loading ||

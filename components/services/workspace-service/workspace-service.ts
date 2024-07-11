@@ -95,6 +95,7 @@ class WorkspaceService {
                 name
                 tmp_type
                 collection_workspaces {
+                  workspace_id
                   workspace {
                     id
                     name
@@ -231,7 +232,9 @@ class WorkspaceService {
 
     const restWorkspaces = Array.from(workspaces.keys()).filter((id) => {
       return !collections.some((c) => {
-        return c.collection_workspaces.some((cw) => cw.workspace.id === id);
+        return c.collection_workspaces.some((cw) => {
+          return cw.workspace.id === id;
+        });
       });
     });
 
@@ -246,7 +249,16 @@ class WorkspaceService {
       __typename: "appv3_collection",
     };
 
-    return [defaultCollection, ...collections];
+    // we need to sort collection in that way, that trash is always in the end
+    const sortedCollections = [...collections]?.sort((a, b) => {
+      console.log(a, b);
+
+      if (a?.tmp_type === "Trash") return 1;
+      if (b?.tmp_type === "Trash") return -1;
+      return 0;
+    });
+
+    return [defaultCollection, ...sortedCollections];
   }
 
   public updateWorkspaces() {
@@ -337,6 +349,61 @@ class WorkspaceService {
         mutation,
         variables: {
           collection_id: collectionId,
+        },
+      });
+
+      this.fetchWorkspaces();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  public async deleteScene(sceneId: number) {
+    const mutation = gql`
+      mutation DeleteScene($id: Int!) {
+        delete_appv3_toolset(where: { scene_id: { _eq: $id } }) {
+          affected_rows
+        }
+
+        delete_appv3_scene(where: { id: { _eq: $id } }) {
+          affected_rows
+        }
+      }
+    `;
+
+    try {
+      const data = await client.mutate({
+        mutation,
+        variables: {
+          id: sceneId,
+        },
+      });
+
+      this.fetchWorkspaces();
+
+      this.$setError("Scene deleted successfully.");
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  public async moveSceneToWorkspace(sceneId: number, workspaceId: number) {
+    const mutation = gql`
+      mutation MoveSceneToWorkspace($id: Int!, $workspace_id: Int!) {
+        update_appv3_scene_by_pk(
+          pk_columns: { id: $id }
+          _set: { workspace_id: $workspace_id }
+        ) {
+          id
+        }
+      }
+    `;
+    try {
+      const data = await client.mutate({
+        mutation,
+        variables: {
+          id: sceneId,
+          workspace_id: workspaceId,
         },
       });
 
@@ -521,6 +588,20 @@ class WorkspaceService {
     }
   }
 
+  public async moveWorkspaceToTrash(workspaceId: number) {
+    const trashCollection = this._collections$.value.find(
+      (c) => c.tmp_type === "Trash"
+    );
+
+    if (!trashCollection) {
+      this.$setError("Trash collection not found.");
+      console.error("Trash collection not found.");
+      return;
+    }
+
+    await this.moveWorkspaceToCollection(workspaceId, trashCollection.id);
+  }
+
   public async deleteWorkspace(id?: number) {
     const workspaceId = typeof id === "number" ? id : this._activeWorkspace?.id;
 
@@ -534,8 +615,22 @@ class WorkspaceService {
           affected_rows
         }
 
+        delete_appv3_toolset(where: { workspace_id: { _eq: $id } }) {
+          affected_rows
+        }
+
         delete_appv3_scene(where: { workspace_id: { _eq: $id } }) {
           affected_rows
+        }
+
+        delete_appv3_collection_workspace(
+          where: { workspace_id: { _eq: $id } }
+        ) {
+          affected_rows
+        }
+
+        delete_appv3_workspace_by_pk(id: $id) {
+          id
         }
       }
     `;

@@ -14,18 +14,17 @@ const RightBar = () => {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "1fr",
           columnGap: "9px",
         }}
       >
-        <Button variant="contained" color="secondary" size="large">
-          Import
-        </Button>
-
         <Button
           variant="contained"
           color="primary"
           size="large"
+          sx={{
+            width: "100%",
+          }}
           onClick={workspaceService.addScene}
         >
           New scene
@@ -63,7 +62,7 @@ const RightBar = () => {
           <Title style={{ fontWeight: "500" }}>Workspace Users</Title>
         </WidgetHeader>
 
-        <TeamMembers />
+        <TeamMembers mini={true} />
       </Paper>
     </>
   );
