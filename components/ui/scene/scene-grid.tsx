@@ -2,12 +2,9 @@ import styled from "styled-components";
 import Bar from "./bar/bar";
 import ToolsPanel from "./tools-panel/tools-panel";
 import BarUser from "./bar-users/bar-user";
-import dynamic from "next/dynamic";
 import WidgetPanelGrid from "./widgets-panel/widget-panel-grid";
 import { useAuth } from "@/components/services/auth-service/auth-provider";
 import { Box } from "@mui/material";
-import OptionsPanel from "./options-panel/options-panel";
-import { useRef } from "react";
 
 const SceneGrid = () => {
   const { authService } = useAuth();
