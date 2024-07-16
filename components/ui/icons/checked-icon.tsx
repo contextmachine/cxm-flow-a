@@ -10,8 +10,8 @@ const CheckedIcon = () => {
       <path
         d="M9.18976 5L5.91683 8.273C5.62396 8.56588 5.14906 8.56588 4.85618 8.273L3 6.41683"
         stroke="#2689FF"
-        stroke-width="1.25"
-        stroke-linecap="round"
+        strokeWidth="1.25"
+        strokeLinecap="round"
       />
     </svg>
   );

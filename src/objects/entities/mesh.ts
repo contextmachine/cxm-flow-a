@@ -139,6 +139,8 @@ export class Mesh implements Entity {
     if (mesh.material) {
       const material = mesh.material;
 
+      // console.log(material);
+
       if (material instanceof THREE.MeshStandardMaterial) {
         material.flatShading = true;
       }
@@ -189,7 +191,10 @@ export class Mesh implements Entity {
   }
 
   private updateMeshMaterial() {
-    const visible = this._visibility && this._parent?.visibility;
+    const parentExist = this._parent !== undefined;
+    const parentVisible = !parentExist || this._parent?.visibility;
+
+    const visible = this._visibility && parentVisible;
 
     let newMaterial: THREE.Material;
 
@@ -203,6 +208,10 @@ export class Mesh implements Entity {
       newMaterial = this._overrideMaterial;
     } else {
       newMaterial = this._defaultMaterial;
+    }
+
+    if (this.name === "mesh_62") {
+      console.log(newMaterial);
     }
 
     this.setMeshMaterial(newMaterial);

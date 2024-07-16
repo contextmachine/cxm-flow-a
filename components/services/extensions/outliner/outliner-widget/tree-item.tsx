@@ -50,12 +50,12 @@ const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
       <TreeItemWrapper key={item.entity.id}>
         <LineWrapper
           ref={itemRef}
-          selected={selected}
+          $selected={selected}
           onClick={(e) => onItemClick(e)}
         >
           {item.entity.children && item.entity.children.length > 0 && (
             <ExpandButton
-              expanded={expanded}
+              $expanded={expanded}
               onClick={(e) => {
                 item.expanded = !expanded;
                 setExpanded(!expanded);
@@ -66,8 +66,8 @@ const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
             </ExpandButton>
           )}
           <EntityIcon
-            count={item.children?.length}
-            isGroupActive={isGroupActive}
+            $count={item.children?.length}
+            $isGroupActive={isGroupActive}
           >
             {entityIcon(item.entity)}
             {item.children?.length}
@@ -106,7 +106,7 @@ const TreeItemWrapper = styled.div`
   justify-content: center;
 `;
 
-const LineWrapper = styled.li<{ selected: boolean }>`
+const LineWrapper = styled.li<{ $selected: boolean }>`
   display: flex;
   flex-direction: row;
   margin-top: 3px;
@@ -115,29 +115,30 @@ const LineWrapper = styled.li<{ selected: boolean }>`
   height: 21px;
   border-radius: 9px;
   cursor: pointer;
-  background-color: ${({ selected }) => (selected ? "#bce1ff" : "transparent")};
+  background-color: ${({ $selected }) =>
+    $selected ? "#bce1ff" : "transparent"};
 
   &:hover {
-    background-color: ${({ selected }) => (selected ? "#abd9fe" : "#f3f3f3")};
+    background-color: ${({ $selected }) => ($selected ? "#abd9fe" : "#f3f3f3")};
   }
 `;
 
-const ExpandButton = styled.button<{ expanded: boolean }>`
+const ExpandButton = styled.button<{ $expanded: boolean }>`
   background-color: transparent;
   width: 15px;
   border: 0px;
   cursor: pointer;
-  transform: ${({ expanded }) => (expanded ? "rotate(90deg)" : "none")};
+  transform: ${({ $expanded }) => ($expanded ? "rotate(90deg)" : "none")};
   transition: transform 0.2s ease;
 `;
 
 const EntityIcon = styled.div<{
-  count: number | undefined;
-  isGroupActive: boolean;
+  $count: number | undefined;
+  $isGroupActive: boolean;
 }>`
-  background-color: ${({ count, isGroupActive }) =>
-    count !== undefined
-      ? isGroupActive
+  background-color: ${({ $count, $isGroupActive }) =>
+    $count !== undefined
+      ? $isGroupActive
         ? "#fec779"
         : "#f3f3f3"
       : "transparent"};

@@ -58,7 +58,7 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
         />
         <FilterButton
           onClick={() => onEnable()}
-          isActive={preset !== undefined && preset.enabled}
+          $isActive={preset !== undefined && preset.enabled}
         ></FilterButton>
       </WidgetPaper>
     );
@@ -67,16 +67,16 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
 
 export default ViewFilterWidget;
 
-const FilterButton = styled.button<{ isActive: boolean }>`
+const FilterButton = styled.button<{ $isActive: boolean }>`
   width: 100%;
   height: 27px;
-  background-color: ${({ isActive }) => (isActive ? "#237ef9" : "#f3f3f3")};
-  color: ${({ isActive }) => (isActive ? "white" : "black")};
+  background-color: ${({ $isActive }) => ($isActive ? "#237ef9" : "#f3f3f3")};
+  color: ${({ $isActive }) => ($isActive ? "white" : "black")};
   border: 0px;
   border-radius: 9px;
 
   &::after {
-    content: ${({ isActive }) => (isActive ? `"Enabled"` : `"Enable"`)};
+    content: ${({ $isActive }) => ($isActive ? `"Enabled"` : `"Enable"`)};
   }
 `;
 

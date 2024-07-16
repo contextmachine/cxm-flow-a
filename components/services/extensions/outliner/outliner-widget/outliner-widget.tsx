@@ -19,7 +19,7 @@ const OutlinerWidget: React.FC<OutlinerWidgetProps> = ({
     <WidgetPaper isPreview={isPreview} title={"Outliner"}>
       <TreeContainer>
         {tree.map((x) => (
-          <TreeItem item={x} extension={extension} />
+          <TreeItem item={x} extension={extension} key={x.entity.id} />
         ))}
       </TreeContainer>
     </WidgetPaper>

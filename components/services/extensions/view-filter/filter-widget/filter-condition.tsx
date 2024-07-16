@@ -44,9 +44,9 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
 
   return (
     <FilterConditionWrapper
-      color={pallete[index % pallete.length]}
-      paramsEnabled={true}
-      paramsOpen={paramsOpen}
+      $color={pallete[index % pallete.length]}
+      $paramsEnabled={true}
+      $paramsOpen={paramsOpen}
     >
       <div className="first-line">
         <div className="label">
@@ -68,7 +68,7 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
           >
             <ParamsIcon />
           </button>
-          <EnableButton enabled={filterItem.enabled}>
+          <EnableButton $enabled={filterItem.enabled}>
             <button className="enable-button" onClick={() => onEnable()}>
               {!filterItem.enabled && <PlusIcon />}
               {filterItem.enabled && <CheckedIcon />}
@@ -106,7 +106,7 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
 
 export default FilterConditionComponent;
 
-const EnableButton = styled.div<{ enabled: boolean }>`
+const EnableButton = styled.div<{ $enabled: boolean }>`
   button {
     border: 0px;
     display: flex;
@@ -117,18 +117,18 @@ const EnableButton = styled.div<{ enabled: boolean }>`
     padding: 5px;
     align-items: center;
     gap: 5px;
-    color: ${({ enabled }) => (enabled ? "#2689FF" : "black")};
+    color: ${({ $enabled }) => ($enabled ? "#2689FF" : "black")};
 
     &:after {
-      content: ${({ enabled }) => (enabled ? `"Enabled"` : `"Enable"`)};
+      content: ${({ $enabled }) => ($enabled ? `"Enabled"` : `"Enable"`)};
     }
   }
 `;
 
 const FilterConditionWrapper = styled.div<{
-  color: string;
-  paramsEnabled: boolean;
-  paramsOpen: boolean;
+  $color: string;
+  $paramsEnabled: boolean;
+  $paramsOpen: boolean;
 }>`
   display: flex;
   justify-content: start;
@@ -137,8 +137,8 @@ const FilterConditionWrapper = styled.div<{
   gap: 5px;
   border-radius: 9px;
   padding: 3px;
-  background-color: ${({ paramsOpen }) =>
-    paramsOpen ? "#f3f3f3" : "transparent"};
+  background-color: ${({ $paramsOpen }) =>
+    $paramsOpen ? "#f3f3f3" : "transparent"};
 
   button {
     cursor: pointer;
@@ -164,7 +164,7 @@ const FilterConditionWrapper = styled.div<{
         margin-right: 2px;
 
         .marker-tag {
-          background: ${({ color }) => color};
+          background: ${({ $color }) => $color};
           border-radius: 3px;
           height: 6px;
           width: 6px;
@@ -174,7 +174,7 @@ const FilterConditionWrapper = styled.div<{
   }
 
   .second-line {
-    display: ${({ paramsOpen }) => (paramsOpen ? "flex" : "none")};
+    display: ${({ $paramsOpen }) => ($paramsOpen ? "flex" : "none")};
     flex-direction: row;
   }
 
@@ -200,7 +200,8 @@ const FilterConditionWrapper = styled.div<{
     justify-content: center;
     align-items: center;
     svg path {
-      stroke: ${({ paramsEnabled }) => (paramsEnabled ? "#2689FF" : "#333333")};
+      stroke: ${({ $paramsEnabled }) =>
+        $paramsEnabled ? "#2689FF" : "#333333"};
     }
   }
 

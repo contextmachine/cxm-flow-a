@@ -74,7 +74,24 @@ export class ProjectModel {
     const modelObjects: THREE.Object3D[] = [];
     let entity: Entity;
 
-    // this._viewer.setStatus("compute");
+    // const bufferGeometries = new Map();
+
+    // object.traverse((x) => {
+    //   if (x instanceof THREE.Mesh) {
+    //     if (x.geometry) {
+    //       console.log("mesh with geom");
+
+    //       const buffer = x.geometry;
+    //       bufferGeometries.set(buffer.uuid, buffer);
+    //     }
+    //   }
+    // });
+
+    // console.log("geometries", bufferGeometries);
+
+    const timerLabel = `init union mesh ${object.name}}`;
+
+    console.time(timerLabel);
 
     try {
       const unionMesh = new UnionMesh(object, this);
@@ -82,6 +99,8 @@ export class ProjectModel {
 
       this._unionMesh = unionMesh;
     } catch (e) {}
+
+    console.timeLog(timerLabel);
 
     console.log(this._unionMesh);
 

@@ -111,7 +111,7 @@ const MultipleValueInput: React.FC<MultipleValueInputProps> = (
   };
 
   return (
-    <SelectWithSearchWrapper isExclude={operator === "NOT_EQUAL"}>
+    <SelectWithSearchWrapper $isExclude={operator === "NOT_EQUAL"}>
       <DropdownContainer ref={dropDownRef}>
         <div className="input-field">
           {values.map((x, i) => (
@@ -139,8 +139,8 @@ const MultipleValueInput: React.FC<MultipleValueInputProps> = (
               <DropdownItem
                 key={index}
                 onClick={() => onClick(option)}
-                isAdded={values.includes(option)}
-                isExclude={operator === "NOT_EQUAL"}
+                $isAdded={values.includes(option)}
+                $isExclude={operator === "NOT_EQUAL"}
               >
                 {values.includes(option) && operator === "NOT_EQUAL" && (
                   <DeleteIcon />
@@ -161,7 +161,7 @@ const MultipleValueInput: React.FC<MultipleValueInputProps> = (
 
 export default MultipleValueInput;
 
-const SelectWithSearchWrapper = styled.div<{ isExclude: boolean }>`
+const SelectWithSearchWrapper = styled.div<{ $isExclude: boolean }>`
   width: 100%;
   font-size: 12px;
   display: flex;
@@ -184,7 +184,7 @@ const SelectWithSearchWrapper = styled.div<{ isExclude: boolean }>`
       background-color: #e0e0e0;
       border-radius: 6px;
       padding: 2px;
-      color: ${({ isExclude }) => (isExclude ? "red" : "#2689FF")};
+      color: ${({ $isExclude }) => ($isExclude ? "red" : "#2689FF")};
 
       .delete-tag-button {
         border: 0px;
@@ -248,15 +248,15 @@ const DropdownList = styled.ul`
   overflow: auto;
 `;
 
-const DropdownItem = styled.li<{ isAdded: boolean; isExclude: boolean }>`
+const DropdownItem = styled.li<{ $isAdded: boolean; $isExclude: boolean }>`
   padding: 10px;
   margin: 2px;
   border-radius: 7px;
   display: flex;
   gap: 7px;
   align-items: center;
-  color: ${({ isAdded, isExclude }) =>
-    isAdded ? (isExclude ? "red" : "#2689FF") : "black"};
+  color: ${({ $isAdded, $isExclude }) =>
+    $isAdded ? ($isExclude ? "red" : "#2689FF") : "black"};
 
   cursor: pointer;
 
