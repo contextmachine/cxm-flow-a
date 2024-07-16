@@ -56,6 +56,7 @@ class UnionMesh {
     if (index !== undefined) {
       (this._unionMesh.material as THREE.Material[])[index] = meshMaterial;
     }
+    this._model.viewer.updateViewer();
   }
 
   public setLineMaterialToFragment(

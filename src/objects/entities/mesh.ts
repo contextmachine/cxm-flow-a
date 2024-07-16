@@ -11,6 +11,7 @@ import {
   lineDisabledMaterial,
 } from "../materials/object-materials";
 import { Group } from "./group";
+import { escape } from "lodash";
 
 type MeshType = "bvhFragment" | "common";
 
@@ -30,7 +31,8 @@ export class Mesh implements Entity {
 
   private _visibility = true;
   private _bboxVisibility = false;
-  private _linesVisibility = false;
+  private _linesVisibility = true;
+  private _parentVisible = true;
 
   private _selectable = true;
   private _selected = false;
@@ -117,6 +119,10 @@ export class Mesh implements Entity {
     return this._selectable;
   }
 
+  public setParentVisible(visible: boolean) {
+    this._parentVisible = visible;
+  }
+
   public setMeshGroup(meshGroup: Group) {
     this._parent = meshGroup;
   }
@@ -138,8 +144,6 @@ export class Mesh implements Entity {
 
     if (mesh.material) {
       const material = mesh.material;
-
-      // console.log(material);
 
       if (material instanceof THREE.MeshStandardMaterial) {
         material.flatShading = true;
@@ -191,10 +195,8 @@ export class Mesh implements Entity {
   }
 
   private updateMeshMaterial() {
-    const parentExist = this._parent !== undefined;
-    const parentVisible = !parentExist || this._parent?.visibility;
-
-    const visible = this._visibility && parentVisible;
+    const visible = this._visibility && this._parentVisible;
+    const selected = this._selected || this._parentSelected;
 
     let newMaterial: THREE.Material;
 
@@ -202,16 +204,12 @@ export class Mesh implements Entity {
       newMaterial = transparentMaterial;
     } else if (this._disable) {
       newMaterial = transparentMaterial;
-    } else if (this._selected || this._parentSelected) {
+    } else if (selected) {
       newMaterial = selectedMaterial;
     } else if (this._overrideMaterial) {
       newMaterial = this._overrideMaterial;
     } else {
       newMaterial = this._defaultMaterial;
-    }
-
-    if (this.name === "mesh_62") {
-      console.log(newMaterial);
     }
 
     this.setMeshMaterial(newMaterial);
@@ -220,11 +218,15 @@ export class Mesh implements Entity {
   private updateLineMaterial(material?: THREE.LineBasicMaterial) {
     let newMaterial: THREE.Material;
 
-    if (!this._visibility && !this._linesVisibility) {
+    const visible =
+      this._visibility && this._linesVisibility && this._parentVisible;
+    const selected = this._selected || this._parentSelected;
+
+    if (!visible && !selected) {
       newMaterial = transparentMaterial;
     } else if (this._disable) {
       newMaterial = lineDisabledMaterial;
-    } else if (this._selected || this._parentSelected) {
+    } else if (selected) {
       newMaterial = lineSelectedMaterial;
     } else {
       newMaterial = lineDefaultMaterial;
@@ -233,23 +235,14 @@ export class Mesh implements Entity {
     this.setLineMaterial(newMaterial);
   }
 
-  public updateMaterial(
-    material?: THREE.Material,
-    linesMaterial?: THREE.LineBasicMaterial
-  ) {
+  public updateMaterial(material?: THREE.Material) {
     if (material) {
       this._overrideMaterial = material;
     } else {
       this._overrideMaterial = undefined;
     }
 
-    this.updateMeshMaterial();
-    this.updateLineMaterial(linesMaterial);
-  }
-
-  public clearColor() {
-    this.updateMeshMaterial();
-    this.updateLineMaterial();
+    this.updateMaterials();
   }
 
   private setMeshMaterial(material: THREE.Material) {
@@ -264,47 +257,61 @@ export class Mesh implements Entity {
     }
   }
 
-  public onSelect() {
-    this._selected = true;
+  private updateMaterials() {
+    this._parentVisible = getParentVisibility(this);
 
     this.updateLineMaterial();
     this.updateMeshMaterial();
+  }
+
+  public onSelect() {
+    this._selected = true;
+
+    this.updateMaterials();
   }
 
   public onDeselect() {
     this._selected = false;
 
-    this.updateLineMaterial();
-    this.updateMeshMaterial();
+    this.updateMaterials();
   }
 
   public onParentSelect() {
     this._parentSelected = true;
 
-    this.updateLineMaterial();
-    this.updateMeshMaterial();
+    this.updateMaterials();
   }
 
   public onParentDeselect() {
     this._parentSelected = false;
 
-    this.updateLineMaterial();
-    this.updateMeshMaterial();
+    this.updateMaterials();
   }
 
   public onDisable() {
     this._disable = true;
     this._selectable = false;
 
-    this.updateLineMaterial();
-    this.updateMeshMaterial();
+    this.updateMaterials();
   }
 
   public onEnable() {
     this._disable = false;
     this._selectable = true;
 
-    this.updateLineMaterial();
-    this.updateMeshMaterial();
+    this.updateMaterials();
   }
 }
+
+const getParentVisibility = (enitiy: Entity): boolean => {
+  const parent = enitiy.parent;
+  if (parent) {
+    if (parent.visibility) {
+      return getParentVisibility(parent);
+    } else {
+      return false;
+    }
+  } else {
+    return true;
+  }
+};

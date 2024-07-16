@@ -107,6 +107,10 @@ export class DefaultObject implements Entity {
     return this._meshIdMap;
   }
 
+  public updateMaterial() {
+    return;
+  }
+
   public initBoundingBox() {
     const bbox = new THREE.Box3().expandByObject(this._object3d);
     const size = bbox.getSize(new THREE.Vector3());

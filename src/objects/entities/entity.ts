@@ -32,6 +32,7 @@ export interface Entity {
   setVisibility: (visible: boolean) => void;
   showLineEdges: (show: boolean) => void;
   setBboxVisibilty: (show: boolean) => void;
+  updateMaterial: () => void;
 
   onSelect: () => void;
   onDeselect: () => void;

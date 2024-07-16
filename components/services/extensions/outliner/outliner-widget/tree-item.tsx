@@ -5,6 +5,8 @@ import { Entity } from "@/src/objects/entities/entity";
 import React, { use, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import OutlinerExtension, { OutlinerItem } from "../outliner-extension";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 interface TreeItemProps {
   extension: OutlinerExtension;
@@ -17,27 +19,36 @@ const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
   const [expanded, setExpanded] = useState(item.expanded);
   const [selected, setSelected] = useState(item.selected);
   const [isGroupActive, setGroupActive] = useState(item.isGroupActive);
+  const [visibility, setVisibility] = useState(item.entity.visibility);
+
+  useEffect(() => {
+    item.entity.setVisibility(visibility);
+  }, [visibility]);
 
   const itemRef = useRef(null);
+
+  const scrollToItem = () => {
+    (itemRef.current as any).scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     setSelected(item.selected);
     if (item.selected) {
-      (itemRef.current as any).scrollIntoView({ behavior: "smooth" });
+      scrollToItem();
     }
   }, [item.selected]);
 
   useEffect(() => {
     setExpanded(item.expanded);
     if (item.expanded) {
-      (itemRef.current as any).scrollIntoView({ behavior: "smooth" });
+      scrollToItem();
     }
   }, [item.expanded]);
 
   useEffect(() => {
     setGroupActive(item.isGroupActive);
     if (item.isGroupActive) {
-      (itemRef.current as any).scrollIntoView({ behavior: "smooth" });
+      scrollToItem();
     }
   }, [item.isGroupActive]);
 
@@ -46,13 +57,13 @@ const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
   };
 
   return (
-    <>
-      <TreeItemWrapper key={item.entity.id}>
-        <LineWrapper
-          ref={itemRef}
-          $selected={selected}
-          onClick={(e) => onItemClick(e)}
-        >
+    <TreeItemWrapper key={item.entity.id}>
+      <LineWrapper
+        ref={itemRef}
+        $selected={selected}
+        onClick={(e) => onItemClick(e)}
+      >
+        <LeftContentWrapper>
           {item.entity.children && item.entity.children.length > 0 && (
             <ExpandButton
               $expanded={expanded}
@@ -73,16 +84,25 @@ const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
             {item.children?.length}
           </EntityIcon>
           {item.entity.name}
-        </LineWrapper>
-        {expanded && (
-          <ChildrenContainer>
-            {item.children?.map((x) => (
-              <TreeItem item={x} extension={extension} />
-            ))}
-          </ChildrenContainer>
-        )}
-      </TreeItemWrapper>
-    </>
+        </LeftContentWrapper>
+        <VisibiltyButton
+          onClick={(e) => {
+            e.stopPropagation();
+            setVisibility(!visibility);
+          }}
+        >
+          {visibility && <VisibilityIcon className="visibility-icon" />}
+          {!visibility && <VisibilityOffIcon className="unvisibility-icon" />}
+        </VisibiltyButton>
+      </LineWrapper>
+      {expanded && (
+        <ChildrenContainer>
+          {item.children?.map((x) => (
+            <TreeItem item={x} extension={extension} />
+          ))}
+        </ChildrenContainer>
+      )}
+    </TreeItemWrapper>
   );
 };
 
@@ -99,6 +119,22 @@ const entityIcon = (entity: Entity) => {
   }
 };
 
+const VisibiltyButton = styled.button`
+  background-color: transparent;
+  border: 0px;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  svg {
+    width: 16px;
+  }
+
+  .unvisibility-icon {
+    fill: gray;
+  }
+`;
+
 const TreeItemWrapper = styled.div`
   margin-left: 5px;
   display: block;
@@ -106,9 +142,15 @@ const TreeItemWrapper = styled.div`
   justify-content: center;
 `;
 
+const LeftContentWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
 const LineWrapper = styled.li<{ $selected: boolean }>`
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
   margin-top: 3px;
   margin-bottom: 3px;
   align-items: center;
@@ -120,6 +162,14 @@ const LineWrapper = styled.li<{ $selected: boolean }>`
 
   &:hover {
     background-color: ${({ $selected }) => ($selected ? "#abd9fe" : "#f3f3f3")};
+  }
+
+  .visibility-icon {
+    display: none;
+  }
+
+  &:hover .visibility-icon {
+    display: flex;
   }
 `;
 

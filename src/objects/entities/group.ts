@@ -139,9 +139,14 @@ export class Group implements Entity {
     // this._bbox.applyMatrix4(this._object3d.matrixWorld);
   }
 
+  public updateMaterial() {
+    this.children.forEach((x) => x.updateMaterial());
+  }
+
   public setVisibility(visible: boolean) {
     this._visibility = visible;
     this.updateBbox();
+    this.updateMaterial();
   }
 
   private updateBbox() {
