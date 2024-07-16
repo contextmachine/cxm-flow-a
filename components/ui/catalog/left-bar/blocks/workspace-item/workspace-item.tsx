@@ -75,8 +75,8 @@ const WorkspaceItem: React.FC<{
     }
   };
 
-  const handleConfirmDelete = () => {
-    workspaceService.deleteWorkspace(item.id);
+  const handleConfirmDelete = async () => {
+    await workspaceService.deleteWorkspace(item.id);
     setConfirmDialogOpen(false);
     handleClose();
   };

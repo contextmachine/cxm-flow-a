@@ -18,6 +18,7 @@ import stc from "string-to-color";
 import ShareIcon from "@mui/icons-material/Share";
 import CopyIcon from "@mui/icons-material/FileCopy";
 import SettingsIcon from "@mui/icons-material/Settings";
+import SettingsModal from "../settings/settings";
 
 const TeamMembers: React.FC<{
   mini?: boolean;
@@ -33,134 +34,142 @@ const TeamMembers: React.FC<{
   );
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-      }}
-    >
-      {!mini && (
-        <Box
-          sx={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "20px",
-          }}
-        >
-          <Button
-            type="submit"
-            variant="contained"
-            color="secondary"
-            startIcon={<ShareIcon />}
-            onClick={() => {}}
-          >
-            Share workspace
-          </Button>
-
-          <Button
-            type="submit"
-            variant="contained"
-            color="secondary"
-            startIcon={<CopyIcon />}
-            data-active="true"
-            onClick={() => {}}
-          >
-            Copy link
-          </Button>
-        </Box>
-      )}
-
-      {currentUserRole !== RoleTypes.VIEWER && (
-        <Box
-          sx={{
-            marginBottom: "20px",
-          }}
-        >
-          <InviteForm />
-        </Box>
-      )}
-
+    <>
       <Box
         sx={{
-          marginBottom: "10px",
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
         }}
       >
-        Access settings
-      </Box>
+        {!mini && (
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "20px",
+            }}
+          >
+            <Button
+              type="submit"
+              variant="contained"
+              color="secondary"
+              startIcon={<ShareIcon />}
+              onClick={() => {}}
+            >
+              Share workspace
+            </Button>
 
-      <Box sx={{ color: "#999999" }}>
-        {activeWorkspaceUsers.map(
-          (workspaceUser: WorkspaceUserDto, i: number) => {
-            const isSelf = userMetadata?.id === workspaceUser.user.id;
-
-            return (
-              <Box
-                sx={{
-                  height: "33px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "0px 5px",
-                }}
-                key={i}
-              >
-                <Box sx={{ display: "flex", gap: "9px", alignItems: "center" }}>
-                  <Ava
-                    color={stc(workspaceUser.user.username)}
-                    data-userid={workspaceUser.user.id}
-                    key={i}
-                  />
-
-                  <Box>
-                    {workspaceUser.user.username} {isSelf && <b>(You)</b>}
-                  </Box>
-                </Box>{" "}
-                <UserRole
-                  isSelf={isSelf}
-                  isDisabled={() => {
-                    if (isSelf) {
-                      // Check if there's only one admin in the workspace
-                      const adminCount = activeWorkspaceUsers.filter(
-                        (u) => u.role.id === RoleTypes.ADMIN
-                      ).length;
-
-                      const isCurrentUserTheOnlyAdmin =
-                        adminCount === 1 &&
-                        workspaceUser.role.id === RoleTypes.ADMIN;
-
-                      // Disallow role change if the current user is not an admin
-                      if (currentUserRole !== RoleTypes.ADMIN) return false;
-
-                      // Disallow role change if the current user is the only admin
-                      if (isCurrentUserTheOnlyAdmin) return true;
-                    } else {
-                      // Disallow role change if the current user is not an admin
-                      if (currentUserRole !== RoleTypes.ADMIN) return true;
-                    }
-
-                    return false;
-                  }}
-                  value={workspaceUser.role.id}
-                  onChange={(role_id: number) =>
-                    workspaceService.updateUserRole(
-                      workspaceUser.user.id,
-                      role_id
-                    )
-                  }
-                  onLeave={() =>
-                    workspaceService.removeUserFromWorkspace(
-                      workspaceUser.user.id
-                    )
-                  }
-                />
-              </Box>
-            );
-          }
+            <Button
+              type="submit"
+              variant="contained"
+              color="secondary"
+              startIcon={<CopyIcon />}
+              data-active="true"
+              onClick={() => {}}
+            >
+              Copy link
+            </Button>
+          </Box>
         )}
+
+        {currentUserRole !== RoleTypes.VIEWER && !mini && (
+          <Box
+            sx={{
+              marginBottom: "20px",
+            }}
+          >
+            <InviteForm />
+          </Box>
+        )}
+
+        {!mini && (
+          <Box
+            sx={{
+              marginBottom: "10px",
+            }}
+          >
+            Access settings
+          </Box>
+        )}
+
+        <Box sx={{ color: "#999999" }}>
+          {activeWorkspaceUsers.map(
+            (workspaceUser: WorkspaceUserDto, i: number) => {
+              const isSelf = userMetadata?.id === workspaceUser.user.id;
+
+              return (
+                <Box
+                  sx={{
+                    height: "33px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "0px 5px",
+                  }}
+                  key={i}
+                >
+                  <Box
+                    sx={{ display: "flex", gap: "9px", alignItems: "center" }}
+                  >
+                    <Ava
+                      color={stc(workspaceUser.user.username)}
+                      data-userid={workspaceUser.user.id}
+                      key={i}
+                    />
+
+                    <Box>
+                      {workspaceUser.user.username} {isSelf && <b>(You)</b>}
+                    </Box>
+                  </Box>{" "}
+                  <UserRole
+                    isSelf={isSelf}
+                    isDisabled={() => {
+                      if (mini) return true;
+
+                      if (isSelf) {
+                        // Check if there's only one admin in the workspace
+                        const adminCount = activeWorkspaceUsers.filter(
+                          (u) => u.role.id === RoleTypes.ADMIN
+                        ).length;
+
+                        const isCurrentUserTheOnlyAdmin =
+                          adminCount === 1 &&
+                          workspaceUser.role.id === RoleTypes.ADMIN;
+
+                        // Disallow role change if the current user is not an admin
+                        if (currentUserRole !== RoleTypes.ADMIN) return false;
+
+                        // Disallow role change if the current user is the only admin
+                        if (isCurrentUserTheOnlyAdmin) return true;
+                      } else {
+                        // Disallow role change if the current user is not an admin
+                        if (currentUserRole !== RoleTypes.ADMIN) return true;
+                      }
+
+                      return false;
+                    }}
+                    value={workspaceUser.role.id}
+                    onChange={(role_id: number) =>
+                      workspaceService.updateUserRole(
+                        workspaceUser.user.id,
+                        role_id
+                      )
+                    }
+                    onLeave={() =>
+                      workspaceService.removeUserFromWorkspace(
+                        workspaceUser.user.id
+                      )
+                    }
+                  />
+                </Box>
+              );
+            }
+          )}
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 
@@ -251,7 +260,6 @@ const InviteForm = () => {
     }
 
     setUsername("");
-    setIsOpened(false);
   };
 
   return (
