@@ -83,7 +83,7 @@ const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
             {entityIcon(item.entity)}
             {item.children?.length}
           </EntityIcon>
-          {item.entity.name}
+          <LabelWrapper>{item.entity.name}</LabelWrapper>
         </LeftContentWrapper>
         <VisibiltyButton
           onClick={(e) => {
@@ -145,6 +145,14 @@ const TreeItemWrapper = styled.div`
 const LeftContentWrapper = styled.div`
   display: flex;
   flex-direction: row;
+  width: calc(100% - 30px);
+`;
+
+const LabelWrapper = styled.div`
+  display: inline-block;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 `;
 
 const LineWrapper = styled.li<{ $selected: boolean }>`
