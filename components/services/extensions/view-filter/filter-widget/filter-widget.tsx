@@ -57,14 +57,6 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
           key={0}
           index={0}
         />
-        <Button
-          variant="contained"
-          data-active={preset !== undefined && preset.enabled}
-          color="secondary"
-          onClick={() => onEnable()}
-        >
-          hello
-        </Button>
         <FilterButton
           onClick={() => onEnable()}
           $isActive={preset !== undefined && preset.enabled}
@@ -80,9 +72,7 @@ const FilterButton = styled.button<{ $isActive: boolean }>`
   width: 100%;
   height: 27px;
   color: ${({ $isActive }) =>
-    $isActive
-      ? "var(--button-secondary-active-text-color)"
-      : "var(--main-text-color)"};
+    $isActive ? "#FFFFFF" : "var(--main-text-color)"};
   background-color: ${({ $isActive }) =>
     $isActive
       ? "var(--button-primary-color)"

@@ -52,12 +52,12 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
         <div className="label">
           <div className="marker">
             <span className="marker-tag" />
-            <IconButton
+            <DeleteButton
               className="delete-button"
               onClick={() => onDelete(filterItem.id)}
             >
               <ClearIcon className="delete-icon" />
-            </IconButton>
+            </DeleteButton>
           </div>
           {filterItem.key}
         </div>
@@ -113,9 +113,7 @@ const EnableButton = styled.div<{ $enabled: boolean }>`
     justify-content: center;
     width: 75px;
     color: ${({ $enabled }) =>
-      $enabled
-        ? "var(--button-secondary-active-text-color)"
-        : "var(--main-text-color)"};
+      $enabled ? "#FFFFFF" : "var(--main-text-color)"};
     background-color: ${({ $enabled }) =>
       $enabled
         ? "var(--button-primary-color)"
@@ -130,6 +128,11 @@ const EnableButton = styled.div<{ $enabled: boolean }>`
       content: ${({ $enabled }) => ($enabled ? `"Enabled"` : `"Enable"`)};
     }
   }
+`;
+
+const DeleteButton = styled.button`
+  background-color: transparent;
+  border: 0px;
 `;
 
 const FilterConditionWrapper = styled.div<{
@@ -149,6 +152,15 @@ const FilterConditionWrapper = styled.div<{
 
   button {
     cursor: pointer;
+  }
+
+  &:hover .delete-button {
+    display: block;
+  }
+
+  .delete-button {
+    display: none;
+    height: 27px;
   }
 
   .first-line {
@@ -185,15 +197,6 @@ const FilterConditionWrapper = styled.div<{
     flex-direction: row;
   }
 
-  &:hover .delete-button {
-    display: block;
-  }
-
-  .delete-button {
-    display: none;
-    height: 27px;
-  }
-
   .button-block {
     gap: 5px;
     display: flex;
@@ -210,9 +213,6 @@ const FilterConditionWrapper = styled.div<{
       stroke: ${({ $paramsEnabled }) =>
         $paramsEnabled ? "#2689FF" : "#333333"};
     }
-  }
-
-  .enable-button {
   }
 
   .delete-icon {

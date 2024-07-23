@@ -169,7 +169,8 @@ const LineWrapper = styled.li<{ $selected: boolean }>`
     $selected ? "#bce1ff" : "transparent"};
 
   &:hover {
-    background-color: ${({ $selected }) => ($selected ? "#abd9fe" : "#f3f3f3")};
+    background-color: ${({ $selected }) =>
+      $selected ? "#abd9fe" : "var(--button-secondary-hover-color)"};
   }
 
   .visibility-icon {
@@ -198,7 +199,7 @@ const EntityIcon = styled.div<{
     $count !== undefined
       ? $isGroupActive
         ? "#fec779"
-        : "#f3f3f3"
+        : "var(--button-secondary-color)"
       : "transparent"};
   margin: 0px 3px;
   border-radius: 9px;
@@ -208,6 +209,9 @@ const EntityIcon = styled.div<{
   justify-content: center;
   gap: 3px;
   padding: 0px 4px;
+  svg path {
+    stroke: var(--main-text-color);
+  }
 `;
 
 const ChildrenContainer = styled.div`

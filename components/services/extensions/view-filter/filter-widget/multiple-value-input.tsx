@@ -181,10 +181,11 @@ const SelectWithSearchWrapper = styled.div<{ $isExclude: boolean }>`
 
     .tag {
       display: flex;
-      background-color: #e0e0e0;
+      background-color: var(--main-bg-color);
       border-radius: 6px;
       padding: 2px;
-      color: ${({ $isExclude }) => ($isExclude ? "red" : "#2689FF")};
+      color: ${({ $isExclude }) =>
+        $isExclude ? "var(--button-secondary-danger-text-color)" : "#2689FF"};
 
       .delete-tag-button {
         border: 0px;
@@ -240,8 +241,8 @@ const DropdownList = styled.ul`
   left: 0;
   width: 100%;
   border-radius: 9px;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
+  background-color: var(--paper-bg-color);
+  border: 1px solid var(--box-border-color);
   list-style-type: none;
   padding: 0;
   max-height: 200px;
@@ -256,12 +257,16 @@ const DropdownItem = styled.li<{ $isAdded: boolean; $isExclude: boolean }>`
   gap: 7px;
   align-items: center;
   color: ${({ $isAdded, $isExclude }) =>
-    $isAdded ? ($isExclude ? "red" : "#2689FF") : "black"};
+    $isAdded
+      ? $isExclude
+        ? "var(--button-secondary-danger-text-color)"
+        : "#2689FF"
+      : "var(--main-text-color)"};
 
   cursor: pointer;
 
   &:hover {
-    background-color: #e0e0e0;
+    background-color: var(--icon-button-hover-color);
   }
 `;
 
@@ -293,7 +298,7 @@ const useSingleAndDoubleClick = (
       singleClickTimer = setTimeout(() => {
         doSingleClickThing(curOption);
         setClicks(0);
-      }, 250);
+      }, DELAY);
     } else if (clicks === 2) {
       onDoubleClick(curOption);
       setClicks(0);
