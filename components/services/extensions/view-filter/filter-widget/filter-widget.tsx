@@ -5,6 +5,7 @@ import ViewFilterExtension from "../view-filter-extension";
 import { useSubscribe } from "@/src/hooks";
 
 import FilterItemComponent from "./filter-item-component";
+import { Button } from "@mui/material";
 
 interface ViewFilterWidgetProps {
   isPreview?: boolean;
@@ -56,6 +57,14 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
           key={0}
           index={0}
         />
+        <Button
+          variant="contained"
+          data-active={preset !== undefined && preset.enabled}
+          color="secondary"
+          onClick={() => onEnable()}
+        >
+          hello
+        </Button>
         <FilterButton
           onClick={() => onEnable()}
           $isActive={preset !== undefined && preset.enabled}
@@ -70,8 +79,14 @@ export default ViewFilterWidget;
 const FilterButton = styled.button<{ $isActive: boolean }>`
   width: 100%;
   height: 27px;
-  background-color: ${({ $isActive }) => ($isActive ? "#237ef9" : "#f3f3f3")};
-  color: ${({ $isActive }) => ($isActive ? "white" : "black")};
+  color: ${({ $isActive }) =>
+    $isActive
+      ? "var(--button-secondary-active-text-color)"
+      : "var(--main-text-color)"};
+  background-color: ${({ $isActive }) =>
+    $isActive
+      ? "var(--button-primary-color)"
+      : "var(--button-secondary-active-bg-color)"};
   border: 0px;
   border-radius: 9px;
 
@@ -85,7 +100,7 @@ const FilteredCountWrapper = styled.div`
   width: 100%;
   display: flex;
   align-items: baseline;
-  background-color: #f3f3f3;
+  background-color: var(--main-bg-color);
   border-radius: 10px;
 
   .count {

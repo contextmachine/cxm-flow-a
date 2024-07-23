@@ -170,10 +170,10 @@ const SelectWithSearchWrapper = styled.div<{ $isExclude: boolean }>`
     min-height: 25px;
     display: flex;
     justify-content: start;
-    background-color: white;
+    background-color: var(--select-bg-color);
     width: 100%;
 
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--box-border-color);
     border-radius: 9px;
     padding: 2px;
     flex-flow: row wrap;
@@ -210,7 +210,7 @@ const SelectWithSearchWrapper = styled.div<{ $isExclude: boolean }>`
       min-width: 100px;
       max-width: 100%;
       border: 0px;
-      background-color: white;
+      background-color: var(--select-bg-color);
       margin-left: 10px;
       &:focus-visible {
         outline: -webkit-focus-ring-color auto 0px;

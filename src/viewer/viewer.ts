@@ -8,7 +8,7 @@ import CameraControl from "./camera-control";
 import Loader, { LoaderState } from "./loader/loader";
 import EntityControl from "./entity-control";
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
-import { appLogicError, assertDefined } from "@/utils";
+import { appLogicError, assertDefined, distinctByKeys } from "@/utils";
 import ProjectSettingsService from "../services/project-settings/project-settings-service";
 import SelectionControl from "./selection/selection-tool";
 import SceneService from "@/components/services/scene-service/scene-service";
@@ -64,7 +64,7 @@ export class Viewer {
 
     this._stats = new Stats();
 
-    this._projectSettingsService = new ProjectSettingsService();
+    this._projectSettingsService = new ProjectSettingsService(this);
     this._cameraService = new CameraControl(this);
     this._composerPerspective = new ComposerPipe(
       this._renderer,
@@ -76,9 +76,9 @@ export class Viewer {
     // this._taggingService = new TaggingService(this)
 
     // TODO: Needs to be discussed with Dima
-    /* this._scene.background = new THREE.Color(
+    this._scene.background = new THREE.Color(
       this._projectSettingsService.settings.background_color
-    ); */
+    );
     this._lights.forEach((x) => this._scene.add(x));
 
     this._entityControl = new EntityControl(this);
@@ -92,10 +92,12 @@ export class Viewer {
     this._subscriptions.push(
       RX.fromEvent(window, "resize").subscribe(() => this.resize())
     );
+
     this._subscriptions.push(
-      this._projectSettingsService.$settings.subscribe((settings) => {
-        // TODO: Needs to be discussed with Dima
-        //this._scene.background = new THREE.Color(settings.background_color);
+      distinctByKeys(this._projectSettingsService.$settings, [
+        "background_color",
+      ]).subscribe((settings) => {
+        this._scene.background = new THREE.Color(settings.background_color);
         this.updateViewer();
       })
     );

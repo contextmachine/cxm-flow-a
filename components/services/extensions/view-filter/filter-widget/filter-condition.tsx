@@ -111,13 +111,20 @@ const EnableButton = styled.div<{ $enabled: boolean }>`
     border: 0px;
     display: flex;
     justify-content: center;
-    background-color: #f3f3f3;
+    width: 75px;
+    color: ${({ $enabled }) =>
+      $enabled
+        ? "var(--button-secondary-active-text-color)"
+        : "var(--main-text-color)"};
+    background-color: ${({ $enabled }) =>
+      $enabled
+        ? "var(--button-primary-color)"
+        : "var(--button-secondary-active-bg-color)"};
     height: 27px;
     border-radius: 9px;
     padding: 5px;
     align-items: center;
     gap: 5px;
-    color: ${({ $enabled }) => ($enabled ? "#2689FF" : "black")};
 
     &:after {
       content: ${({ $enabled }) => ($enabled ? `"Enabled"` : `"Enable"`)};
@@ -138,7 +145,7 @@ const FilterConditionWrapper = styled.div<{
   border-radius: 9px;
   padding: 3px;
   background-color: ${({ $paramsOpen }) =>
-    $paramsOpen ? "#f3f3f3" : "transparent"};
+    $paramsOpen ? "var(--main-bg-color)" : "transparent"};
 
   button {
     cursor: pointer;

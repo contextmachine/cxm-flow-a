@@ -17,8 +17,6 @@ import { Ava } from "../../catalog/styles/styles";
 import stc from "string-to-color";
 import ShareIcon from "@mui/icons-material/Share";
 import CopyIcon from "@mui/icons-material/FileCopy";
-import SettingsIcon from "@mui/icons-material/Settings";
-import SettingsModal from "../settings/settings";
 
 const TeamMembers: React.FC<{
   mini?: boolean;

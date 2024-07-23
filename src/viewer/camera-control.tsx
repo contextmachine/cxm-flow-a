@@ -5,6 +5,7 @@ import * as THREE from "three";
 import Viewer from "./viewer";
 import { ControlsViewState, ViewState } from "./camera-control.types";
 import TWEEN from "@tweenjs/tween.js";
+import { distinctByKeys } from "../utils";
 
 class CameraControl {
   private _subscriptions: RX.Unsubscribable[] = [];
@@ -59,17 +60,26 @@ class CameraControl {
     );
 
     this._subscriptions.push(
-      this._viewer.projectSettingsService.$settings.subscribe(() => {
-        this.camera.near =
-          this._viewer.projectSettingsService.settings.camera_near;
-        this.camera.far =
-          this._viewer.projectSettingsService.settings.camera_far;
+      this._viewer.projectSettingsService.$settings.subscribe((settings) => {
+        console.log("alo", settings);
+      })
+    );
+
+    this._subscriptions.push(
+      distinctByKeys(this._viewer.projectSettingsService.$settings, [
+        "camera_near",
+        "camera_far",
+        "camera_fov",
+      ]).subscribe((settings) => {
+        this.camera.near = settings.camera_near;
+        this.camera.far = settings.camera_far;
         if (this.camera instanceof THREE.PerspectiveCamera) {
-          this.camera.fov =
-            this._viewer.projectSettingsService.settings.camera_fov;
+          this.camera.fov = settings.camera_fov;
         }
         this._controls.camera.updateProjectionMatrix();
         this._viewer.updateViewer();
+
+        console.log("camera only");
       })
     );
 

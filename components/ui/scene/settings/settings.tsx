@@ -1,5 +1,5 @@
 // ModalComponent.tsx
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Modal,
   Box,
@@ -22,20 +22,48 @@ import OpenFolderIcon from "../../icons/open-folder-icon";
 import { ParamItem } from "../widgets-panel/widgets/pointcloud-handler-widget/blocks/overall-form copy";
 import ProductsSetupPanel from "../products-setup-panel/products-setup-panel";
 import TeamMembers from "../team-members/team-membets";
+import { useClickOutside } from "@/src/hooks";
+import useForm from "@/src/hooks/useForm";
+import { useViewer } from "@/components/services/scene-service/scene-provider";
+import ProjectSettings from "./project-settings";
 
 const SettingsModal: React.FC<{
   open: boolean;
   onClose: () => void;
   sections?: ("Camera" | "Widgets" | "Access")[];
-}> = ({ open, onClose, sections }) => {
+}> = (props) => {
+  const { sections, open, onClose } = props;
+
   const [value, setValue] = useState(0);
   const [cameraAngle, setCameraAngle] = useState<number>(75);
   const [zoom, setZoom] = useState<number>(1);
   const [distance, setDistance] = useState<number>(100);
-  const [size, setSize] = useState<number[]>([100, 900]);
-  const [mean, setMean] = useState<number>(100);
-  const [deviation, setDeviation] = useState<number>(100);
+
+  // const viewer = useViewer();
+
+  // const formstate = useForm(viewer.projectSettingsService.settings);
+
+  // const [size, setSize] = useState<number[]>([100, 900]);
+  // const [mean, setMean] = useState<number>(100);
+  // const [deviation, setDeviation] = useState<number>(100);
   const [backgroundColor, setBackgroundColor] = useState<string>("#EEEEEE");
+
+  const onChangeSettings = () => {};
+
+  const onModalClose = () => {
+    if (isOpen) {
+      onClose();
+    }
+  };
+
+  const modalRef = useRef(null);
+  useClickOutside(modalRef, onModalClose);
+
+  const [isOpen, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(open);
+  }, [open]);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -84,7 +112,7 @@ const SettingsModal: React.FC<{
           height: "100%",
         }}
       >
-        <ModalBox>
+        <ModalBox ref={modalRef}>
           <Box
             sx={{
               flexGrow: 1,
@@ -158,115 +186,7 @@ const SettingsModal: React.FC<{
                     minWidth: "500px",
                   }}
                 >
-                  <AccordionBox>
-                    <AccordionWrapper title={"Scene properties"}>
-                      <ParamItem data-type="overall">
-                        <Box>Background</Box>
-                        <Box>
-                          <TextField
-                            fullWidth
-                            value={backgroundColor}
-                            onChange={(e) => setBackgroundColor(e.target.value)}
-                          />
-                        </Box>
-                      </ParamItem>
-                    </AccordionWrapper>
-
-                    <AccordionWrapper title={"Camera properties"}>
-                      <ParamItem data-type="overall">
-                        <Box>Camera angle</Box>
-                        <Box>
-                          <TextField
-                            fullWidth
-                            value={cameraAngle}
-                            onChange={(e) => setBackgroundColor(e.target.value)}
-                          />
-                        </Box>
-                      </ParamItem>
-
-                      <ParamItem data-type="overall">
-                        <Box>Zoom</Box>
-                        <Box>
-                          <TextField
-                            fullWidth
-                            type="number"
-                            value={zoom}
-                            onChange={(e) => setZoom(Number(e.target.value))}
-                          />
-                        </Box>
-                      </ParamItem>
-
-                      <ParamItem data-type="overall">
-                        <Box>Distance</Box>
-                        <Box>
-                          <TextField
-                            fullWidth
-                            type="number"
-                            value={distance}
-                            onChange={(e) =>
-                              setDistance(Number(e.target.value))
-                            }
-                          />
-                        </Box>
-                      </ParamItem>
-                    </AccordionWrapper>
-
-                    <AccordionWrapper title={"Label properties"}>
-                      <ParamItem data-type="overall">
-                        <Box>Size</Box>
-                        <Box>
-                          <Slider
-                            data-type="params"
-                            value={2}
-                            step={1}
-                            min={1}
-                            max={8}
-                            onChange={(e, value) => {}}
-                            size="small"
-                            valueLabelDisplay="auto"
-                          />
-                        </Box>
-                      </ParamItem>
-
-                      <ParamItem data-type="overall">
-                        <Box>Average</Box>
-                        <Box>
-                          <TextField
-                            fullWidth
-                            type="number"
-                            value={cameraAngle}
-                            onChange={(e) =>
-                              setCameraAngle(Number(e.target.value))
-                            }
-                          />
-                        </Box>
-                      </ParamItem>
-
-                      <ParamItem data-type="overall">
-                        <Box>Deviation</Box>
-                        <Box>
-                          <TextField
-                            fullWidth
-                            type="number"
-                            value={cameraAngle}
-                            onChange={(e) =>
-                              setCameraAngle(Number(e.target.value))
-                            }
-                          />
-                        </Box>
-                      </ParamItem>
-                    </AccordionWrapper>
-
-                    <Button
-                      sx={{
-                        margin: "10px",
-                      }}
-                      variant="contained"
-                      color="primary"
-                    >
-                      Save
-                    </Button>
-                  </AccordionBox>
+                  <ProjectSettings />
                 </Paper>
               </TabPanel>
             )}
