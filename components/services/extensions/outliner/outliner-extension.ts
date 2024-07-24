@@ -55,8 +55,6 @@ class OutlinerExtension extends ExtensionEntity {
 
         const hit = item.entity.name.toLowerCase().includes(filterInput);
 
-        console.log(item.entity.name, filterInput, hit, children);
-
         if (hit) {
           hitObjects.add(item.entity.id);
         }

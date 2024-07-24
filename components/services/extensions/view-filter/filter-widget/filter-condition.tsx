@@ -155,7 +155,7 @@ const FilterConditionWrapper = styled.div<{
   }
 
   &:hover .delete-button {
-    display: block;
+    display: flex;
   }
 
   .delete-button {
