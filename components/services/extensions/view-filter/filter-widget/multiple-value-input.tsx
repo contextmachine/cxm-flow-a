@@ -1,10 +1,9 @@
 import { useClickOutside, useEnterEsc } from "@/src/hooks";
-import { use, useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import ViewFilterExtension, { FilterCondition } from "../view-filter-extension";
 import { PropertyType } from "./filter-condition";
 import ClearIcon from "@mui/icons-material/Clear";
-import { debounce, isEqual } from "lodash";
 import DeleteIcon from "@/components/ui/icons/delete-icon";
 import PlusIcon from "@/components/ui/icons/plus-icon";
 import CheckedIcon from "@/components/ui/icons/checked-icon";

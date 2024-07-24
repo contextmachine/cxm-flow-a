@@ -11,6 +11,7 @@ export interface OutlinerItem {
   isGroupActive: boolean;
   children: OutlinerItem[] | undefined;
   parent: OutlinerItem | undefined;
+  isShowed: boolean;
 }
 
 type OutlinerTree = OutlinerItem[];
@@ -40,6 +41,49 @@ class OutlinerExtension extends ExtensionEntity {
     this._viewer.selectionTool.addToSelection([item.id]);
   }
 
+  public onFilter(filterInput: string) {
+    if (filterInput !== "") {
+      const toExpand: Set<string> = new Set();
+      const hitObjects: Set<string> = new Set();
+
+      const checkItem = (item: OutlinerItem): boolean => {
+        let children = false;
+        if (item.children) {
+          const childrenResult = item.children?.map((x) => checkItem(x));
+          children = childrenResult.some((x) => x);
+        }
+
+        const hit = item.entity.name.toLowerCase().includes(filterInput);
+
+        console.log(item.entity.name, filterInput, hit, children);
+
+        if (hit) {
+          hitObjects.add(item.entity.id);
+        }
+
+        if (children) {
+          toExpand.add(item.entity.id);
+        }
+
+        return hit || children;
+      };
+
+      this._tree.forEach((x) => checkItem(x));
+
+      this._treeMap.forEach((x) => {
+        x.expanded = toExpand.has(x.entity.id);
+        x.isShowed = toExpand.has(x.entity.id) || hitObjects.has(x.entity.id);
+      });
+    } else {
+      this._treeMap.forEach((x) => {
+        x.isShowed = true;
+        x.expanded = false;
+      });
+    }
+
+    this._$tree.next([...this._tree]);
+  }
+
   public load() {
     console.log("outliner loaded");
 
@@ -63,16 +107,6 @@ class OutlinerExtension extends ExtensionEntity {
 
     this._subscriptions.push(
       this._viewer.selectionTool.picker.$currentGroup.subscribe((group) => {
-        const traverseAncessors = (
-          item: OutlinerItem,
-          f: (item: OutlinerItem) => void
-        ) => {
-          if (item.parent) {
-            traverseAncessors(item.parent, f);
-          }
-          f(item);
-        };
-
         this._treeMap.forEach((x) => {
           x.expanded = false;
           x.isGroupActive = false;
@@ -101,6 +135,7 @@ class OutlinerExtension extends ExtensionEntity {
         isGroupActive: false,
         children: undefined,
         parent: parent,
+        isShowed: true,
       };
 
       if (entity.children) {
@@ -126,3 +161,18 @@ class OutlinerExtension extends ExtensionEntity {
   }
 }
 export default OutlinerExtension;
+
+const traverseAncessors = (
+  item: OutlinerItem,
+  f: (item: OutlinerItem) => void
+) => {
+  if (item.parent) {
+    traverseAncessors(item.parent, f);
+  }
+  f(item);
+};
+
+const traverseTree = (item: OutlinerItem, f: (item: OutlinerItem) => void) => {
+  f(item);
+  item.children?.forEach(f);
+};

@@ -11,15 +11,17 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 interface TreeItemProps {
   extension: OutlinerExtension;
   item: OutlinerItem;
+  search?: string;
 }
 
 const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
-  const { item, extension } = props;
+  const { item, extension, search } = props;
 
   const [expanded, setExpanded] = useState(item.expanded);
   const [selected, setSelected] = useState(item.selected);
   const [isGroupActive, setGroupActive] = useState(item.isGroupActive);
   const [visibility, setVisibility] = useState(item.entity.visibility);
+  const [isShowed, setIsShowed] = useState(item.isShowed);
 
   useEffect(() => {
     item.entity.setVisibility(visibility);
@@ -28,8 +30,14 @@ const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
   const itemRef = useRef(null);
 
   const scrollToItem = () => {
-    (itemRef.current as any).scrollIntoView({ behavior: "smooth" });
+    if (isShowed) {
+      (itemRef.current as any).scrollIntoView({ behavior: "smooth" });
+    }
   };
+
+  useEffect(() => {
+    setIsShowed(item.isShowed);
+  }, [item.isShowed]);
 
   useEffect(() => {
     setSelected(item.selected);
@@ -57,52 +65,58 @@ const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
   };
 
   return (
-    <TreeItemWrapper key={item.entity.id}>
-      <LineWrapper
-        ref={itemRef}
-        $selected={selected}
-        onClick={(e) => onItemClick(e)}
-      >
-        <LeftContentWrapper>
-          {item.entity.children && item.entity.children.length > 0 && (
-            <ExpandButton
-              $expanded={expanded}
+    <>
+      {isShowed && (
+        <TreeItemWrapper key={item.entity.id}>
+          <LineWrapper
+            ref={itemRef}
+            $selected={selected}
+            onClick={(e) => onItemClick(e)}
+          >
+            <LeftContentWrapper>
+              {item.entity.children && item.entity.children.length > 0 && (
+                <ExpandButton
+                  $expanded={expanded}
+                  onClick={(e) => {
+                    item.expanded = !expanded;
+                    setExpanded(!expanded);
+                    e.stopPropagation();
+                  }}
+                >
+                  <ExpandIcon />
+                </ExpandButton>
+              )}
+              <EntityIcon
+                $count={item.children?.length}
+                $isGroupActive={isGroupActive}
+              >
+                {entityIcon(item.entity)}
+                {item.children?.length}
+              </EntityIcon>
+              <LabelWrapper>{item.entity.name}</LabelWrapper>
+            </LeftContentWrapper>
+            <VisibiltyButton
               onClick={(e) => {
-                item.expanded = !expanded;
-                setExpanded(!expanded);
                 e.stopPropagation();
+                setVisibility(!visibility);
               }}
             >
-              <ExpandIcon />
-            </ExpandButton>
+              {visibility && <VisibilityIcon className="visibility-icon" />}
+              {!visibility && (
+                <VisibilityOffIcon className="unvisibility-icon" />
+              )}
+            </VisibiltyButton>
+          </LineWrapper>
+          {expanded && (
+            <ChildrenContainer>
+              {item.children?.map((x) => (
+                <TreeItem item={x} extension={extension} search={search} />
+              ))}
+            </ChildrenContainer>
           )}
-          <EntityIcon
-            $count={item.children?.length}
-            $isGroupActive={isGroupActive}
-          >
-            {entityIcon(item.entity)}
-            {item.children?.length}
-          </EntityIcon>
-          <LabelWrapper>{item.entity.name}</LabelWrapper>
-        </LeftContentWrapper>
-        <VisibiltyButton
-          onClick={(e) => {
-            e.stopPropagation();
-            setVisibility(!visibility);
-          }}
-        >
-          {visibility && <VisibilityIcon className="visibility-icon" />}
-          {!visibility && <VisibilityOffIcon className="unvisibility-icon" />}
-        </VisibiltyButton>
-      </LineWrapper>
-      {expanded && (
-        <ChildrenContainer>
-          {item.children?.map((x) => (
-            <TreeItem item={x} extension={extension} />
-          ))}
-        </ChildrenContainer>
+        </TreeItemWrapper>
       )}
-    </TreeItemWrapper>
+    </>
   );
 };
 

@@ -109,8 +109,8 @@ const DropdownList = styled.ul`
   left: 0;
   width: 100%;
   border-radius: 9px;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
+  background-color: var(--paper-bg-color);
+  border: 1px solid var(--box-border-color);
   list-style-type: none;
   padding: 0;
   max-height: 200px;
@@ -125,6 +125,6 @@ const DropdownItem = styled.li`
   cursor: pointer;
 
   &:hover {
-    background-color: #e0e0e0;
+    background-color: var(--icon-button-hover-color);
   }
 `;
