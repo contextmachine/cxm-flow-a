@@ -56,6 +56,8 @@ class ViewFilterExtension extends ExtensionEntity {
 
   private _dbService: ViewFilterDbService;
 
+  private _filteredObjects: Entity[] = [];
+
   constructor(viewer: Viewer) {
     super(viewer);
     this.name = "view-filter";
@@ -84,6 +86,10 @@ class ViewFilterExtension extends ExtensionEntity {
   }
   public get $childrenCount() {
     return this._$childrenCount;
+  }
+
+  public get filteredObjects() {
+    return this._filteredObjects;
   }
 
   public async load() {
@@ -173,6 +179,7 @@ class ViewFilterExtension extends ExtensionEntity {
 
       this._$currentScopeCount.next(filteredObjects.length);
       this._$childrenCount.next(fittingChildrens.length);
+      this._filteredObjects = filteredObjects;
     } else {
       this._viewer.selectionTool.picker.setCustomEntityScope(undefined);
       this._viewer.selectionTool.picker.objectsOnCurrentLevel.forEach((x) =>
@@ -180,6 +187,7 @@ class ViewFilterExtension extends ExtensionEntity {
       );
       this._$currentScopeCount.next(0);
       this._$childrenCount.next(0);
+      this._filteredObjects = [];
     }
 
     this._viewer.updateViewer();

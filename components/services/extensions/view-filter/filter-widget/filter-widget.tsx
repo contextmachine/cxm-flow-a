@@ -5,8 +5,9 @@ import ViewFilterExtension from "../view-filter-extension";
 import { useSubscribe } from "@/src/hooks";
 
 import FilterItemComponent from "./filter-item-component";
-import { Button } from "@mui/material";
-
+import { Button, IconButton } from "@mui/material";
+import DoneIcon from "@mui/icons-material/Done";
+import { useViewer } from "@/components/services/scene-service/scene-provider";
 interface ViewFilterWidgetProps {
   isPreview?: boolean;
   extension: ExtensionEntityInterface;
@@ -18,6 +19,8 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
 }) => {
   const extension = ext as ViewFilterExtension;
   const preset = useSubscribe(extension.$filter, extension.filter);
+
+  const viewer = useViewer();
 
   const filterPreset = useSubscribe(extension.$filter, extension.filter);
 
@@ -38,15 +41,27 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
       <WidgetPaper isPreview={isPreview} title={"View Filter"}>
         {currentScopeCount !== undefined && (
           <FilteredCountWrapper>
-            <div className="count">
-              <div>{currentScopeCount.toLocaleString()}</div>
-              {childrenCount !== undefined && childrenCount !== 0 && (
-                <div style={{ color: "#b3b3b3" }}>
-                  ({childrenCount.toLocaleString()})
-                </div>
-              )}
+            <div className="count-label">
+              <div className="count">
+                <div>{currentScopeCount.toLocaleString()}</div>
+                {childrenCount !== undefined && childrenCount !== 0 && (
+                  <div style={{ color: "#b3b3b3" }}>
+                    ({childrenCount.toLocaleString()})
+                  </div>
+                )}
+              </div>
+              <div className="label">Objects</div>
             </div>
-            <div className="label">Objects</div>
+            <IconButton
+              onClick={() =>
+                viewer.selectionTool.addToSelection(
+                  extension.filteredObjects.map((x) => x.id)
+                )
+              }
+              sx={{ width: "20px", height: "20px" }}
+            >
+              <DoneIcon sx={{ fontSize: "14px" }} />
+            </IconButton>
           </FilteredCountWrapper>
         )}
 
@@ -89,16 +104,22 @@ const FilteredCountWrapper = styled.div`
   padding: 5px;
   width: 100%;
   display: flex;
-  align-items: baseline;
+  justify-content: space-between;
+  align-items: center;
   background-color: var(--main-bg-color);
   border-radius: 10px;
 
-  .count {
+  .count-label {
     display: flex;
-    margin-right: 10px;
+    align-items: baseline;
 
-    & * {
-      font-size: 24px;
+    .count {
+      display: flex;
+      margin-right: 10px;
+
+      & * {
+        font-size: 24px;
+      }
     }
   }
 `;
