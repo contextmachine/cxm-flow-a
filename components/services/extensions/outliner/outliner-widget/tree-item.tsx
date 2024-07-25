@@ -7,6 +7,7 @@ import styled from "styled-components";
 import OutlinerExtension, { OutlinerItem } from "../outliner-extension";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import { useViewer } from "@/components/services/scene-service/scene-provider";
 
 interface TreeItemProps {
   extension: OutlinerExtension;
@@ -17,11 +18,15 @@ interface TreeItemProps {
 const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
   const { item, extension, search } = props;
 
+  const viewer = useViewer();
+
   const [expanded, setExpanded] = useState(item.expanded);
   const [selected, setSelected] = useState(item.selected);
   const [isGroupActive, setGroupActive] = useState(item.isGroupActive);
   const [visibility, setVisibility] = useState(item.entity.visibility);
   const [isShowed, setIsShowed] = useState(item.isShowed);
+
+  const [itemClicked, setItemClicked] = useState(false);
 
   useEffect(() => {
     item.entity.setVisibility(visibility);
@@ -41,8 +46,11 @@ const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
 
   useEffect(() => {
     setSelected(item.selected);
-    if (item.selected) {
+    if (item.selected && !itemClicked) {
       scrollToItem();
+    }
+    if (itemClicked) {
+      setItemClicked(false);
     }
   }, [item.selected]);
 
@@ -61,6 +69,7 @@ const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
   }, [item.isGroupActive]);
 
   const onItemClick = (e: any) => {
+    setItemClicked(true);
     extension.onItemClick(item.entity);
   };
 
@@ -87,6 +96,9 @@ const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
                 </ExpandButton>
               )}
               <EntityIcon
+                onClick={(e) => {
+                  viewer.controls.fitToObjects([item.entity.bbox.box]);
+                }}
                 $count={item.children?.length}
                 $isGroupActive={isGroupActive}
               >
@@ -223,8 +235,21 @@ const EntityIcon = styled.div<{
   justify-content: center;
   gap: 3px;
   padding: 0px 4px;
-  svg path {
+
+  svg {
+    justify-self: center;
+    align-items: center;
+  }
+
+  svg * {
     stroke: var(--main-text-color);
+  }
+
+  &:hover {
+    color: var(--button-primary-color);
+    svg * {
+      stroke: var(--button-primary-color);
+    }
   }
 `;
 

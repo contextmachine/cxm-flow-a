@@ -6,6 +6,7 @@ import Viewer from "./viewer";
 import { ControlsViewState, ViewState } from "./camera-control.types";
 import TWEEN from "@tweenjs/tween.js";
 import { distinctByKeys } from "../utils";
+import { wireframeMaterial } from "../objects/materials/object-materials";
 
 class CameraControl {
   private _subscriptions: RX.Unsubscribable[] = [];
@@ -117,13 +118,9 @@ class CameraControl {
   }
 
   public fitToBox(box: THREE.Box3) {
-    this._controls.fitToBox(box, true, {
-      cover: false,
-      paddingLeft: 0.1,
-      paddingRight: 0.1,
-      paddingBottom: 0.1,
-      paddingTop: 0.1,
-    });
+    const x = box.getBoundingSphere(new THREE.Sphere());
+
+    this._controls.fitToSphere(x, false);
 
     // Compute the box's size and adjust the camera's far value
     const size = new THREE.Vector3();
