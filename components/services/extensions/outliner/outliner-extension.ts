@@ -36,8 +36,10 @@ class OutlinerExtension extends ExtensionEntity {
     return this._$tree;
   }
 
-  public onItemClick(item: Entity) {
-    this._viewer.selectionTool.clearSelection();
+  public onItemClick(e: React.MouseEvent, item: Entity) {
+    if (!e.shiftKey) {
+      this._viewer.selectionTool.clearSelection();
+    }
     this._viewer.selectionTool.addToSelection([item.id]);
   }
 

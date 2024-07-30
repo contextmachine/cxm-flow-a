@@ -32,7 +32,8 @@ const WidgetPanelGrid = () => {
             backdropFilter: "blur(4px)",
             pointerEvents: "all !important",
             width: "100vw",
-            height: "100vh",
+            height: "fit-content",
+            maxHeight: "100vh",
             zIndex: 10,
             left: "-0px",
             top: "-0px",
@@ -60,6 +61,8 @@ const WidgetPanelGrid = () => {
               data-type="widgets-panel"
               sx={{
                 display: "flex",
+                height: "fit-content",
+                maxHeight: "100%",
                 flexDirection: "column",
                 rowGap: "9px",
                 overflowY: "scroll",

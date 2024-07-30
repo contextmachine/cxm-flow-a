@@ -6,7 +6,6 @@ import Viewer from "./viewer";
 import { ControlsViewState, ViewState } from "./camera-control.types";
 import TWEEN from "@tweenjs/tween.js";
 import { distinctByKeys } from "../utils";
-import { wireframeMaterial } from "../objects/materials/object-materials";
 
 class CameraControl {
   private _subscriptions: RX.Unsubscribable[] = [];
@@ -106,6 +105,16 @@ class CameraControl {
   public setOrbit(point: THREE.Vector3) {
     this._controls.setOrbitPoint(point.x, point.y, point.z);
     this._viewer.updateViewer();
+  }
+
+  public fitObjects() {
+    const selected = this._viewer.selectionTool.selected;
+
+    if (selected.length > 0) {
+      this.fitToObjects(selected.map((x) => x.bbox.box));
+    } else {
+      this.fitToScene();
+    }
   }
 
   public fitToScene() {

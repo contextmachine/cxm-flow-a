@@ -98,3 +98,10 @@ export function useViewer() {
     throw new Error("useViewer must be used within a SceneContext");
   }
 }
+
+export function useViewerSoft() {
+  const { sceneService } = useScene();
+  const viewer = sceneService.viewer;
+
+  return viewer;
+}
