@@ -152,6 +152,34 @@ class ToolsetService {
     }
   }
 
+  public async renameToolset(toolsetId: number, name: string) {
+    const mutation = gql`
+      mutation renameToolset($toolsetId: Int!, $name: String!) {
+        update_appv3_toolset(
+          where: { id: { _eq: $toolsetId } }
+          _set: { name: $name }
+        ) {
+          affected_rows
+        }
+      }
+    `;
+
+    try {
+      await client.mutate({
+        mutation,
+        variables: {
+          toolsetId,
+          name,
+        },
+      });
+
+      this.fetchUserToolsets();
+    } catch (error) {
+      this._error$.next("Error renaming toolset");
+      console.error(error);
+    }
+  }
+
   public updateActiveToolsetProducts(widgetProducts: ProductsDto[]) {
     const activeToolset = this._activeToolset;
     if (!activeToolset) {
@@ -181,10 +209,10 @@ class ToolsetService {
     this._activePLogId$.next(uuidv4());
   }
 
-  public setActiveToolset(toolsetId: number) {
+  public setActiveToolset = (toolsetId: number) => {
     this._activeToolset = this._toolsets.get(toolsetId) || null;
     this._activeToolset$.next(this._activeToolset);
-  }
+  };
 
   public updateTemporaryTodos(todos: string[]) {
     this._temporaryTodos = todos;

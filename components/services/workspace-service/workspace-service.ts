@@ -669,8 +669,6 @@ class WorkspaceService {
   }
 
   public async deleteScenesFromWorkspace(workspaceId: number) {
-    console.log("wwww", workspaceId);
-
     const mutate = gql`
       mutation DeleteScenesFromWorkspace($workspace_id: Int!) {
         delete_appv3_scene(where: { workspace_id: { _eq: $workspace_id } }) {
@@ -691,7 +689,6 @@ class WorkspaceService {
         },
       });
     } catch (error) {
-      console.log("eeeeee");
       console.error(error);
     }
   }
@@ -716,15 +713,11 @@ class WorkspaceService {
     const scenes = this._workspaces.get(workspaceId)?.scenes || [];
     const sceneIds = Array.from(scenes.keys());
 
-    console.log("sceneIds", sceneIds);
-
     for (const sceneId of sceneIds) {
       await this.deleteScene(sceneId, {
         disableUserRoleCheck: true,
       });
     }
-
-    console.log("workspaceId", workspaceId);
 
     const mutation = gql`
       mutation DeleteWorkspace($id: Int!) {

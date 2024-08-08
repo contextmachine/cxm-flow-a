@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { useStates } from "@/components/services/state-service/state-provider";
 import React from "react";
 
@@ -60,29 +60,37 @@ const WidgetPanelGrid = () => {
             <Box
               data-type="widgets-panel"
               sx={{
-                display: "flex",
-                height: "fit-content",
-                maxHeight: "100%",
-                flexDirection: "column",
-                rowGap: "9px",
-                overflowY: "scroll",
-                overflowX: "hidden",
-                borderRadius: "18px",
-                border: isEditWidgetsOpen
-                  ? "1px dashed #000"
-                  : "1px solid transparent",
+                height: "100%",
+                position: "relative",
               }}
             >
-              <Widget type="bar-widget" />
-              <Widget type="toolset-widget" />
+              <Box
+                sx={{
+                  display: "flex",
+                  height: "100%",
+                  maxHeight: "100%",
+                  flexDirection: "column",
+                  rowGap: "9px",
+                  overflowY: "scroll",
+                  overflowX: "hidden",
+                  borderRadius: "18px",
+                  border: isEditWidgetsOpen
+                    ? "1px dashed #000"
+                    : "1px solid transparent",
+                }}
+              >
+                <Widget type="bar-widget" />
+                {/* <Widget type="toolset-widget" /> */}
 
-              {sectionType === "widgets" && <InUseGrid key={activePLogId} />}
+                {sectionType === "widgets" && <InUseGrid key={activePLogId} />}
+              </Box>
             </Box>
 
             {/* Edit Panel */}
             {isEditWidgetsOpen && <EditGrid key={activePLogId} />}
           </>
         )}
+
         <Properties />
       </Box>
     </>

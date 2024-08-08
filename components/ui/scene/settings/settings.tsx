@@ -99,8 +99,6 @@ const SettingsModal: React.FC<{
     };
   }, [sections]);
 
-  console.log("tabsConfigs", tabsConfigs);
-
   return (
     <Modal open={open} onClose={onClose}>
       <Box

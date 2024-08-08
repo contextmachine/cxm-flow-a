@@ -41,6 +41,7 @@ const InUseGrid = () => {
         rowGap: "9px",
         minHeight: "max-content",
         width: "100%",
+        height: "100%",
         pointerEvents: "all",
         paddingBottom: "9px",
       }}

@@ -44,7 +44,6 @@ const UserSettings: React.FC<{
   const [username, setUsername] = useState("");
   const [theme, setTheme] = useState<"default" | number>("default");
   const { userMetadata, authService, themes } = useAuth();
-  console.log("userMetadata", userMetadata);
 
   useEffect(() => {
     if (!userMetadata) return;
@@ -54,8 +53,6 @@ const UserSettings: React.FC<{
     const userTheme = userMetadata.user_theme?.theme?.id;
     setTheme(typeof userTheme === "number" ? userTheme : "default");
   }, [userMetadata]);
-
-  console.log("theme", theme);
 
   const [notifications, setNotifications] = useState<
     {

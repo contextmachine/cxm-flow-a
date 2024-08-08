@@ -121,8 +121,6 @@ class SelectionControl {
       .map((x) => this._entitiesMap.get(x))
       .filter((x) => x !== undefined) as Entity[];
     this._selectedSubject.next(this._selected);
-
-    console.log(this._selected);
   }
 
   public dispose() {
