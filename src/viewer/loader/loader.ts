@@ -68,6 +68,7 @@ class Loader {
   }
 
   private updateApiObjects() {
+    console.log("update");
     this._queriesSubject.next([...this._queries.values()]);
   }
 
@@ -123,6 +124,22 @@ class Loader {
     this.setStatus("idle");
   }
 
+  public reloadApiObject(id: number) {
+    const list = [...this._queries.values()];
+
+    const existingQueriesMap = new Map(list.map((x) => [x.id, x]));
+
+    const apiObject = existingQueriesMap.get(id);
+
+    if (apiObject) {
+      this.setStatus("loading");
+      this.removeApiObject(apiObject);
+      this.loadApiObject(apiObject);
+      this.updateApiObjects();
+      this.setStatus("idle");
+    }
+  }
+
   private async removeApiObject(apiObject: ApiObject) {
     if (this._queries.has(apiObject)) {
       this._queries.delete(apiObject);
@@ -161,12 +178,15 @@ class Loader {
     }
 
     const jsonObject = findThreeJSJSON(data);
-    const object3d = await parseJSON(jsonObject);
+    if (jsonObject) {
+      const object3d = await parseJSON(jsonObject);
 
-    const model = new ProjectModel(this._viewer, object3d, apiObject);
-    this._viewer.entityControl.addModel(model);
-
-    return model;
+      const model = new ProjectModel(this._viewer, object3d, apiObject);
+      this._viewer.entityControl.addModel(model);
+      return model;
+    } else {
+      return undefined;
+    }
   }
 
   public dispose() {

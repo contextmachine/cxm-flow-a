@@ -3,6 +3,7 @@ import ExtensionEntity from "../../extension-service/entity/extension-entity";
 import * as RX from "rxjs";
 import { Entity } from "@/src/objects/entities/entity";
 import { assertDefined } from "@/src/utils";
+import QueryControl from "./query-control";
 
 export interface OutlinerItem {
   entity: Entity;
@@ -23,6 +24,8 @@ class OutlinerExtension extends ExtensionEntity {
   private _$tree = new RX.Subject<OutlinerTree>();
   private _treeMap: Map<string, OutlinerItem> = new Map();
 
+  private _queryControl = new QueryControl(this._viewer);
+
   constructor(viewer: Viewer) {
     super(viewer);
     this.name = "outliner";
@@ -34,6 +37,10 @@ class OutlinerExtension extends ExtensionEntity {
 
   public get $tree() {
     return this._$tree;
+  }
+
+  public get queryControl() {
+    return this._queryControl;
   }
 
   public onItemClick(e: React.MouseEvent, item: Entity) {

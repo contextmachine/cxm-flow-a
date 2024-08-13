@@ -170,9 +170,9 @@ const SelectWithSearchWrapper = styled.div<{ $isExclude: boolean }>`
     display: flex;
     justify-content: start;
     background-color: var(--select-bg-color);
+    border: 1px solid var(--box-border-color);
     width: 100%;
 
-    border: 1px solid var(--box-border-color);
     border-radius: 9px;
     padding: 2px;
     flex-flow: row wrap;

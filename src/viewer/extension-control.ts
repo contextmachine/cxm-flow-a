@@ -1,6 +1,5 @@
 import ExtensionEntity from "@/components/services/extension-service/entity/extension-entity";
 import CameraViewsExtensions from "@/components/services/extensions/camera-views-extension/camera-views-extension";
-import QueryExtension from "@/components/services/extensions/query-extension/query-extension";
 import * as RX from "rxjs";
 import { assertDefined } from "../utils";
 import Viewer from "./viewer";
@@ -81,8 +80,6 @@ class ExtensionControl {
 
   private createExtension(name: string): ExtensionEntity | undefined {
     switch (name) {
-      case "queries":
-        return new QueryExtension(this._viewer);
       case "views":
         return new CameraViewsExtensions(this._viewer);
       case "pointcloud-handler":

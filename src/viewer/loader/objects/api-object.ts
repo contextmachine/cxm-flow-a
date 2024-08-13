@@ -9,6 +9,7 @@ class ApiObject {
   private _endpoint: string;
   private _name: string;
   private _type: QueryType;
+  private _loaded: boolean;
   private _scene_id: number;
 
   private _model: ProjectModel | undefined;
@@ -19,6 +20,7 @@ class ApiObject {
     this._name = query.name;
     this._type = query.type;
     this._scene_id = query.scene_id;
+    this._loaded = false;
   }
 
   public get id() {
