@@ -24,7 +24,7 @@ export function useStatus() {
   useEffect(() => {
     if (viewer) {
       const subscription = viewer.loader.$status.subscribe((e) => {
-        console.log("status changed, this from subscription", e);
+        // console.log("status changed, this from subscription", e);
         setState(e.toString());
       });
       return () => subscription.unsubscribe();
@@ -32,7 +32,7 @@ export function useStatus() {
   }, [viewer]);
 
   useEffect(() => {
-    console.log("this from useEfffect", state);
+    // console.log("this from useEfffect", state);
   }, [state]);
 
   return state;

@@ -6,6 +6,7 @@ import { Entity } from "@/src/objects/entities/entity";
 import { assertDefined } from "@/src/utils";
 import { v4 } from "uuid";
 import ViewFilterDbService from "./view-filter-db-service";
+import { ProductsDto } from "../../product-service/products.types";
 
 export interface FilterPreset {
   id: number;
@@ -43,8 +44,6 @@ export interface FilterCondition {
 }
 
 class ViewFilterExtension extends ExtensionEntity {
-  private _subscriptions: RX.Unsubscribable[] = [];
-
   private _properties = new Map<string, Entity[]>();
   private _$properties = new RX.Subject<Map<string, Entity[]>>();
 
@@ -58,11 +57,13 @@ class ViewFilterExtension extends ExtensionEntity {
 
   private _filteredObjects: Entity[] = [];
 
-  constructor(viewer: Viewer) {
+  constructor(viewer: Viewer, productData: ProductsDto) {
     super(viewer);
     this.name = "view-filter";
+    this.id = productData.id;
 
     this._dbService = new ViewFilterDbService(this, this._viewer);
+    this.isInitialized = true;
   }
 
   public get properties() {
@@ -90,6 +91,14 @@ class ViewFilterExtension extends ExtensionEntity {
 
   public get filteredObjects() {
     return this._filteredObjects;
+  }
+
+  protected onEnable() {
+    this.executeFiltering();
+  }
+
+  protected onDisable() {
+    this.executeFiltering();
   }
 
   public async load() {
@@ -135,7 +144,10 @@ class ViewFilterExtension extends ExtensionEntity {
   }
 
   private executeFiltering() {
-    if (this._filterPreset && this._filterPreset.enabled) {
+    if (!this.isInitialized) {
+      return;
+    }
+    if (this._enabled && this._filterPreset && this._filterPreset.enabled) {
       const filterPreset = this._filterPreset;
 
       const objects = this._viewer.selectionTool.picker.objectsOnCurrentLevel;
@@ -185,6 +197,7 @@ class ViewFilterExtension extends ExtensionEntity {
       this._viewer.selectionTool.picker.objectsOnCurrentLevel.forEach((x) =>
         x.onEnable()
       );
+      console.log("wwwwwttttttffffff", this._$currentScopeCount);
       this._$currentScopeCount.next(0);
       this._$childrenCount.next(0);
       this._filteredObjects = [];

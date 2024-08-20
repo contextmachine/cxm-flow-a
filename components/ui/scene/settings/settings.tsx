@@ -132,8 +132,6 @@ const SettingsModal: React.FC<{
                 {" "}
                 {tabsConfigs.tabKeys.map((tabKey) => {
                   const label = tabsConfigs.tabLabels[tabKey];
-                  console.log("label", label);
-
                   return (
                     <Tab
                       key={tabKey}

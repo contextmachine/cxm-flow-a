@@ -59,11 +59,9 @@ class CameraControl {
         })
     );
 
-    this._subscriptions.push(
-      this._viewer.projectSettingsService.$settings.subscribe((settings) => {
-        console.log("alo", settings);
-      })
-    );
+    // this._subscriptions.push(
+    //   this._viewer.projectSettingsService.$settings.subscribe((settings) => {})
+    // );
 
     this._subscriptions.push(
       distinctByKeys(this._viewer.projectSettingsService.$settings, [

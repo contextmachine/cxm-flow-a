@@ -4,6 +4,7 @@ import * as RX from "rxjs";
 import { Entity } from "@/src/objects/entities/entity";
 import { assertDefined } from "@/src/utils";
 import QueryControl from "./query-control";
+import { ProductsDto } from "../../product-service/products.types";
 
 export interface OutlinerItem {
   entity: Entity;
@@ -18,17 +19,16 @@ export interface OutlinerItem {
 type OutlinerTree = OutlinerItem[];
 
 class OutlinerExtension extends ExtensionEntity {
-  private _subscriptions: RX.Unsubscribable[] = [];
-
   private _tree: OutlinerTree = [];
   private _$tree = new RX.Subject<OutlinerTree>();
   private _treeMap: Map<string, OutlinerItem> = new Map();
 
   private _queryControl = new QueryControl(this._viewer);
 
-  constructor(viewer: Viewer) {
+  constructor(viewer: Viewer, productData: ProductsDto) {
     super(viewer);
     this.name = "outliner";
+    this.id = productData.id;
   }
 
   public get tree() {

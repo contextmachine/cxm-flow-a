@@ -210,6 +210,7 @@ class ToolsetService {
   }
 
   public setActiveToolset = (toolsetId: number) => {
+    console.log("activeTooolset", this._activeToolset);
     this._activeToolset = this._toolsets.get(toolsetId) || null;
     this._activeToolset$.next(this._activeToolset);
   };
