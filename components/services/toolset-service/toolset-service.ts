@@ -22,6 +22,8 @@ class ToolsetService {
   private _activePLogId$ = new BehaviorSubject<string>("");
   private _error$ = new BehaviorSubject<string>("");
 
+  public pending$ = new BehaviorSubject<boolean>(false);
+
   constructor(private _sceneService: SceneService) {
     this._authService = this._sceneService.authService;
 
@@ -35,6 +37,8 @@ class ToolsetService {
   }
 
   public async fetchUserToolsets() {
+    this.pending$.next(true);
+
     const userMetadata = this._authService.userMetadata;
     const sceneMetadata = this._sceneService.sceneMetadata;
 
@@ -97,6 +101,8 @@ class ToolsetService {
 
       this._toolsets$.next([...toolsets]);
       this._activeToolset$.next(this._activeToolset);
+
+      this.pending$.next(false);
     } catch (error) {
       this._error$.next("Error loading toolsets");
       console.error("Error loading scene:", error);
@@ -104,6 +110,8 @@ class ToolsetService {
   }
 
   public async addToolset() {
+    this.pending$.next(true);
+
     const userMetadata = this._authService.userMetadata;
     const sceneMetadata = this._sceneService.sceneMetadata;
 
@@ -153,6 +161,8 @@ class ToolsetService {
   }
 
   public async renameToolset(toolsetId: number, name: string) {
+    this.pending$.next(true);
+
     const mutation = gql`
       mutation renameToolset($toolsetId: Int!, $name: String!) {
         update_appv3_toolset(
@@ -176,6 +186,43 @@ class ToolsetService {
       this.fetchUserToolsets();
     } catch (error) {
       this._error$.next("Error renaming toolset");
+      console.error(error);
+    }
+  }
+
+  public async deleteToolset(toolsetId: number) {
+    this.pending$.next(true);
+
+    const mutation = gql`
+      mutation deleteToolset($toolsetId: Int!) {
+        delete_appv3_toolset_product(
+          where: { toolset_id: { _eq: $toolsetId } }
+        ) {
+          affected_rows
+        }
+        delete_appv3_toolset(where: { id: { _eq: $toolsetId } }) {
+          affected_rows
+        }
+      }
+    `;
+    try {
+      await client.mutate({
+        mutation,
+        variables: {
+          toolsetId,
+        },
+      });
+
+      await this.fetchUserToolsets();
+
+      // Set active toolset to the last toolset
+      const toolsets = this._toolsets$.value;
+      const lastToolset = toolsets[toolsets.length - 1];
+      if (lastToolset) {
+        this.setActiveToolset(lastToolset.id);
+      }
+    } catch (error) {
+      this._error$.next("Error deleting toolset");
       console.error(error);
     }
   }
@@ -210,16 +257,23 @@ class ToolsetService {
   }
 
   public setActiveToolset = (toolsetId: number) => {
-    console.log("activeTooolset", this._activeToolset);
     this._activeToolset = this._toolsets.get(toolsetId) || null;
     this._activeToolset$.next(this._activeToolset);
   };
 
   public updateTemporaryTodos(todos: string[]) {
     this._temporaryTodos = todos;
+
+    this.saveToolsetProducts({
+      notificationDisabled: true,
+      fetchDisabled: true,
+    });
   }
 
-  public async saveToolsetProducts() {
+  public async saveToolsetProducts(options?: {
+    notificationDisabled: boolean;
+    fetchDisabled: boolean;
+  }) {
     const productService = this._sceneService.productService;
     const activeToolset = this._activeToolset;
 
@@ -257,6 +311,8 @@ class ToolsetService {
       }
     `;
 
+    const notificationDisabled = options?.notificationDisabled || false;
+
     try {
       const data = await client.mutate({
         mutation,
@@ -266,9 +322,9 @@ class ToolsetService {
         },
       });
 
-      this.fetchUserToolsets();
+      if (!options?.fetchDisabled) this.fetchUserToolsets();
 
-      this._error$.next("Toolset products updated");
+      if (!notificationDisabled) this._error$.next("Toolset products updated");
     } catch (error) {
       this._error$.next("Error updating toolset products");
       console.error("Error updating toolset products:", error);

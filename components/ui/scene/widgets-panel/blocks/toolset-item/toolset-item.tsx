@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  Popover,
   TextField,
   Typography,
 } from "@mui/material";
@@ -19,6 +20,7 @@ const ToolsetItem: React.FC<{
   toolset: ToolsetDto;
   onClick: (id: ToolsetDto) => void;
 }> = ({ toolset, active, onClick }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
   const { toolsetService } = useToolset();
@@ -26,8 +28,20 @@ const ToolsetItem: React.FC<{
   const handleClick = (event: any) => {
     event.stopPropagation();
 
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleRenameClick = (event: any) => {
+    event.stopPropagation();
+
     setNewCollectionName(toolset.name);
     setRenameDialogOpen(true);
+
+    handleClose();
   };
 
   const handleRenameSave = () => {
@@ -38,6 +52,14 @@ const ToolsetItem: React.FC<{
   const handleRenameClose = () => {
     setRenameDialogOpen(false);
   };
+
+  const handleDelete = () => {
+    toolsetService.deleteToolset(toolset.id);
+    handleClose();
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? `actions-w-${toolset.id}` : undefined;
 
   return (
     <>
@@ -92,6 +114,59 @@ const ToolsetItem: React.FC<{
           </Button>
         </Box>
       </Btn>
+
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        sx={{
+          maxWidth: "max-content !important",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "0px",
+            maxWidth: "max-content",
+          }}
+        >
+          <Button
+            sx={{
+              width: "100%",
+              justifyContent: "flex-start",
+              textTransform: "none",
+            }}
+            variant="contained"
+            data-active={false}
+            color="secondary"
+            size="large"
+            onClick={handleRenameClick}
+          >
+            Rename
+          </Button>
+
+          <Button
+            sx={{
+              width: "100%",
+              justifyContent: "flex-start",
+              textTransform: "none",
+            }}
+            variant="contained"
+            data-active={false}
+            color="secondary"
+            size="large"
+            onClick={handleDelete}
+          >
+            Delete
+          </Button>
+        </Box>
+      </Popover>
 
       <Dialog open={renameDialogOpen} onClose={handleRenameClose}>
         <Box sx={{ marginLeft: "10px", marginTop: "10px" }}>Rename Toolset</Box>

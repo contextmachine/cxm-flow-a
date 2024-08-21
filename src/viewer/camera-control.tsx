@@ -76,8 +76,6 @@ class CameraControl {
         }
         this._controls.camera.updateProjectionMatrix();
         this._viewer.updateViewer();
-
-        console.log("camera only");
       })
     );
 

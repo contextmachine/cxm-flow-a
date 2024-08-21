@@ -1,6 +1,6 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { useStates } from "@/components/services/state-service/state-provider";
-import React from "react";
+import React, { use, useEffect, useState } from "react";
 
 import dynamic from "next/dynamic";
 import Properties from "./blocks/properties/properties";
@@ -21,6 +21,17 @@ const WidgetPanelGrid = () => {
   const { sectionType } = useStates();
 
   const { activeToolset, activePLogId } = useToolset();
+
+  const [pending, setPending] = useState(false);
+  useEffect(() => {
+    const a = toolsetService.pending$.subscribe((p) => {
+      setPending(p);
+    });
+
+    return () => {
+      a.unsubscribe();
+    };
+  }, []);
 
   return (
     <>
@@ -64,6 +75,40 @@ const WidgetPanelGrid = () => {
                 position: "relative",
               }}
             >
+              {pending && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: "0",
+                    right: "0",
+                    zIndex: 10,
+                    width: "100%",
+                    height: "100%",
+                    background: "rgba(0, 0, 0, 0)",
+                    backdropFilter: "blur(2px)",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    padding: "9px",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: "20px",
+                      height: "20px",
+                    }}
+                  >
+                    <CircularProgress
+                      sx={{
+                        width: "20px",
+                        height: "20px",
+                      }}
+                      data-type="spinner"
+                      size={"small"}
+                    />
+                  </Box>
+                </Box>
+              )}
+
               <Box
                 sx={{
                   display: "flex",

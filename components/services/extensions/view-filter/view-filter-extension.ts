@@ -197,7 +197,7 @@ class ViewFilterExtension extends ExtensionEntity {
       this._viewer.selectionTool.picker.objectsOnCurrentLevel.forEach((x) =>
         x.onEnable()
       );
-      console.log("wwwwwttttttffffff", this._$currentScopeCount);
+
       this._$currentScopeCount.next(0);
       this._$childrenCount.next(0);
       this._filteredObjects = [];
