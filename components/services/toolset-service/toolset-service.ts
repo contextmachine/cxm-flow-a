@@ -36,7 +36,7 @@ class ToolsetService {
     this.addToolset = this.addToolset.bind(this);
   }
 
-  public async fetchUserToolsets() {
+  public async fetchUserToolsets(options?: { skipActiveToolset: boolean }) {
     this.pending$.next(true);
 
     const userMetadata = this._authService.userMetadata;
@@ -96,11 +96,15 @@ class ToolsetService {
         this._toolsets.set(toolset.id, toolset);
       });
 
-      if (!this._activeToolset)
-        this._activeToolset = toolsets[toolsets.length - 1];
+      const skipActiveToolset = options?.skipActiveToolset || false;
 
-      this._toolsets$.next([...toolsets]);
-      this._activeToolset$.next(this._activeToolset);
+      if (!skipActiveToolset) {
+        if (!this._activeToolset)
+          this._activeToolset = toolsets[toolsets.length - 1];
+
+        this._toolsets$.next([...toolsets]);
+        this._activeToolset$.next(this._activeToolset);
+      }
 
       this.pending$.next(false);
     } catch (error) {
@@ -259,6 +263,10 @@ class ToolsetService {
   public setActiveToolset = (toolsetId: number) => {
     this._activeToolset = this._toolsets.get(toolsetId) || null;
     this._activeToolset$.next(this._activeToolset);
+
+    this.fetchUserToolsets({
+      skipActiveToolset: true,
+    });
   };
 
   public updateTemporaryTodos(todos: string[]) {
