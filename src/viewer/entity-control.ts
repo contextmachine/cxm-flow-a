@@ -41,14 +41,10 @@ class EntityControl {
   }
 
   private updateProjectObjects() {
-    console.log("updateProjectObjects", this._entities);
-
     this._entitiesObservable.next(this._entities);
   }
 
   private updateProjectModels() {
-    console.log("updateProjectModels", this._projectModels);
-
     this._projectModelsObservable.next(this._projectModels);
   }
 

@@ -1,9 +1,11 @@
 import WidgetPaper from "../../../../ui/scene/widgets-panel/blocks/widget-paper/widget-paper";
 import styled from "styled-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TagExtension from "./tags-extension";
 import { useViewer } from "@/components/services/scene-service/scene-provider";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
+import { TagCategory } from "./tags-extension.types";
+import { Button } from "@mui/material";
 
 interface TagWidgetProps {
   isPreview?: boolean;
@@ -14,11 +16,47 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
   const viewer = useViewer();
   const tagService = extension;
 
-  console.log("%cTagWidget", "color: red", tagService);
+  const [categories, setCategories] = useState<TagCategory[]>([]);
+  const [activeCategory, setActiveCategory] = useState<TagCategory | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    const a = tagService.$categories.subscribe((c: TagCategory[]) =>
+      setCategories([...c.values()])
+    );
+
+    const b = tagService.$activeCategory.subscribe(
+      (c: TagCategory | undefined) => setActiveCategory(c)
+    );
+
+    return () => {
+      a.unsubscribe();
+      b.unsubscribe();
+    };
+  }, []);
 
   return (
     <WidgetPaper isPreview={isPreview} title={"Tags"}>
-      Tags
+      {categories.map((c, index) => (
+        <Button
+          key={index}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+            pointerEvents: "all",
+          }}
+          data-active={activeCategory?.name === c.name}
+          onClick={() => tagService.setActiveCategory(c.name)}
+          color="secondary"
+          variant="contained"
+          size="large"
+        >
+          {c.name}
+        </Button>
+      ))}
     </WidgetPaper>
   );
 };

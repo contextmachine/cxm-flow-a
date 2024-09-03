@@ -35,9 +35,6 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
     }
   }, [type]);
 
-  console.log("type", type);
-  console.log("extension", extension);
-
   const exceptions = [
     "bar-widget",
     "chart-widget",

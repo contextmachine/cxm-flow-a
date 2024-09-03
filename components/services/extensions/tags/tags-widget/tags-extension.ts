@@ -209,6 +209,20 @@ class TagsExtension extends ExtensionEntity {
     this.themingColorsApplied$.next(applied);
   }
 
+  public setActiveCategory = (_category: TagCategory | string) => {
+    let category: TagCategory | undefined;
+
+    if (typeof _category === "string") {
+      category = this._categories.get(_category);
+    }
+
+    if (category) {
+      this._activeCategory = category;
+      this.$activeCategory.next(this._activeCategory);
+      this.updateTags(this._entityControl.entities);
+    }
+  };
+
   public async unload() {
     if (this._entityControl$) {
       this._entityControl$.unsubscribe();
