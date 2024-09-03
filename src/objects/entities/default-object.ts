@@ -140,6 +140,15 @@ export class DefaultObject implements Entity {
     this.updateBbox();
   }
 
+  public applyThemingColor(color: string) {
+    // TODO: apply theming color
+    return;
+  }
+
+  public clearThemingColor() {
+    return;
+  }
+
   public onSelect() {
     this.setBboxVisibilty(true);
     this._selected = true;

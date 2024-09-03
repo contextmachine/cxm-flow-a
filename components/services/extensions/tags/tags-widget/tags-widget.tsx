@@ -5,7 +5,9 @@ import TagExtension from "./tags-extension";
 import { useViewer } from "@/components/services/scene-service/scene-provider";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import { TagCategory } from "./tags-extension.types";
-import { Button } from "@mui/material";
+import { Box, Button, IconButton, Menu, MenuItem, Switch } from "@mui/material";
+import { display } from "html2canvas/dist/types/css/property-descriptors/display";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 interface TagWidgetProps {
   isPreview?: boolean;
@@ -20,6 +22,17 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
   const [activeCategory, setActiveCategory] = useState<TagCategory | undefined>(
     undefined
   );
+
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const isMenuOpen = Boolean(menuAnchorEl);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
 
   useEffect(() => {
     const a = tagService.$categories.subscribe((c: TagCategory[]) =>
@@ -36,27 +49,70 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
     };
   }, []);
 
+  const handleCategoryClick = (category: TagCategory) => {
+    const isActive = activeCategory?.name === category.name;
+    if (isActive) {
+      tagService.setActiveCategory(undefined);
+      return;
+    }
+
+    tagService.setActiveCategory(category.name);
+  };
+
   return (
-    <WidgetPaper isPreview={isPreview} title={"Tags"}>
-      {categories.map((c, index) => (
-        <Button
-          key={index}
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            width: "100%",
-            pointerEvents: "all",
-          }}
-          data-active={activeCategory?.name === c.name}
-          onClick={() => tagService.setActiveCategory(c.name)}
-          color="secondary"
-          variant="contained"
-          size="large"
-        >
-          {c.name}
-        </Button>
-      ))}
+    <WidgetPaper
+      isPreview={isPreview}
+      title={"Tags"}
+      actionPanel={
+        <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* <Switch size={"small"} onChange={() => {}} /> */}
+          <IconButton size="small" onClick={handleMenuOpen}>
+            <MoreVertIcon
+              sx={{
+                fontSize: "20px",
+              }}
+            />
+          </IconButton>
+
+          <Menu
+            anchorEl={menuAnchorEl}
+            open={isMenuOpen}
+            onClose={handleMenuClose}
+          >
+            <MenuItem onClick={handleMenuClose}>Option 1</MenuItem>
+            <MenuItem onClick={handleMenuClose}>Option 2</MenuItem>
+          </Menu>
+        </Box>
+      }
+    >
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "3px",
+          width: "100%",
+        }}
+      >
+        {categories.map((c, index) => (
+          <Button
+            key={index}
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              width: "100%",
+              pointerEvents: "all",
+            }}
+            data-active={activeCategory?.name === c.name}
+            onClick={() => handleCategoryClick(c)}
+            color="secondary"
+            variant="contained"
+            size="large"
+          >
+            {c.name}
+          </Button>
+        ))}
+      </Box>
     </WidgetPaper>
   );
 };

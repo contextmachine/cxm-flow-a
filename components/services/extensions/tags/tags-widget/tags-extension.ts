@@ -14,6 +14,7 @@ import CameraControl from "@/src/viewer/camera-control";
 import * as THREE from "three";
 import EntityControl from "@/src/viewer/entity-control";
 import { Entity } from "@/src/objects/entities/entity";
+import stc from "string-to-color";
 
 class TagsExtension extends ExtensionEntity {
   private _tagSvg: SVGSVGElement | undefined;
@@ -31,6 +32,9 @@ class TagsExtension extends ExtensionEntity {
   public $categories = new BehaviorSubject<Map<string, TagCategory>>(
     this._categories
   );
+
+  public $labelsEnabled = new BehaviorSubject<boolean>(true);
+  public $themingColorsEnabled = new BehaviorSubject<boolean>(true);
 
   // New state to track the SVG elements
   private _tagElements: Map<
@@ -72,30 +76,42 @@ class TagsExtension extends ExtensionEntity {
       }
     });
 
-    console.log("updateTags", entities);
-
-    if (!this._activeCategory && this._categories.size > 0) {
+    /* if (!this._activeCategory && this._categories.size > 0) {
       this._activeCategory = Array.from(this._categories.values())[0];
-    }
+    } */
 
     this.$categories.next(this._categories);
     this.$activeCategory.next(this._activeCategory);
     this._tags.clear();
 
-    if (!this._activeCategory) return;
-
     // get all tags based on active category
     entities.forEach((entity) => {
-      const props = entity.props;
-      if (props) {
-        const tag = props.get(this._activeCategory!.name);
-        if (tag) {
-          this._tags.set(entity.id, {
-            id: entity.id,
-            label: tag,
-            position: entity.center,
-          });
+      if (this._activeCategory) {
+        const props = entity.props;
+        if (props) {
+          const tag = props.get(this._activeCategory!.name);
+          if (tag) {
+            this._tags.set(entity.id, {
+              id: entity.id,
+              label: tag,
+              position: entity.center,
+            });
+
+            // Generate color from tag using stc
+            const color = stc(tag);
+
+            // Apply material to the entity's mesh or group
+            if (entity.type === "mesh") {
+              if (this._activeCategory) {
+                entity.applyThemingColor(color);
+              }
+            }
+          } else {
+            entity.applyThemingColor("white", true);
+          }
         }
+      } else {
+        entity.clearThemingColor();
       }
     });
 
@@ -209,7 +225,7 @@ class TagsExtension extends ExtensionEntity {
     this.themingColorsApplied$.next(applied);
   }
 
-  public setActiveCategory = (_category: TagCategory | string) => {
+  public setActiveCategory = (_category: TagCategory | string | null) => {
     let category: TagCategory | undefined;
 
     if (typeof _category === "string") {
@@ -218,9 +234,12 @@ class TagsExtension extends ExtensionEntity {
 
     if (category) {
       this._activeCategory = category;
-      this.$activeCategory.next(this._activeCategory);
-      this.updateTags(this._entityControl.entities);
+    } else {
+      this._activeCategory = undefined;
     }
+
+    this.$activeCategory.next(this._activeCategory);
+    this.updateTags(this._entityControl.entities);
   };
 
   public async unload() {
@@ -233,6 +252,16 @@ class TagsExtension extends ExtensionEntity {
       this._cameraControl$.unsubscribe();
       this._cameraControl$ = undefined;
     }
+
+    this._tags.clear();
+    this._categories.clear();
+
+    this.$categories.unsubscribe();
+    this.$activeCategory.unsubscribe();
+    this.$labelsEnabled.unsubscribe();
+    this.$themingColorsEnabled.unsubscribe;
+    this.labelsVisible$.unsubscribe();
+    this.themingColorsApplied$.unsubscribe();
   }
 }
 
