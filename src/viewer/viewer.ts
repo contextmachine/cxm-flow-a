@@ -179,6 +179,15 @@ export class Viewer {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
+    // для предотвращения выделения текста на страницах с нажатием Shift
+    ["keyup", "keydown"].forEach((event: any) => {
+      window.addEventListener(event, (e: any) => {
+        document.onselectstart = function () {
+          return !(e.key == "Shift" && e.shiftKey);
+        };
+      });
+    });
+
     this._renderer.setSize(width, height);
     this._renderer.setPixelRatio(window.devicePixelRatio);
 

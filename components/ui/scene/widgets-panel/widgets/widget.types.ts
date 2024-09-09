@@ -8,4 +8,5 @@ export type WidgetType =
   | "mapping-widget"
   | "statistics-widget"
   | "bar-widget"
-  | "toolset-widget";
+  | "toolset-widget"
+  | "selection-props";
