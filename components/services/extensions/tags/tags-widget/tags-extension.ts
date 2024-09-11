@@ -25,6 +25,8 @@ class TagsExtension extends ExtensionEntity {
   private _entityControl: EntityControl;
 
   private _tags: Map<string, Tag> = new Map<string, Tag>();
+  public $tags = new BehaviorSubject<Map<string, Tag>>(this._tags);
+
   private _tagGroups: Map<string, TagGroup> = new Map<string, TagGroup>();
   private _categories: Map<string, TagCategory> = new Map<
     string,
@@ -98,6 +100,7 @@ class TagsExtension extends ExtensionEntity {
     this.$categories.next(this._categories);
     this.$activeCategory.next(this._activeCategory);
     this._tags.clear();
+    this.$tags.next(new Map());
 
     // get all tags based on active category
     entities.forEach((entity) => {
@@ -132,6 +135,8 @@ class TagsExtension extends ExtensionEntity {
         entity.clearThemingColor();
       }
     });
+
+    this.$tags.next(new Map(this._tags));
 
     this.renderAll();
   };
@@ -244,8 +249,6 @@ class TagsExtension extends ExtensionEntity {
     const grouped: TagGroup[] = [];
     const tags = Array.from(this._tags.values());
 
-    console.log("groups 1", tags);
-
     // Group tags based on distance
     tags.forEach((tag, i) => {
       const { projectedPosition } = tag;
@@ -254,8 +257,6 @@ class TagsExtension extends ExtensionEntity {
 
       const x = projectedPosition.x;
       const y = projectedPosition.y;
-
-      console.log("group 2", x, y);
 
       const groupedWith = grouped.find(
         (group) =>
@@ -279,8 +280,6 @@ class TagsExtension extends ExtensionEntity {
         this._tagGroups.set(`${i}`, group);
       }
     });
-
-    console.log("group 3", this._tagGroups);
   };
 
   private renderGroups = () => {
