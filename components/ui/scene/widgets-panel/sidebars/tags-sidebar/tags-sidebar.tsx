@@ -78,7 +78,7 @@ const TagsSidebar: React.FC<{
           pointerEvents: "all !important",
         }}
       >
-        <WidgetPaper isPreview={false} title={"Tags summary"}>
+        <WidgetPaper isPreview={false} title={"Summary"}>
           <Tabs $activeTab={tab} className="outliner-tabs">
             {outlinerTabs.map((x, index) => (
               <div
