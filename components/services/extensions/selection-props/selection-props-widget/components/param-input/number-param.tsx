@@ -1,19 +1,23 @@
 import { FC } from "react";
-import ParamLabel from "./components/param-label";
-import { InputWrapper, MixedWrapper, ParamInputProps } from "./param-input";
-import { isMixed } from "../../../../params/mixed";
+import { ParamWrapper, MixedWrapper, ParamInputProps } from "./param-input";
+import ParamLabel from "../param-label";
 
 export interface NumberInputProps extends ParamInputProps {
   precision?: number;
 }
 
 const NumberInput: FC<NumberInputProps> = (props: NumberInputProps) => {
-  const { property, onChange, paramName, precision, param } = props;
+  const { property, onChange, paramName, precision, param, index } = props;
 
   return (
     <>
-      <InputWrapper>
-        <ParamLabel paramName={paramName} param={param} type="number" />
+      <ParamWrapper>
+        <ParamLabel
+          paramName={paramName}
+          param={param}
+          type="number"
+          index={index}
+        />
         <MixedWrapper className="param-value">
           {/* <InputNumber
                     size='small'
@@ -30,7 +34,7 @@ const NumberInput: FC<NumberInputProps> = (props: NumberInputProps) => {
                     style={{ width: '100%' }}
                 /> */}
         </MixedWrapper>
-      </InputWrapper>
+      </ParamWrapper>
     </>
   );
 };

@@ -1,4 +1,4 @@
-import { ParamType } from "../../params/params";
+import { ParamType } from "../params/params";
 
 const simpleTypes = ["string", "boolean", "number"];
 

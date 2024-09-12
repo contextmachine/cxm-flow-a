@@ -1,18 +1,23 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
-import ParamLabel from "./components/param-label";
-import { InputWrapper, MixedWrapper, ParamInputProps } from "./param-input";
+import { ParamWrapper, MixedWrapper, ParamInputProps } from "./param-input";
+import ParamLabel from "../param-label";
 
 export interface RangeInputProps extends ParamInputProps {
   precision?: number;
 }
 
 export default function DomainSlider(props: RangeInputProps) {
-  const { property, onChange, paramName, precision, param } = props;
+  const { property, onChange, paramName, precision, param, index } = props;
 
   return (
     <>
-      <InputWrapper>
-        <ParamLabel paramName={paramName} param={param} type="number" />
+      <ParamWrapper>
+        <ParamLabel
+          paramName={paramName}
+          param={param}
+          type="number"
+          index={index}
+        />
         <div className="param-value">
           <MixedWrapper>
             {/* <InputNumber
@@ -46,7 +51,7 @@ export default function DomainSlider(props: RangeInputProps) {
                     /> */}
           </MixedWrapper>
         </div>
-      </InputWrapper>
+      </ParamWrapper>
     </>
   );
 }

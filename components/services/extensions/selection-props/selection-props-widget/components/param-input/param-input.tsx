@@ -6,16 +6,16 @@ import NumberInput from "./number-param";
 import StringInput from "./string-param";
 import RangeInput from "./range-input";
 import EnumInput from "./enum-input";
-import { Mixed } from "../../../../params/mixed";
+import { useViewer } from "@/components/services/scene-service/scene-provider";
+import { ParamEntity } from "@/src/services/project-settings/entities/params";
+import UniversalInput from "./universal-input";
 import {
   EnumParam,
   NumberParam,
   Param,
   RangeParam,
-} from "../../../../params/params";
-import { useViewer } from "@/components/services/scene-service/scene-provider";
-import { ParamEntity } from "@/src/services/project-settings/entities/params";
-import UniversalInput from "./universal-input/universal-input";
+} from "../../../params/params";
+import { PropertyValue } from "../../../selection-props-extension";
 
 export const MixedWrapper = styled.div`
   display: flex;
@@ -28,7 +28,7 @@ export const MixedWrapper = styled.div`
   }
 `;
 
-export const InputWrapper = styled.div`
+export const ParamWrapper = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
@@ -55,11 +55,7 @@ export interface ParamInputProps {
   paramName: string;
   onChange: (value: any, paramName: string) => void;
   param?: Param;
-}
-
-export interface PropertyValue {
-  value: Mixed<any>;
-  type: string;
+  index: number;
 }
 
 export default function ParamInput(props: ParamInputProps) {

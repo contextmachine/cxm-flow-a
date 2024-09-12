@@ -1,12 +1,12 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
-import ParamLabel from "./components/param-label";
-import { InputWrapper, MixedWrapper, ParamInputProps } from "./param-input";
-import { EnumParam } from "../../../../params/params";
+import { ParamWrapper, MixedWrapper, ParamInputProps } from "./param-input";
+import { EnumParam } from "../../../params/params";
+import ParamLabel from "../param-label";
 
 export interface EnumInputProps extends ParamInputProps {}
 
 export default function EnumInput(props: EnumInputProps) {
-  const { property, onChange, paramName, param } = props;
+  const { property, onChange, paramName, param, index } = props;
 
   const options = useMemo(() => {
     if (param) {
@@ -21,8 +21,13 @@ export default function EnumInput(props: EnumInputProps) {
   if (param) {
     return (
       <>
-        <InputWrapper>
-          <ParamLabel paramName={paramName} param={param} type="number" />
+        <ParamWrapper>
+          <ParamLabel
+            paramName={paramName}
+            param={param}
+            type="number"
+            index={index}
+          />
           <div className="param-value">
             <MixedWrapper>
               {/* <Select
@@ -37,7 +42,7 @@ export default function EnumInput(props: EnumInputProps) {
               /> */}
             </MixedWrapper>
           </div>
-        </InputWrapper>
+        </ParamWrapper>
       </>
     );
   } else {

@@ -1,17 +1,21 @@
 import { FC } from "react";
-import ParamLabel from "./components/param-label";
-import { InputWrapper, MixedWrapper, ParamInputProps } from "./param-input";
+import { ParamWrapper, MixedWrapper, ParamInputProps } from "./param-input";
 import { Input } from "@mui/material";
-import { isMixed } from "../../../../params/mixed";
-import styled from "styled-components";
+import ParamLabel from "../param-label";
+import { isMixed } from "../../../params/mixed";
 
 const StringInput: FC<ParamInputProps> = (props: ParamInputProps) => {
-  const { property, onChange, paramName, param } = props;
+  const { property, onChange, paramName, param, index } = props;
 
   return (
     <>
-      <InputWrapper>
-        <ParamLabel paramName={paramName} param={param} type="string" />
+      <ParamWrapper>
+        <ParamLabel
+          paramName={paramName}
+          param={param}
+          type="string"
+          index={index}
+        />
         <MixedWrapper className="param-value">
           <Input
             size="small"
@@ -20,7 +24,7 @@ const StringInput: FC<ParamInputProps> = (props: ParamInputProps) => {
             onChange={(e) => onChange(e.target.value, paramName)}
           />
         </MixedWrapper>
-      </InputWrapper>
+      </ParamWrapper>
     </>
   );
 };

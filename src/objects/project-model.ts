@@ -70,6 +70,10 @@ export class ProjectModel {
     return this._entity;
   }
 
+  public get queryId(): number {
+    return this._queryEntity.id;
+  }
+
   public initModel(object: THREE.Object3D): Entity {
     const modelObjects: THREE.Object3D[] = [];
     let entity: Entity;

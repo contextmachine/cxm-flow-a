@@ -2,12 +2,12 @@ import { useClickOutside, useEnterEsc, useEntities } from "@/src/hooks";
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { Entity } from "@/src/objects/entities/entity";
-import { InputWrapper, ParamInputProps } from "../param-input";
-import ParamLabel from "../components/param-label";
 import { isMixed } from "@/components/services/extensions/selection-props/params/mixed";
+import { ParamWrapper, ParamInputProps } from "./param-input";
+import ParamLabel from "../param-label";
 
 const UniversalInput: React.FC<ParamInputProps> = (props: ParamInputProps) => {
-  const { paramName, property } = props;
+  const { paramName, property, onChange, index } = props;
   const [isOpen, setIsOpen] = useState(false);
   const dropDownRef = useRef(null);
 
@@ -18,7 +18,12 @@ const UniversalInput: React.FC<ParamInputProps> = (props: ParamInputProps) => {
     paramName
   ).values;
 
-  const [value, setValue] = useState(property.value);
+  const onInputChange = (e: any) => {
+    onChange(e, paramName);
+    // setValue(e);
+  };
+
+  // const [value, setValue] = useState(property.value);
   const [filteredOptions, setFilteredOptions] = useState(valueOptions);
 
   const handleClose = () => {
@@ -40,74 +45,92 @@ const UniversalInput: React.FC<ParamInputProps> = (props: ParamInputProps) => {
   //   (option ?? "").toLowerCase().includes(input.toLowerCase());
 
   return (
-    <InputWrapper>
-      <ParamLabel paramName={paramName} param={undefined} type="string" />
-      <SelectWithSearchWrapper>
+    <ParamWrapper>
+      <ParamLabel
+        paramName={paramName}
+        param={undefined}
+        type="string"
+        index={index}
+      />
+      <InputWrapper>
         <DropdownContainer ref={dropDownRef}>
-          <div className="input-field">
+          <InputField>
             <input
+              className="input-field"
               onClick={() => setIsOpen(!isOpen)}
-              className="multiple-input"
-              onChange={(e) => setValue(e.target.value)}
+              onChange={(e) => onInputChange(e.target.value)}
               value={isMixed(property.value) ? "" : property.value}
               placeholder={isMixed(property.value) ? "Mixed" : undefined}
             />
-          </div>
+            {property.beenChanged && <span className="edit-tag" />}
+          </InputField>
           {isOpen && filteredOptions.length > 0 && (
             <DropdownList>
               {filteredOptions.map((option, index) => (
-                <DropdownItem key={index} onClick={() => setValue(option)}>
+                <DropdownItem
+                  key={index}
+                  onClick={() => {
+                    handleClose();
+                    onInputChange(option);
+                  }}
+                >
                   {option}
                 </DropdownItem>
               ))}
             </DropdownList>
           )}
         </DropdownContainer>
-      </SelectWithSearchWrapper>
-    </InputWrapper>
+      </InputWrapper>
+    </ParamWrapper>
   );
 };
 
 export default UniversalInput;
 
-const SelectWithSearchWrapper = styled.div`
+const InputField = styled.div`
+  height: 25px;
+  display: flex;
+  justify-content: space-between;
+  background-color: var(--select-bg-color);
+  border: 1px solid var(--box-border-color);
+  align-items: center;
+  width: 100%;
+
+  border-radius: 9px;
+  flex-flow: row wrap;
+  gap: 2px;
+
+  .input-field {
+    border: 0px;
+    background-color: var(--select-bg-color);
+    margin-left: 10px;
+    height: 20px;
+    &:focus-visible {
+      outline: -webkit-focus-ring-color auto 0px;
+    }
+  }
+
+  .edit-tag {
+    width: 4px;
+    height: 4px;
+    border-radius: 2px;
+    margin-right: 4px;
+    background-color: var(--button-secondary-active-text-color);
+  }
+
+  /* .end-icon {
+    padding: 0px;
+
+    svg {
+      fill: #e0e0e0;
+    }
+  } */
+`;
+
+const InputWrapper = styled.div`
   width: 100%;
   font-size: 12px;
   display: flex;
-
-  .input-field {
-    min-height: 25px;
-    display: flex;
-    justify-content: start;
-    background-color: var(--select-bg-color);
-    border: 1px solid var(--box-border-color);
-    width: 100%;
-
-    border-radius: 9px;
-    padding: 2px;
-    flex-flow: row wrap;
-    gap: 2px;
-
-    .multiple-input {
-      min-width: 100px;
-      max-width: 100%;
-      border: 0px;
-      background-color: var(--select-bg-color);
-      margin-left: 10px;
-      height: 20px;
-      &:focus-visible {
-        outline: -webkit-focus-ring-color auto 0px;
-      }
-    }
-
-    .end-icon {
-      padding: 0px;
-
-      svg {
-        fill: #e0e0e0;
-      }
-    }
-  }
 `;
 
 const DropdownContainer = styled.div`

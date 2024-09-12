@@ -4,7 +4,6 @@ import ViewFilterExtension, {
   FilterGroup,
 } from "../view-filter-extension";
 import styled from "styled-components";
-import { IconButton } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import OperatorSelect from "@/components/services/extensions/view-filter/filter-widget/operator-select";
 import ValueInput from "./value-input";

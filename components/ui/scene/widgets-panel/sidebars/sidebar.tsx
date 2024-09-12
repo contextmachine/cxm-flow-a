@@ -3,7 +3,7 @@ import { WidgetType } from "../widgets/widget.types";
 import { useViewer } from "@/components/services/scene-service/scene-provider";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import PointCloudHandlerSidebar from "./pointcloud-handler-sidebar/pointcloud-handler-sidebar";
-import SelectionProps from "../../../../services/extensions/selection-props/selection-props-widget/properties-bar/properties-sidebar";
+import SelectionProps from "../../../../services/extensions/selection-props/selection-props-widget/selection-props-bar";
 
 const Sidebar: React.FC<{
   type: WidgetType;
