@@ -9,7 +9,6 @@ import {
   selectedMaterial,
   transparentMaterial,
   lineDisabledMaterial,
-  createThemeMaterial,
 } from "../materials/object-materials";
 import { Group } from "./group";
 import { escape } from "lodash";
@@ -46,9 +45,6 @@ export class Mesh implements Entity {
 
   private _defaultMaterial: THREE.Material = meshDefaultMaterial;
   private _overrideMaterial: THREE.Material | undefined;
-
-  private _themingColor: string | undefined; // hex color
-  private _themingColorOpacity: number = 1;
 
   constructor(object: THREE.Mesh, model: ProjectModel, parent?: Group) {
     this._id = object.uuid;
@@ -212,11 +208,6 @@ export class Mesh implements Entity {
       newMaterial = selectedMaterial;
     } else if (this._overrideMaterial) {
       newMaterial = this._overrideMaterial;
-    } else if (this._themingColor) {
-      newMaterial = createThemeMaterial(
-        this._themingColor,
-        this._themingColorOpacity
-      );
     } else {
       newMaterial = this._defaultMaterial;
     }
@@ -271,22 +262,6 @@ export class Mesh implements Entity {
 
     this.updateLineMaterial();
     this.updateMeshMaterial();
-  }
-
-  /**
-   * Apply theming color to the mesh
-   * @param color hex color
-   */
-  public applyThemingColor(color: string, isTransparent = false) {
-    this._themingColor = color;
-    this._themingColorOpacity = isTransparent ? 0 : 1;
-
-    this.updateMaterials();
-  }
-
-  public clearThemingColor() {
-    this._themingColor = undefined;
-    this.updateMaterials();
   }
 
   public onSelect() {

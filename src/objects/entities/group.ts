@@ -171,16 +171,6 @@ export class Group implements Entity {
     this.updateBbox();
   }
 
-  public applyThemingColor(color: string) {
-    // TODO: apply color to group
-    return;
-  }
-
-  public clearThemingColor() {
-    // TODO: clear color from group
-    return;
-  }
-
   public onSelect() {
     this._selected = true;
     this.setBboxVisibilty(true, selectedGroupBoxHelperColor);

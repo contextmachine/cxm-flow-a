@@ -6,7 +6,6 @@ import Viewer from "./viewer";
 import ViewFilterExtension from "@/components/services/extensions/view-filter/view-filter-extension";
 import OutlinerExtension from "@/components/services/extensions/outliner/outliner-extension";
 import PointCloudExtension from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension";
-import TagsExtension from "@/components/services/extensions/tags/tags-widget/tags-extension";
 import { ProductsDto } from "@/components/services/product-service/products.types";
 import SelectionPropsExtension from "@/components/services/extensions/selection-props/selection-props-extension";
 
@@ -25,7 +24,6 @@ class ExtensionControl {
         products.forEach((data) => {
           if (!this._extensions.has(data.name)) {
             const extension = this.createExtension(data);
-
             if (extension) {
               console.log(extension);
               this.addExtension(extension);
@@ -97,8 +95,6 @@ class ExtensionControl {
         return new OutlinerExtension(this._viewer, productData);
       case "selection-props":
         return new SelectionPropsExtension(this._viewer, productData);
-      case "tags-widget":
-        return new TagsExtension(this._viewer, productData);
       default:
         return undefined;
     }

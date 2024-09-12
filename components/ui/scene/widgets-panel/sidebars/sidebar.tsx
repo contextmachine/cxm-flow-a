@@ -3,7 +3,6 @@ import { WidgetType } from "../widgets/widget.types";
 import { useViewer } from "@/components/services/scene-service/scene-provider";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import PointCloudHandlerSidebar from "./pointcloud-handler-sidebar/pointcloud-handler-sidebar";
-import TagsSidebar from "./tags-sidebar/tags-sidebar";
 import SelectionProps from "../../../../services/extensions/selection-props/selection-props-widget/selection-props-bar";
 
 const Sidebar: React.FC<{
@@ -28,8 +27,6 @@ const Sidebar: React.FC<{
   switch (type) {
     case "pointcloud-handler":
       return <PointCloudHandlerSidebar extension={extension!} />;
-    case "tags-widget":
-      return <TagsSidebar extension={extension!} />;
     case "selection-props":
       return <SelectionProps extension={extension} />;
     default:

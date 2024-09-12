@@ -13,7 +13,6 @@ import ViewFilterWidget from "@/components/services/extensions/view-filter/filte
 import PointCloudHandlerWidget from "./pointcloud-handler-widget/pointcloud-handler-widget";
 import OutlinerWidget from "@/components/services/extensions/outliner/outliner-widget/outliner-widget";
 import OutlinerExtension from "@/components/services/extensions/outliner/outliner-extension";
-import TagWidget from "@/components/services/extensions/tags/tags-widget/tags-widget";
 
 const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
   if (type.toLowerCase().startsWith("product")) {
@@ -71,8 +70,6 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
       return <BarChartWidget isPreview={isPreview} extension={extension} />;
     case "toolset-widget":
       return <ToolsetWidget isPreview={isPreview} extension={extension} />;
-    case "tags-widget":
-      return <TagWidget isPreview={isPreview} extension={extension!} />;
     default:
       return null;
   }

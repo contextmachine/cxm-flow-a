@@ -10,4 +10,3 @@ export type WidgetType =
   | "bar-widget"
   | "toolset-widget"
   | "selection-props";
-  | "tags-widget";
