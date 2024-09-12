@@ -5,9 +5,11 @@ import { Entity } from "@/src/objects/entities/entity";
 import { isMixed } from "@/components/services/extensions/selection-props/params/mixed";
 import { ParamWrapper, ParamInputProps } from "./param-input";
 import ParamLabel from "../param-label";
+import { IconButton } from "@mui/material";
+import UTurnRightIcon from "@mui/icons-material/UTurnRight";
 
 const UniversalInput: React.FC<ParamInputProps> = (props: ParamInputProps) => {
-  const { paramName, property, onChange, index } = props;
+  const { paramName, property, onChange, onRevert, index } = props;
   const [isOpen, setIsOpen] = useState(false);
   const dropDownRef = useRef(null);
 
@@ -62,7 +64,19 @@ const UniversalInput: React.FC<ParamInputProps> = (props: ParamInputProps) => {
               value={isMixed(property.value) ? "" : property.value}
               placeholder={isMixed(property.value) ? "Mixed" : undefined}
             />
-            {property.beenChanged && <span className="edit-tag" />}
+            {property.beenChanged && (
+              <div className="edit-block">
+                <span className="edit-tag" />
+                <IconButton
+                  className="revert-button"
+                  onClick={() => {
+                    onRevert(paramName);
+                  }}
+                >
+                  <UTurnRightIcon />
+                </IconButton>
+              </div>
+            )}
           </InputField>
           {isOpen && filteredOptions.length > 0 && (
             <DropdownList>
@@ -110,7 +124,26 @@ const InputField = styled.div`
     }
   }
 
+  &:hover .edit-tag {
+    display: none;
+  }
+
+  .revert-button {
+    transform: rotate(90deg);
+    display: none;
+    width: 12px;
+    height: 12px;
+    * {
+      width: 12px;
+    }
+  }
+
+  &:hover .revert-button {
+    display: flex;
+  }
+
   .edit-tag {
+    display: flex;
     width: 4px;
     height: 4px;
     border-radius: 2px;

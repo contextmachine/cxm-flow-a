@@ -1,6 +1,5 @@
 import Viewer from "@/src/viewer/viewer";
 import ExtensionEntity from "../../extension-service/entity/extension-entity";
-import * as RX from "rxjs";
 import { ProductsDto } from "../../product-service/products.types";
 import { Entity } from "@/src/objects/entities/entity";
 import { Mixed, MixedValue } from "./params/mixed";
@@ -8,9 +7,10 @@ import { defineParamType } from "./selection-props-widget/utils";
 import { groupBy } from "@/src/utils";
 
 export interface PropertyValue {
+  type: string;
   beenChanged: boolean;
   value: Mixed<any>;
-  type: string;
+  oldValue: Mixed<any>;
 }
 
 class SelectionPropsExtension extends ExtensionEntity {
@@ -38,23 +38,36 @@ class SelectionPropsExtension extends ExtensionEntity {
     });
 
     objectList.forEach((po) => {
-      [...po.props!].forEach(([k, v]) => {
-        if (params.has(k)) {
-          const param = params.get(k)!;
-          if (param.value !== v) {
+      [...allKeys].forEach((key) => {
+        const value = po.props!.get(key);
+        if (params.has(key)) {
+          const param = params.get(key)!;
+          if (param.value !== value) {
             param.value = new MixedValue();
+            param.oldValue = param.value;
           }
         } else {
-          const valueType = defineParamType(v);
+          const valueType = defineParamType(value);
 
           if (valueType) {
-            params.set(k, { value: v, type: valueType, beenChanged: false });
+            params.set(key, {
+              oldValue: value,
+              value,
+              type: valueType,
+              beenChanged: false,
+            });
           } else {
-            params.set(k, { value: v, type: "string", beenChanged: false });
+            params.set(key, {
+              oldValue: value,
+              value,
+              type: "string",
+              beenChanged: false,
+            });
           }
         }
       });
     });
+
     return params;
   }
 

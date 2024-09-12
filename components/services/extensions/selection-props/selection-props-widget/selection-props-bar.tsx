@@ -52,6 +52,12 @@ const SelectionProps: React.FC<{
                     param.value = value;
                     setFormState(new Map(formState));
                   }}
+                  onRevert={(paramName) => {
+                    const param = formState.get(paramName) as PropertyValue;
+                    param.beenChanged = false;
+                    param.value = param.oldValue;
+                    setFormState(new Map(formState));
+                  }}
                   paramName={x[0]}
                   property={x[1]}
                   index={i}

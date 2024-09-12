@@ -54,6 +54,7 @@ export interface ParamInputProps {
   property: PropertyValue;
   paramName: string;
   onChange: (value: any, paramName: string) => void;
+  onRevert: (paramName: string) => void;
   param?: Param;
   index: number;
 }
