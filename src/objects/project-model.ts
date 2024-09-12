@@ -106,8 +106,6 @@ export class ProjectModel {
 
     console.timeLog(timerLabel);
 
-    console.log(this._unionMesh);
-
     if (object instanceof THREE.Group) {
       entity = new Group(object, this, undefined);
     } else if (object instanceof THREE.Mesh) {

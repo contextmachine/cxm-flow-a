@@ -34,6 +34,9 @@ export interface Entity {
   setBboxVisibilty: (show: boolean) => void;
   updateMaterial: () => void;
 
+  applyThemingColor: (color: string, isTransparent?: boolean) => void;
+  clearThemingColor: () => void;
+
   onSelect: () => void;
   onDeselect: () => void;
   onParentSelect: () => void;
