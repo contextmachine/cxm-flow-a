@@ -7,6 +7,7 @@ import { defineParamType } from "./selection-props-widget/utils";
 import { groupBy } from "@/src/utils";
 
 export interface PropertyValue {
+  paramName: string;
   type: string;
   beenChanged: boolean;
   value: Mixed<any>;
@@ -51,6 +52,7 @@ class SelectionPropsExtension extends ExtensionEntity {
 
           if (valueType) {
             params.set(key, {
+              paramName: key,
               oldValue: value,
               value,
               type: valueType,
@@ -58,6 +60,7 @@ class SelectionPropsExtension extends ExtensionEntity {
             });
           } else {
             params.set(key, {
+              paramName: key,
               oldValue: value,
               value,
               type: "string",

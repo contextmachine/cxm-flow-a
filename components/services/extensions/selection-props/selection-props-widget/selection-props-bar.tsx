@@ -1,12 +1,13 @@
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import { Box, Button } from "@mui/material";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import WidgetPaper from "../../../../ui/scene/widgets-panel/blocks/widget-paper/widget-paper";
 import { useSelected } from "@/src/hooks";
 import SelectionPropsExtension, {
   PropertyValue,
 } from "../selection-props-extension";
 import ParamInput from "./components/param-input/param-input";
+import NewParamForm from "./new-param-form";
 
 const SelectionProps: React.FC<{
   extension: ExtensionEntityInterface;
@@ -18,10 +19,47 @@ const SelectionProps: React.FC<{
 
   const [formState, setFormState] = useState(new Map<string, PropertyValue>());
 
-  const paramList = useMemo(() => {
+  const onPropertyAdd = (name: string, value: string) => {
+    formState.set(name, {
+      paramName: name,
+      value,
+      oldValue: undefined,
+      type: "string",
+      beenChanged: true,
+    });
+    setFormState(new Map(formState));
+  };
+
+  const onPropertyChange = (value: any, paramName: string) => {
+    const param = formState.get(paramName) as PropertyValue;
+    param.beenChanged = true;
+    param.value = value;
+    setFormState(new Map(formState));
+  };
+
+  const onPropertyRevert = (paramName: string) => {
+    const param = formState.get(paramName) as PropertyValue;
+    if (param.oldValue) {
+      param.beenChanged = false;
+      param.value = param.oldValue;
+    } else {
+      formState.delete(paramName);
+    }
+    setFormState(new Map(formState));
+  };
+
+  const onPropertyDelete = (paramName: string) => {
+    const param = formState.get(paramName) as PropertyValue;
+    if (param.oldValue) {
+      param.beenChanged = true;
+      param.value = undefined;
+    }
+    setFormState(new Map(formState));
+  };
+
+  useEffect(() => {
     const params = extension.getSelectionParams(selected);
     setFormState(params);
-    return params;
   }, [selected]);
 
   return (
@@ -46,23 +84,17 @@ const SelectionProps: React.FC<{
             >
               {[...formState.entries()].map((x, i) => (
                 <ParamInput
-                  onChange={(value, paramName) => {
-                    const param = formState.get(paramName) as PropertyValue;
-                    param.beenChanged = true;
-                    param.value = value;
-                    setFormState(new Map(formState));
-                  }}
-                  onRevert={(paramName) => {
-                    const param = formState.get(paramName) as PropertyValue;
-                    param.beenChanged = false;
-                    param.value = param.oldValue;
-                    setFormState(new Map(formState));
-                  }}
-                  paramName={x[0]}
+                  onChange={onPropertyChange}
+                  onRevert={onPropertyRevert}
+                  onDelete={onPropertyDelete}
                   property={x[1]}
                   index={i}
                 />
               ))}
+              <NewParamForm
+                existingKeys={[...formState.keys()]}
+                onSubmit={onPropertyAdd}
+              />
               <Button
                 sx={{
                   width: "100%",

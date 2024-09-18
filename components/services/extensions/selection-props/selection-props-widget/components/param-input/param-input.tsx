@@ -52,15 +52,15 @@ export const ParamWrapper = styled.div`
 
 export interface ParamInputProps {
   property: PropertyValue;
-  paramName: string;
   onChange: (value: any, paramName: string) => void;
   onRevert: (paramName: string) => void;
+  onDelete: (paramName: string) => void;
   param?: Param;
   index: number;
 }
 
 export default function ParamInput(props: ParamInputProps) {
-  const { property, onChange, paramName } = props;
+  const { property, onChange } = props;
 
   const viewer = useViewer();
   const [paramLibrary, setParamLibrary] = useState(
@@ -87,8 +87,8 @@ export default function ParamInput(props: ParamInputProps) {
   //   }
   // }, [settings, params]);
 
-  if (paramLibrary.has(paramName)) {
-    const param = assertDefined(paramLibrary.get(paramName));
+  if (paramLibrary.has(property.paramName)) {
+    const param = assertDefined(paramLibrary.get(property.paramName));
 
     switch (param.type) {
       case "boolean":

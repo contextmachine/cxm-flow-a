@@ -178,6 +178,8 @@ class Loader {
     }
 
     const jsonObject = findThreeJSJSON(data);
+
+    console.log(jsonObject);
     if (jsonObject) {
       const object3d = await parseJSON(jsonObject);
 

@@ -5,6 +5,7 @@ import {
 import { FC, useState } from "react";
 import styled from "styled-components";
 import ClearIcon from "@mui/icons-material/Clear";
+import { PropertyValue } from "../../selection-props-extension";
 
 const LibraryTag = styled.div`
   display: flex;
@@ -19,63 +20,38 @@ const LibraryTag = styled.div`
   }
 `;
 
-// стиль для редактирования параметра, пока отключен, ждет допиливания
-// const Label = styled.div`
-//     cursor: pointer;
-//     &:hover {
-//         text-decoration-line: underline;
-//     }
-// }
-// `
-
 const Label = styled.div``;
 
 interface ParamLabelProps {
   param?: Param;
-  paramName: string;
+  property: PropertyValue;
   type: ParamType;
   index: number;
+  onDelete: (paramName: string) => void;
 }
 
 const ParamLabel: FC<ParamLabelProps> = (props: ParamLabelProps) => {
-  const { param, paramName, type, index } = props;
+  const { param, type, index, property, onDelete } = props;
   const [edit, setOpenEdit] = useState(false);
-
-  const onDelete = () => {
-    // extension.removeFilterItem(parentGroup, id);
-  };
 
   return (
     <>
       <LabelContainer $color={pallete[index % pallete.length]}>
         <div className="marker">
           <span className="marker-tag" />
-          <DeleteButton className="delete-button" onClick={() => onDelete()}>
+          <DeleteButton
+            className="delete-button"
+            onClick={() => onDelete(property.paramName)}
+          >
             <ClearIcon className="delete-icon" />
           </DeleteButton>
         </div>
         <Label
-          onClick={() => {
-            // setOpenEdit(true)
-          }}
+          style={{ textDecoration: property.value ? "none" : "line-through" }}
         >
-          {paramName}
+          {property.paramName}
         </Label>
       </LabelContainer>
-
-      {/* <EditParamForm
-        isOpen={edit}
-        setOpen={setOpenEdit}
-        param={
-          param
-            ? param
-            : {
-                id: v4(),
-                type: type,
-                name: paramName,
-              }
-        }
-      /> */}
     </>
   );
 };

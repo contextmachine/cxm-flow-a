@@ -9,7 +9,7 @@ import { IconButton } from "@mui/material";
 import UTurnRightIcon from "@mui/icons-material/UTurnRight";
 
 const UniversalInput: React.FC<ParamInputProps> = (props: ParamInputProps) => {
-  const { paramName, property, onChange, onRevert, index } = props;
+  const { property, onChange, onRevert, index, onDelete } = props;
   const [isOpen, setIsOpen] = useState(false);
   const dropDownRef = useRef(null);
 
@@ -17,12 +17,11 @@ const UniversalInput: React.FC<ParamInputProps> = (props: ParamInputProps) => {
 
   const valueOptions = getPropertyValues(
     [...entities.values()],
-    paramName
+    property.paramName
   ).values;
 
   const onInputChange = (e: any) => {
-    onChange(e, paramName);
-    // setValue(e);
+    onChange(e, property.paramName);
   };
 
   // const [value, setValue] = useState(property.value);
@@ -49,7 +48,8 @@ const UniversalInput: React.FC<ParamInputProps> = (props: ParamInputProps) => {
   return (
     <ParamWrapper>
       <ParamLabel
-        paramName={paramName}
+        onDelete={onDelete}
+        property={property}
         param={undefined}
         type="string"
         index={index}
@@ -61,7 +61,11 @@ const UniversalInput: React.FC<ParamInputProps> = (props: ParamInputProps) => {
               className="input-field"
               onClick={() => setIsOpen(!isOpen)}
               onChange={(e) => onInputChange(e.target.value)}
-              value={isMixed(property.value) ? "" : property.value}
+              value={
+                property.value === undefined || isMixed(property.value)
+                  ? ""
+                  : property.value
+              }
               placeholder={isMixed(property.value) ? "Mixed" : undefined}
             />
             {property.beenChanged && (
@@ -70,7 +74,7 @@ const UniversalInput: React.FC<ParamInputProps> = (props: ParamInputProps) => {
                 <IconButton
                   className="revert-button"
                   onClick={() => {
-                    onRevert(paramName);
+                    onRevert(property.paramName);
                   }}
                 >
                   <UTurnRightIcon />
