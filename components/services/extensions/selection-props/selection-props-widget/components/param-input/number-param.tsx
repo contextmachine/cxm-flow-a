@@ -7,13 +7,15 @@ export interface NumberInputProps extends ParamInputProps {
 }
 
 const NumberInput: FC<NumberInputProps> = (props: NumberInputProps) => {
-  const { property, onChange, paramName, precision, param, index } = props;
+  // const { property, onChange, precision, param, index } = props;
+  const { property, onChange, onRevert, index, onDelete, param } = props;
 
   return (
     <>
       <ParamWrapper>
         <ParamLabel
-          paramName={paramName}
+          onDelete={onDelete}
+          property={property}
           param={param}
           type="number"
           index={index}

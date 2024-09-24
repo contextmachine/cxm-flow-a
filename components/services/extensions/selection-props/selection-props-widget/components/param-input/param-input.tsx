@@ -124,14 +124,14 @@ export default function ParamInput(props: ParamInputProps) {
     switch (property.type) {
       case "string":
         return <UniversalInput {...props} />;
-      case "number":
-        return <NumberInput {...props} />;
-      case "boolean":
-        return <BooleanInput {...props} />;
-      case "range":
-        return <RangeInput {...props} />;
+      // case "number":
+      //   return <NumberInput {...props} />;
+      // case "boolean":
+      //   return <BooleanInput {...props} />;
+      // case "range":
+      //   return <RangeInput {...props} />;
       default:
-        return <div>Unknown value type</div>;
+        return <UniversalInput {...props} />;
     }
   }
 }

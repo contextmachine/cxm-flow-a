@@ -74,6 +74,10 @@ export class ProjectModel {
     return this._queryEntity.id;
   }
 
+  public get endPoint(): ApiObject {
+    return this._queryEntity;
+  }
+
   public initModel(object: THREE.Object3D): Entity {
     const modelObjects: THREE.Object3D[] = [];
     let entity: Entity;

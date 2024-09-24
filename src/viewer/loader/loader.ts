@@ -167,6 +167,8 @@ class Loader {
       this._queries.add(apiObject);
     }
 
+    console.log(options);
+
     let data;
     if (options?.useData) {
       // use data from options
@@ -174,6 +176,8 @@ class Loader {
     } else {
       // fetch data from endpoint
       const response = await axios.get(apiObject.endpoint);
+      console.log("RESPONSE", response);
+
       data = response.data;
     }
 

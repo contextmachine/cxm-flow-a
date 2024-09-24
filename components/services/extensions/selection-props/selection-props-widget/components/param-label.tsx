@@ -2,7 +2,7 @@ import {
   Param,
   ParamType,
 } from "@/components/services/extensions/selection-props/params/params";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import styled from "styled-components";
 import ClearIcon from "@mui/icons-material/Clear";
 import { PropertyValue } from "../../selection-props-extension";

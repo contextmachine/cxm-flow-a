@@ -8,6 +8,8 @@ import SelectionPropsExtension, {
 } from "../selection-props-extension";
 import ParamInput from "./components/param-input/param-input";
 import NewParamForm from "./new-param-form";
+import { useAuth } from "@/components/services/auth-service/auth-provider";
+import { UserMetadata } from "@/components/services/auth-service/auth-service.types";
 
 const SelectionProps: React.FC<{
   extension: ExtensionEntityInterface;
@@ -16,6 +18,7 @@ const SelectionProps: React.FC<{
 
   const { extension: ext } = props;
   const extension = ext as SelectionPropsExtension;
+  const userMetadata = useAuth().userMetadata as UserMetadata;
 
   const [formState, setFormState] = useState(new Map<string, PropertyValue>());
 
@@ -58,7 +61,7 @@ const SelectionProps: React.FC<{
   };
 
   useEffect(() => {
-    const params = extension.getSelectionParams(selected);
+    const params = new Map(extension.getSelectionParams(selected));
     setFormState(params);
   }, [selected]);
 
@@ -82,12 +85,12 @@ const SelectionProps: React.FC<{
                 width: "100%",
               }}
             >
-              {[...formState.entries()].map((x, i) => (
+              {[...formState.values()].map((x, i) => (
                 <ParamInput
                   onChange={onPropertyChange}
                   onRevert={onPropertyRevert}
                   onDelete={onPropertyDelete}
-                  property={x[1]}
+                  property={x}
                   index={i}
                 />
               ))}
@@ -104,7 +107,7 @@ const SelectionProps: React.FC<{
                 variant="contained"
                 color="primary"
                 size="medium"
-                onClick={() => extension.submitChanges(formState)}
+                onClick={() => extension.submitChanges(formState, userMetadata)}
               >
                 Save
               </Button>

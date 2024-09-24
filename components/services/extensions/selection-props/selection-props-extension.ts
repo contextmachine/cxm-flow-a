@@ -5,6 +5,14 @@ import { Entity } from "@/src/objects/entities/entity";
 import { Mixed, MixedValue } from "./params/mixed";
 import { defineParamType } from "./selection-props-widget/utils";
 import { groupBy } from "@/src/utils";
+import { useAuth } from "../../auth-service/auth-provider";
+import {
+  UserMetadata,
+  UserMetadataResponse,
+} from "../../auth-service/auth-service.types";
+import { ProjectModel } from "@/src/objects/project-model";
+import axios from "axios";
+import client from "@/components/graphql/client/client";
 
 export interface PropertyValue {
   paramName: string;
@@ -74,10 +82,10 @@ class SelectionPropsExtension extends ExtensionEntity {
     return params;
   }
 
-  public async submitChanges(formState: Map<string, PropertyValue>) {
-    // const selectionState = selected.map((x) => x.id);
-    // viewer.selectionService.clearSelection();
-
+  public async submitChanges(
+    formState: Map<string, PropertyValue>,
+    userMetadata: UserMetadata
+  ) {
     const changedProperties = new Map(
       [...formState.entries()].filter((x) => x[1].beenChanged)
     );
@@ -85,42 +93,59 @@ class SelectionPropsExtension extends ExtensionEntity {
     const selectedObjects = this._viewer.selectionTool.selected;
     this._viewer.selectionTool.clearSelection();
 
-    await this.updateProps(selectedObjects, changedProperties);
+    const selectionState = selectedObjects.map((x) => x.id);
+
+    await this.updateProps(selectedObjects, changedProperties, userMetadata);
+
+    this._viewer.selectionTool.addToSelection(selectionState);
   }
 
-  public async updateProps(entities: Entity[], newProps: Map<string, any>) {
+  public async updateProps(
+    entities: Entity[],
+    newProps: Map<string, any>,
+    userMetadata: UserMetadata
+  ) {
     const groupedByModel = groupBy(entities, (x) => x.model);
 
     const params = new Map(
       [...newProps.entries()].map((x) => [x[0], x[1].value])
     );
 
-    console.log(params);
-
     for (const data of [...groupedByModel.entries()]) {
       const [model, objects] = data;
 
+      const entry = this.getUpdatePropsEntry(model);
+
+      const newPropsValuesOnly = new Map(
+        [...newProps.entries()].map((x) => [x[0], x[1].value])
+      );
+
+      const updatedProps = Object.fromEntries(
+        [...newPropsValuesOnly.entries()].filter((x) => x[1] !== undefined)
+      );
+
+      const deletedProps = [...newPropsValuesOnly.entries()]
+        .filter((x) => x[1] === undefined)
+        .map((x) => x[0]);
+
       const body = {
-        uuids: objects.map((x) => x.id),
-        props: Object.fromEntries(params),
+        scene_id: this._viewer.sceneService.sceneId,
+        user_id: userMetadata.id,
+        model_id: 5,
+        endpoint: {
+          type: "rest",
+          entry: entry,
+          query: model.endPoint.endpoint,
+        },
+        props_data: {
+          object_uuids: objects.map((x) => x.id),
+          updated_props: updatedProps,
+          deleted_props: deletedProps,
+        },
       };
 
-      // let endpointEntry: UserdataEntry | undefined;
-
-      // if (objects.length === 1) {
-      //   const [object] = objects;
-      //   endpointEntry = object.userdata?.getEntry("update_props");
-      // }
-
-      // if (!endpointEntry)
-      //   endpointEntry = model.projectObject.userdata?.getEntry("update_props");
-
-      // if (!endpointEntry) throw Error("endpoint not found");
-
-      // const endpoint = endpointEntry.endpoint;
-      // const url = endpoint.url;
+      const res = await axios.post(entry, body);
       await this._viewer.loader.reloadApiObject(model.queryId);
-      console.log(body);
     }
   }
 
@@ -131,6 +156,13 @@ class SelectionPropsExtension extends ExtensionEntity {
   public unload(): void {
     console.log("props selection extension unloaded");
     this._subscriptions.forEach((x) => x.unsubscribe());
+  }
+
+  private getUpdatePropsEntry(model: ProjectModel): string {
+    const defaultUpdateProps =
+      "https://props-server.dev.contextmachine.cloud/props-update";
+
+    return defaultUpdateProps;
   }
 }
 
