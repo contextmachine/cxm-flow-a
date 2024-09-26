@@ -5,6 +5,7 @@ import BarUser from "./bar-users/bar-user";
 import WidgetPanelGrid from "./widgets-panel/widget-panel-grid";
 import { useAuth } from "@/components/services/auth-service/auth-provider";
 import { Box } from "@mui/material";
+import Message from "./message/message";
 
 const SceneGrid = () => {
   const { authService } = useAuth();

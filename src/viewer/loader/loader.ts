@@ -68,7 +68,6 @@ class Loader {
   }
 
   private updateApiObjects() {
-    console.log("update");
     this._queriesSubject.next([...this._queries.values()]);
   }
 
@@ -124,7 +123,7 @@ class Loader {
     this.setStatus("idle");
   }
 
-  public reloadApiObject(id: number) {
+  public async reloadApiObject(id: number) {
     const list = [...this._queries.values()];
 
     const existingQueriesMap = new Map(list.map((x) => [x.id, x]));
@@ -134,7 +133,7 @@ class Loader {
     if (apiObject) {
       this.setStatus("loading");
       this.removeApiObject(apiObject);
-      this.loadApiObject(apiObject);
+      await this.loadApiObject(apiObject);
       this.updateApiObjects();
       this.setStatus("idle");
     }
@@ -167,8 +166,6 @@ class Loader {
       this._queries.add(apiObject);
     }
 
-    console.log(options);
-
     let data;
     if (options?.useData) {
       // use data from options
@@ -176,14 +173,11 @@ class Loader {
     } else {
       // fetch data from endpoint
       const response = await axios.get(apiObject.endpoint);
-      console.log("RESPONSE", response);
-
       data = response.data;
     }
 
     const jsonObject = findThreeJSJSON(data);
 
-    console.log(jsonObject);
     if (jsonObject) {
       const object3d = await parseJSON(jsonObject);
 

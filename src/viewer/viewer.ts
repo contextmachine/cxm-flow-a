@@ -13,6 +13,7 @@ import ProjectSettingsService from "../services/project-settings/project-setting
 import SelectionControl from "./selection/selection-tool";
 import SceneService from "@/components/services/scene-service/scene-service";
 import ExtensionControl from "./extension-control";
+import { Message, MessageType } from "@/components/ui/scene/message/message";
 
 CameraControls.install({ THREE: THREE });
 
@@ -36,6 +37,8 @@ export class Viewer {
 
   private _subscriptions: RX.Unsubscribable[] = [];
   private _clock = new THREE.Clock();
+
+  private _$message = new RX.Subject<MessageType>();
 
   // SERVICES
   private _projectSettingsService: ProjectSettingsService;
@@ -122,6 +125,14 @@ export class Viewer {
 
   public get canvas(): HTMLCanvasElement {
     return this._renderer.domElement;
+  }
+
+  public setMessage(message: Message) {
+    this._$message.next(message);
+  }
+
+  public get $message() {
+    return this._$message;
   }
 
   public get sceneService(): SceneService {

@@ -34,6 +34,7 @@ class SelectionControl {
       this._viewer.entityControl.$entities.subscribe((objects) => {
         this._entitiesMap = objects;
         if (this._needsReloadSelection) {
+          console.log("restore");
           const ids = this._needsReloadSelection.filter((x) =>
             this._entitiesMap.has(x)
           );
@@ -60,7 +61,7 @@ class SelectionControl {
     return this._updateSelectionSubject;
   }
 
-  public set needsReloadSelection(e: string[] | undefined) {
+  public set needsRestoreSelection(e: string[] | undefined) {
     this._needsReloadSelection = e;
   }
 

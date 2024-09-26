@@ -1,8 +1,8 @@
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
-import { Box, Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 import WidgetPaper from "../../../../ui/scene/widgets-panel/blocks/widget-paper/widget-paper";
-import { useSelected } from "@/src/hooks";
+import { useSelected, useSubscribe } from "@/src/hooks";
 import SelectionPropsExtension, {
   PropertyValue,
 } from "../selection-props-extension";
@@ -14,11 +14,16 @@ import { UserMetadata } from "@/components/services/auth-service/auth-service.ty
 const SelectionProps: React.FC<{
   extension: ExtensionEntityInterface;
 }> = (props) => {
-  const selected = useSelected();
-
   const { extension: ext } = props;
   const extension = ext as SelectionPropsExtension;
   const userMetadata = useAuth().userMetadata as UserMetadata;
+
+  const status = useSubscribe(extension.$status, extension.status);
+
+  const selected = useSubscribe(
+    extension.$selectionState,
+    extension.selectionState
+  );
 
   const [formState, setFormState] = useState(new Map<string, PropertyValue>());
 
@@ -109,7 +114,11 @@ const SelectionProps: React.FC<{
                 size="medium"
                 onClick={() => extension.submitChanges(formState, userMetadata)}
               >
-                Save
+                {status === "updating" ? (
+                  <CircularProgress size={18} />
+                ) : (
+                  "Save"
+                )}
               </Button>
             </Box>
           </WidgetPaper>

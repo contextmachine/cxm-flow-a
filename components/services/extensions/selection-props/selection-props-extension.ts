@@ -5,14 +5,10 @@ import { Entity } from "@/src/objects/entities/entity";
 import { Mixed, MixedValue } from "./params/mixed";
 import { defineParamType } from "./selection-props-widget/utils";
 import { groupBy } from "@/src/utils";
-import { useAuth } from "../../auth-service/auth-provider";
-import {
-  UserMetadata,
-  UserMetadataResponse,
-} from "../../auth-service/auth-service.types";
+import { UserMetadata } from "../../auth-service/auth-service.types";
 import { ProjectModel } from "@/src/objects/project-model";
 import axios from "axios";
-import client from "@/components/graphql/client/client";
+import * as RX from "rxjs";
 
 export interface PropertyValue {
   paramName: string;
@@ -22,13 +18,52 @@ export interface PropertyValue {
   oldValue: Mixed<any>;
 }
 
+type UpdatingStatus = "idle" | "updating" | "success" | "error";
+
 class SelectionPropsExtension extends ExtensionEntity {
+  private _selectionState: Entity[] = [];
+  private _$selectionState = new RX.Subject<Entity[]>();
+  private _freezeSelectionToolbar = false;
+
+  private _status: UpdatingStatus = "idle";
+  private _$status = new RX.Subject<UpdatingStatus>();
+
   constructor(viewer: Viewer, productData: ProductsDto) {
     super(viewer);
     this.name = "selection-props";
     this.id = productData.id;
 
     this.isInitialized = true;
+
+    this._subscriptions.push(
+      this._viewer.selectionTool.$selected.subscribe((e) => {
+        if (!this._freezeSelectionToolbar) {
+          this._selectionState = e;
+          this._$selectionState.next(this._selectionState);
+        }
+      })
+    );
+  }
+
+  public setStatus(status: UpdatingStatus) {
+    this._status = status;
+    this._$status.next(status);
+  }
+
+  public get selectionState() {
+    return this._selectionState;
+  }
+
+  public get $selectionState() {
+    return this._$selectionState;
+  }
+
+  public get status() {
+    return this._status;
+  }
+
+  public get $status() {
+    return this._$status;
   }
 
   protected onEnable() {}
@@ -90,26 +125,61 @@ class SelectionPropsExtension extends ExtensionEntity {
       [...formState.entries()].filter((x) => x[1].beenChanged)
     );
 
-    const selectedObjects = this._viewer.selectionTool.selected;
-    this._viewer.selectionTool.clearSelection();
+    this.setStatus("updating");
 
+    const selectedObjects = this._viewer.selectionTool.selected;
     const selectionState = selectedObjects.map((x) => x.id);
 
-    await this.updateProps(selectedObjects, changedProperties, userMetadata);
+    const { updatedModels, failedToUpdate } = await this.updateProps(
+      selectedObjects,
+      changedProperties,
+      userMetadata
+    );
 
-    this._viewer.selectionTool.addToSelection(selectionState);
+    if (updatedModels.length > 0) {
+      this._freezeSelectionToolbar = true;
+
+      this._viewer.selectionTool.clearSelection();
+
+      for (const model of updatedModels) {
+        await this._viewer.loader.reloadApiObject(model.queryId);
+      }
+
+      this._viewer.selectionTool.needsRestoreSelection = selectionState;
+      this._freezeSelectionToolbar = false;
+    }
+
+    this._viewer.setMessage(
+      failedToUpdate.length > 0
+        ? { message: "Some of models hasn't been updated", status: "warning" }
+        : { message: "Succsesfully updated props", status: "success" }
+    );
+
+    this.setStatus(failedToUpdate.length > 0 ? "error" : "success");
+
+    setTimeout(() => {
+      if (this.status !== "updating") {
+        this.setStatus("idle");
+      }
+    }, 10000);
   }
 
   public async updateProps(
     entities: Entity[],
     newProps: Map<string, any>,
     userMetadata: UserMetadata
-  ) {
+  ): Promise<{
+    updatedModels: ProjectModel[];
+    failedToUpdate: ProjectModel[];
+  }> {
     const groupedByModel = groupBy(entities, (x) => x.model);
 
     const params = new Map(
       [...newProps.entries()].map((x) => [x[0], x[1].value])
     );
+
+    const updatedModels: ProjectModel[] = [];
+    const failedToUpdate: ProjectModel[] = [];
 
     for (const data of [...groupedByModel.entries()]) {
       const [model, objects] = data;
@@ -144,9 +214,17 @@ class SelectionPropsExtension extends ExtensionEntity {
         },
       };
 
-      const res = await axios.post(entry, body);
-      await this._viewer.loader.reloadApiObject(model.queryId);
+      try {
+        const res = await axios.post(entry, body);
+        if (res.status === 200) {
+          updatedModels.push(model);
+        }
+      } catch (e) {
+        failedToUpdate.push(model);
+      }
     }
+
+    return { updatedModels, failedToUpdate };
   }
 
   public async load() {
