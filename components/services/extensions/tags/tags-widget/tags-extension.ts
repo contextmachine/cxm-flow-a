@@ -299,116 +299,80 @@ class TagsExtension extends ExtensionEntity {
     }
 
     // Render each group as an SVG element
+    // Render each group as an SVG element
     this._tagGroups.forEach((group) => {
       const { tags } = group;
       const firstTag = Array.from(tags)[0];
 
       const screenPosition = this.toScreenPosition(firstTag.position);
 
-      // Create an SVG circle element for the group with dark mode styling
-      const circleElement = document.createElementNS(
+      // Determine the dimensions of the main rectangle
+      let rectangleWidth = 50; // Adjust this value based on the width you prefer
+      const rectangleHeight = 30; // Adjust height based on your design preference
+
+      // Render each tag as a small rectangle inside the main background rectangle
+      const smallRectangleWidth = 15; // Width of each small rectangle
+      const clashOffset = 2; // Overlap amount for the "clash" effect
+
+      const uniqueLabels = new Set(Array.from(tags).map((tag) => tag.label));
+
+      const minWidthNeeded =
+        uniqueLabels.size * (smallRectangleWidth - clashOffset);
+      rectangleWidth = Math.max(minWidthNeeded, rectangleWidth);
+
+      // Create a dark background rectangle for the group
+      const backgroundRect = document.createElementNS(
         "http://www.w3.org/2000/svg",
-        "circle"
+        "rect"
       );
-      circleElement.setAttribute("cx", `${screenPosition.x}`);
-      circleElement.setAttribute("cy", `${screenPosition.y}`);
-      circleElement.setAttribute("r", `${this._edgeThreshold}`);
+      backgroundRect.setAttribute(
+        "x",
+        `${screenPosition.x - rectangleWidth / 2}`
+      );
+      backgroundRect.setAttribute(
+        "y",
+        `${screenPosition.y - rectangleHeight / 2}`
+      );
+      backgroundRect.setAttribute("width", `${rectangleWidth}`);
+      backgroundRect.setAttribute("height", `${rectangleHeight}`);
 
-      // Dark mode styles
-      circleElement.setAttribute("fill", "rgba(0, 0, 0, 0.8)"); // Dark, semi-transparent fill
-      circleElement.setAttribute("stroke", "black"); // Black stroke for contrast
-      circleElement.setAttribute("stroke-width", "1.5");
+      // Dark mode styles for background rectangle
+      backgroundRect.setAttribute("fill", "rgba(0, 0, 0, 0.8)");
+      backgroundRect.setAttribute("stroke", "black");
+      backgroundRect.setAttribute("stroke-width", "1.5");
+      backgroundRect.setAttribute("rx", "10");
+      backgroundRect.setAttribute("ry", "10");
 
-      // Append the circle element to the SVG
-      this._tagGroupSvg!.appendChild(circleElement);
+      // Append the background rectangle to the SVG
+      this._tagGroupSvg!.appendChild(backgroundRect);
 
-      if (this._showDetailedLabels) {
-        // Detailed label rendering logic
-        // Count occurrences of each label
-        const labelCounts: { [label: string]: number } = {};
-        tags.forEach((tag) => {
-          labelCounts[tag.label] = (labelCounts[tag.label] || 0) + 1;
-        });
-
-        // Get unique labels and handle "Others" if there are more than 3
-        let labelArray = Object.keys(labelCounts);
-        const maxVisibleLabels = 2;
-        let othersCount = 0;
-
-        if (labelArray.length > maxVisibleLabels) {
-          othersCount = labelArray
-            .slice(maxVisibleLabels)
-            .reduce((sum, label) => sum + labelCounts[label], 0);
-          labelArray = labelArray.slice(0, maxVisibleLabels);
-        }
-
-        // Calculate the offset to center the labels vertically inside the circle
-        const lineHeight = 18; // Adjust line height based on your preference
-        const totalHeight =
-          lineHeight * (labelArray.length + (othersCount > 0 ? 1 : 0)); // Add space for "Others"
-        const startY = screenPosition.y - totalHeight / 2 + lineHeight / 2;
-
-        // Add each unique label and its count as an SVG text element, stacked vertically inside the circle
-        labelArray.forEach((label, index) => {
-          const textElement = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "text"
-          );
-          textElement.setAttribute("x", `${screenPosition.x}`);
-          textElement.setAttribute("y", `${startY + index * lineHeight}`);
-
-          // Dark mode text styles
-          textElement.setAttribute("fill", "#ffffff"); // White text for dark mode
-          textElement.setAttribute("font-size", "10");
-          textElement.setAttribute("text-anchor", "middle"); // Center align text
-          textElement.textContent = `${label} - ${labelCounts[label]}`; // Show label and count
-
-          // Append the text element to the SVG
-          this._tagGroupSvg!.appendChild(textElement);
-        });
-
-        // If there are more than 3 labels, add an "Others" label
-        if (othersCount > 0) {
-          const othersTextElement = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "text"
-          );
-          othersTextElement.setAttribute("x", `${screenPosition.x}`);
-          othersTextElement.setAttribute(
-            "y",
-            `${startY + labelArray.length * lineHeight}`
-          );
-
-          // Dark mode text styles for "Others"
-          othersTextElement.setAttribute("fill", "#ffffff"); // White text for dark mode
-          othersTextElement.setAttribute("font-size", "9");
-          othersTextElement.setAttribute("text-anchor", "middle"); // Center align text
-          othersTextElement.textContent = `Others - ${othersCount}`; // Show "Others" and count
-
-          // Append the "Others" text element to the SVG
-          this._tagGroupSvg!.appendChild(othersTextElement);
-        }
-      } else {
-        // Show only the total number of tags
-        const totalTags = tags.size;
-
-        // Add a single text element showing the total number of tags
-        const textElement = document.createElementNS(
+      Array.from(uniqueLabels).forEach((label, index) => {
+        const smallRect = document.createElementNS(
           "http://www.w3.org/2000/svg",
-          "text"
+          "rect"
         );
-        textElement.setAttribute("x", `${screenPosition.x}`);
-        textElement.setAttribute("y", `${screenPosition.y}`);
 
-        // Dark mode text styles
-        textElement.setAttribute("fill", "#ffffff"); // White text for dark mode
-        textElement.setAttribute("font-size", "14");
-        textElement.setAttribute("text-anchor", "middle"); // Center align text
-        textElement.textContent = `${totalTags}`; // Show total count
+        // Calculate position for each small rectangle with overlap
+        const xPosition =
+          screenPosition.x -
+          rectangleWidth / 2 +
+          index * (smallRectangleWidth - clashOffset);
+        const yPosition = screenPosition.y - rectangleHeight / 4; // Center vertically
 
-        // Append the text element to the SVG
-        this._tagGroupSvg!.appendChild(textElement);
-      }
+        smallRect.setAttribute("x", `${xPosition}`);
+        smallRect.setAttribute("y", `${yPosition}`);
+        smallRect.setAttribute("width", `${smallRectangleWidth}`);
+        smallRect.setAttribute("height", `${rectangleHeight / 2}`);
+        smallRect.setAttribute("rx", "10");
+        smallRect.setAttribute("ry", "10");
+
+        // Set color based on stc(label)
+        const color = stc(label);
+        smallRect.setAttribute("fill", color);
+
+        // Append each small rectangle to the SVG
+        this._tagGroupSvg!.appendChild(smallRect);
+      });
 
       // Hide all individual tags in the group
       tags.forEach((tag) => {

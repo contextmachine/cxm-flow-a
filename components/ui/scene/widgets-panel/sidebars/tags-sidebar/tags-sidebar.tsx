@@ -64,8 +64,6 @@ const TagsSidebar: React.FC<{
     return Array.from(uniqueTags).map(([name, value]) => ({ name, value }));
   }, [tags]);
 
-  console.log("tab", tab);
-
   if (!activeCategory) return null;
 
   return (

@@ -13,11 +13,10 @@ const PieChart: React.FC<{
     maxHeight?: string;
   };
   type?: "pie" | "bar";
-}> = ({ items, options, type }) => {
+  content?: string | number;
+}> = ({ items, options, type, content }) => {
   const chartRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  console.log("type", type);
 
   const coordinate: any = useMemo(() => {
     if (type === "bar") {
@@ -26,7 +25,7 @@ const PieChart: React.FC<{
 
     return {
       type: "theta",
-      innerRadius: 0.9,
+      innerRadius: 0.7,
     };
   }, [type]);
 
@@ -58,7 +57,7 @@ const PieChart: React.FC<{
       type: "view",
       padding: 0,
       inset: 0,
-      height: 300,
+      height: 240,
       coordinate,
       children: [
         {
@@ -94,23 +93,62 @@ const PieChart: React.FC<{
       sx={{
         width: "100%",
         height: "100%",
-        maxHeight: maxHeight,
+        maxHeight: `${maxHeight}`,
         display: "flex",
         flexDirection: "column",
+        pointerEvents: "none",
       }}
     >
-      <div
-        style={{ width: "100%", height: "100%", maxHeight: maxHeight }}
-        ref={containerRef}
-      />
+      <Box
+        sx={{
+          width: "100%",
+          height: "100%",
+          maxHeight: maxHeight,
+          minHeight: 240,
+          position: "relative",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            minHeight: maxHeight,
+            maxHeight: maxHeight,
+            position: "absolute",
+          }}
+          ref={containerRef}
+        />
+
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Box
+            sx={{
+              fontSize: "24px",
+              fontWeight: "bold",
+            }}
+          >
+            {content}
+          </Box>
+          <Box>Total</Box>
+        </Box>
+      </Box>
 
       <Box
         sx={{
           display: "flex",
+          justifyContent: "center",
           rowGap: "7px",
-          columnGap: "10px",
+          columnGap: "15px",
           flexWrap: "wrap",
-          marginTop: "40px",
+          marginTop: "30px",
           marginBottom: "20px",
         }}
       >
@@ -122,17 +160,18 @@ const PieChart: React.FC<{
               sx={{
                 display: "flex",
                 alignItems: "center",
-                gap: "5px",
+                gap: "8px",
               }}
             >
               <Box
                 sx={{
-                  minWidth: "25px",
-                  maxWidth: "25px",
-                  minHeight: "5px",
-                  maxHeight: "5px",
+                  minWidth: "8px",
+                  maxWidth: "8px",
+                  minHeight: "8px",
+                  maxHeight: "8px",
                   background: stc(item.name),
-                  borderRadius: "2px",
+                  borderRadius: "10px",
+                  border: "1px solid rgba(0,0,0,0.3)",
                 }}
               />
 

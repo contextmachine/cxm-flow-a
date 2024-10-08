@@ -1,13 +1,27 @@
 import WidgetPaper from "../../../../ui/scene/widgets-panel/blocks/widget-paper/widget-paper";
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import TagExtension from "./tags-extension";
 import { useViewer } from "@/components/services/scene-service/scene-provider";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
-import { TagCategory } from "./tags-extension.types";
+import { Tag, TagCategory } from "./tags-extension.types";
 import { Box, Button, IconButton, Menu, MenuItem, Switch } from "@mui/material";
 import { display } from "html2canvas/dist/types/css/property-descriptors/display";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import TagsExtension from "./tags-extension";
+import dynamic from "next/dynamic";
+import { ErrorBoundary } from "react-error-boundary";
+import Filter from "./blocks/filter/filter";
+
+const PieChart = dynamic(
+  () =>
+    import(
+      "@/components/ui/scene/widgets-panel/sidebars/tags-sidebar/blocks/pie-chart/pie-chart"
+    ),
+  {
+    ssr: false,
+  }
+);
 
 interface TagWidgetProps {
   isPreview?: boolean;
@@ -16,7 +30,7 @@ interface TagWidgetProps {
 
 const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
   const viewer = useViewer();
-  const tagService = extension;
+  const tagService = extension as TagsExtension;
 
   const [categories, setCategories] = useState<TagCategory[]>([]);
   const [activeCategory, setActiveCategory] = useState<TagCategory | undefined>(
@@ -35,34 +49,51 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
   };
 
   useEffect(() => {
-    const a = tagService.$categories.subscribe((c: TagCategory[]) =>
+    const a = tagService.$categories.subscribe((c) =>
       setCategories([...c.values()])
     );
-
-    const b = tagService.$activeCategory.subscribe(
-      (c: TagCategory | undefined) => setActiveCategory(c)
-    );
+    const b = tagService.$activeCategory.subscribe((c) => setActiveCategory(c));
+    const ts = tagService.$tags.subscribe((tags) => setTags(tags));
 
     return () => {
       a.unsubscribe();
       b.unsubscribe();
+      ts.unsubscribe();
     };
   }, []);
 
-  const handleCategoryClick = (category: TagCategory) => {
-    const isActive = activeCategory?.name === category.name;
+  const handleCategoryClick = (categoryName: string) => {
+    const isActive = activeCategory?.name === categoryName;
     if (isActive) {
-      tagService.setActiveCategory(undefined);
+      tagService.setActiveCategory(null);
       return;
     }
 
-    tagService.setActiveCategory(category.name);
+    tagService.setActiveCategory(categoryName);
   };
+
+  const [tags, setTags] = useState<Map<string, Tag>>(new Map());
+
+  const items = useMemo(() => {
+    const uniqueTags = new Map<string, number>();
+
+    tags.forEach((tag) => {
+      const label = tag.label;
+
+      if (uniqueTags.has(label)) {
+        uniqueTags.set(label, uniqueTags.get(label)! + 1);
+      } else {
+        uniqueTags.set(label, 1);
+      }
+    });
+
+    return Array.from(uniqueTags).map(([name, value]) => ({ name, value }));
+  }, [tags]);
 
   return (
     <WidgetPaper
       isPreview={isPreview}
-      title={"Tags"}
+      title={"Charts"}
       actionPanel={
         <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {/* <Switch size={"small"} onChange={() => {}} /> */}
@@ -85,7 +116,8 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
         </Box>
       }
     >
-      <Box
+      {/* TODO: Remove within the next version */}
+      {/* <Box
         sx={{
           display: "flex",
           flexDirection: "column",
@@ -104,7 +136,7 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
               pointerEvents: "all",
             }}
             data-active={activeCategory?.name === c.name}
-            onClick={() => handleCategoryClick(c)}
+            onClick={() => handleCategoryClick(c.name)}
             color="secondary"
             variant="contained"
             size="large"
@@ -112,10 +144,37 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
             {c.name}
           </Button>
         ))}
-      </Box>
+      </Box> */}
+
+      <Filter
+        activeCategory={activeCategory}
+        categories={categories}
+        handleCategoryClick={handleCategoryClick}
+      />
+
+      {activeCategory && (
+        <ErrorBoundary FallbackComponent={FallbackComponent}>
+          <PieChart
+            items={items}
+            options={{
+              maxHeight: "max-content",
+              legend: {
+                maxItems: 15,
+              },
+            }}
+            content={tags.size}
+            type="pie"
+            key={activeCategory?.name}
+          />
+        </ErrorBoundary>
+      )}
     </WidgetPaper>
   );
 };
+
+function FallbackComponent({ error }: any) {
+  return <div>Error loading chart: {error.message}</div>;
+}
 
 export default TagWidget;
 
