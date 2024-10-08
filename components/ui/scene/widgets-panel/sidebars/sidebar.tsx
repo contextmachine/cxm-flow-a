@@ -27,8 +27,6 @@ const Sidebar: React.FC<{
   switch (type) {
     case "pointcloud-handler":
       return <PointCloudHandlerSidebar extension={extension!} />;
-    case "tags-widget":
-      return <TagsSidebar extension={extension!} />;
     default:
       return null;
   }
