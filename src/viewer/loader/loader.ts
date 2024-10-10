@@ -172,7 +172,14 @@ class Loader {
       data = options.useData;
     } else {
       // fetch data from endpoint
-      const response = await axios.get(apiObject.endpoint);
+      const response = await axios.get(apiObject.endpoint, {
+        // query URL without using browser cache
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      });
       data = response.data;
     }
 
