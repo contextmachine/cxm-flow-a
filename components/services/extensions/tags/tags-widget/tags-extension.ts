@@ -9,12 +9,19 @@ import {
   Observable,
   Subscription,
 } from "rxjs";
-import { Tag, TagCategory, TagGroup } from "./tags-extension.types";
+import {
+  Tag,
+  TagCategory,
+  TagCondition,
+  TagGroup,
+  UniqueTag,
+} from "./tags-extension.types";
 import CameraControl from "@/src/viewer/camera-control";
 import * as THREE from "three";
 import EntityControl from "@/src/viewer/entity-control";
 import { Entity } from "@/src/objects/entities/entity";
 import stc from "string-to-color";
+import { FilterItem } from "../../view-filter/view-filter-extension";
 
 class TagsExtension extends ExtensionEntity {
   private _tagSvg: SVGSVGElement | undefined;
@@ -26,6 +33,7 @@ class TagsExtension extends ExtensionEntity {
 
   private _tags: Map<string, Tag> = new Map<string, Tag>();
   public $tags = new BehaviorSubject<Map<string, Tag>>(this._tags);
+  public $uniqueTags = new BehaviorSubject<Map<string, number>>(new Map());
 
   private _tagGroups: Map<string, TagGroup> = new Map<string, TagGroup>();
   private _categories: Map<string, TagCategory> = new Map<
@@ -36,6 +44,7 @@ class TagsExtension extends ExtensionEntity {
   public $categories = new BehaviorSubject<Map<string, TagCategory>>(
     this._categories
   );
+  public $subFilters = new BehaviorSubject<TagCondition[]>([]);
 
   public $labelsEnabled = new BehaviorSubject<boolean>(true);
   public $themingColorsEnabled = new BehaviorSubject<boolean>(true);
@@ -52,6 +61,7 @@ class TagsExtension extends ExtensionEntity {
   );
 
   private _entityControl$: Subscription | undefined;
+  private _subFilterControl$: Subscription | undefined;
   private _cameraControl$: Subscription | undefined;
   private _cameraGroupingControl$: Subscription | undefined;
 
@@ -70,7 +80,10 @@ class TagsExtension extends ExtensionEntity {
     this._tagSvg = this._viewer.tagCanvas;
   }
 
-  public updateTags = (entities: Map<string, Entity>) => {
+  public updateTags = (
+    entities: Map<string, Entity>,
+    keepSubFilters?: boolean
+  ) => {
     if (this._tagSvg) {
       while (this._tagSvg.firstChild) {
         this._tagSvg.removeChild(this._tagSvg.firstChild);
@@ -93,14 +106,15 @@ class TagsExtension extends ExtensionEntity {
       }
     });
 
-    /* if (!this._activeCategory && this._categories.size > 0) {
-      this._activeCategory = Array.from(this._categories.values())[0];
-    } */
-
     this.$categories.next(this._categories);
     this.$activeCategory.next(this._activeCategory);
     this._tags.clear();
     this.$tags.next(new Map());
+    this.$uniqueTags.next(new Map());
+
+    if (!keepSubFilters) {
+      this.$subFilters.next([]);
+    }
 
     // get all tags based on active category
     entities.forEach((entity) => {
@@ -122,10 +136,14 @@ class TagsExtension extends ExtensionEntity {
             const color = stc(tag);
 
             // Apply material to the entity's mesh or group
-            if (entity.type === "mesh") {
-              if (this._activeCategory) {
-                entity.applyThemingColor(color);
-              }
+            if (
+              entity.type === "mesh" &&
+              this._activeCategory &&
+              this.isTagValidForSubfilter(tag)
+            ) {
+              entity.applyThemingColor(color);
+            } else {
+              entity.applyThemingColor("white", true);
             }
           } else {
             entity.applyThemingColor("white", true);
@@ -137,8 +155,71 @@ class TagsExtension extends ExtensionEntity {
     });
 
     this.$tags.next(new Map(this._tags));
+    this._getUniqueTags();
 
     this.renderAll();
+  };
+
+  public isTagValidForSubfilter = (tag: string): boolean => {
+    const subFilters = this.$subFilters.value;
+
+    if (subFilters.length === 0 || subFilters.every(({ enabled }) => !enabled))
+      return true;
+
+    const valid = subFilters.some((filter) => {
+      if (filter.name === tag) {
+        if (filter.operator === "EQUAL" && filter.enabled) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    return valid;
+  };
+
+  public addSubFilter = (condition: TagCondition) => {
+    this.$subFilters.next([...this.$subFilters.value, condition]);
+  };
+
+  public removeSubFilter = (condition: TagCondition) => {
+    const subFilters = this.$subFilters.value.filter(
+      (filter) => filter.name !== condition.name
+    );
+
+    this.$subFilters.next(subFilters);
+  };
+
+  public updateSubFilter = (condition: TagCondition) => {
+    const subFilters = this.$subFilters.value.map((filter) => {
+      if (filter.name === condition.name) {
+        return condition;
+      }
+
+      return filter;
+    });
+
+    this.$subFilters.next([...subFilters]);
+  };
+
+  // Method to get unique tags and their counts
+  private _getUniqueTags = () => {
+    const tags = this._tags;
+
+    const uniqueTags = new Map<string, number>();
+
+    tags.forEach((tag) => {
+      const label = tag.label;
+
+      if (uniqueTags.has(label)) {
+        uniqueTags.set(label, uniqueTags.get(label)! + 1);
+      } else {
+        uniqueTags.set(label, 1);
+      }
+    });
+
+    this.$uniqueTags.next(uniqueTags);
   };
 
   /**
@@ -299,7 +380,6 @@ class TagsExtension extends ExtensionEntity {
     }
 
     // Render each group as an SVG element
-    // Render each group as an SVG element
     this._tagGroups.forEach((group) => {
       const { tags } = group;
       const firstTag = Array.from(tags)[0];
@@ -414,6 +494,10 @@ class TagsExtension extends ExtensionEntity {
 
     this.updateTags(this._entityControl.entities);
 
+    this._subFilterControl$ = this.$subFilters.subscribe((subFilters) => {
+      this.updateTags(this._entityControl.entities, true);
+    });
+
     // Create an observable for control events
     const controlEvent$ = fromEvent(this._cameraControl.controls, "control");
 
@@ -467,6 +551,10 @@ class TagsExtension extends ExtensionEntity {
     this.updateTags(this._entityControl.entities);
   };
 
+  public updateFilterCondition = (filterItem: FilterItem) => {
+    console.log("Filter item updated", filterItem);
+  };
+
   public async unload() {
     if (this._entityControl$) {
       this._entityControl$.unsubscribe();
@@ -483,10 +571,19 @@ class TagsExtension extends ExtensionEntity {
       this._cameraGroupingControl$ = undefined;
     }
 
+    if (this._subFilterControl$) {
+      this._subFilterControl$.unsubscribe();
+      this._subFilterControl$ = undefined;
+    }
+
     this._tags.clear();
+    this._tagGroups.clear();
     this._categories.clear();
 
+    this.$tags.unsubscribe();
+    this.$uniqueTags.unsubscribe();
     this.$categories.unsubscribe();
+    this.$subFilters.unsubscribe();
     this.$activeCategory.unsubscribe();
     this.$labelsEnabled.unsubscribe();
     this.$themingColorsEnabled.unsubscribe;

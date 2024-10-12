@@ -6,7 +6,9 @@ import ViewFilterExtension, {
 import styled from "styled-components";
 import { IconButton } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
-import OperatorSelect from "@/components/services/extensions/view-filter/filter-widget/operator-select";
+import OperatorSelect, {
+  Option,
+} from "@/components/services/extensions/view-filter/filter-widget/operator-select";
 import ValueInput from "./value-input";
 import { Entity } from "@/src/objects/entities/entity";
 import { useEntities } from "@/src/hooks";
@@ -14,6 +16,7 @@ import MultipleValueInput from "./multiple-value-input";
 import { PlusIcon } from "@radix-ui/react-icons";
 import ParamsIcon from "@/components/ui/icons/params-icon";
 import CheckedIcon from "@/components/ui/icons/checked-icon";
+import TagsExtension from "../../tags/tags-widget/tags-extension";
 
 interface FilterConditionProps {
   index: number;
@@ -42,9 +45,62 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
     extension.updateFilterCondition(filterItem);
   };
 
+  const onOperatorChange = (e: Option) => {
+    filterItem.operator = e.value;
+    extension.updateFilterCondition(filterItem);
+  };
+
+  const handleDelete = () => {
+    onDelete(filterItem.id);
+  };
+
+  return (
+    <FilterConditionTmp
+      index={index}
+      paramsOpen={paramsOpen}
+      setParamsOpen={setParamsOpen}
+      onOperatorChange={onOperatorChange}
+      onEnable={onEnable}
+      onDelete={handleDelete}
+      filterItem={filterItem}
+      type={type}
+      values={values}
+      extension={extension}
+    />
+  );
+};
+
+// NOTE: This tmp component is used within the "chart widget"
+export const FilterConditionTmp: React.FC<{
+  index: number;
+  paramsOpen: boolean;
+  setParamsOpen: (value: boolean) => void;
+  onOperatorChange: (e: Option) => void;
+  onEnable: () => void;
+  onDelete: () => void;
+  filterItem: FilterCondition;
+  type: PropertyType;
+  values: string[];
+  extension: ViewFilterExtension | TagsExtension;
+  disabledParams?: boolean;
+  color?: string;
+}> = ({
+  index,
+  paramsOpen,
+  setParamsOpen,
+  onOperatorChange,
+  onEnable,
+  onDelete,
+  filterItem,
+  type,
+  values,
+  extension,
+  disabledParams,
+  color,
+}) => {
   return (
     <FilterConditionWrapper
-      $color={pallete[index % pallete.length]}
+      $color={color || pallete[index % pallete.length]}
       $paramsEnabled={true}
       $paramsOpen={paramsOpen}
     >
@@ -52,24 +108,23 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
         <div className="label">
           <div className="marker">
             <span className="marker-tag" />
-            <DeleteButton
-              className="delete-button"
-              onClick={() => onDelete(filterItem.id)}
-            >
+            <DeleteButton className="delete-button" onClick={onDelete}>
               <ClearIcon className="delete-icon" />
             </DeleteButton>
           </div>
           {filterItem.key}
         </div>
         <div className="button-block">
-          <button
-            className="params-button"
-            onClick={() => setParamsOpen(!paramsOpen)}
-          >
-            <ParamsIcon />
-          </button>
+          {!disabledParams && (
+            <button
+              className="params-button"
+              onClick={() => setParamsOpen(!paramsOpen)}
+            >
+              <ParamsIcon />
+            </button>
+          )}
           <EnableButton $enabled={filterItem.enabled}>
-            <button className="enable-button" onClick={() => onEnable()}>
+            <button className="enable-button" onClick={onEnable}>
               {!filterItem.enabled && <PlusIcon />}
               {filterItem.enabled && <CheckedIcon />}
             </button>
@@ -80,7 +135,7 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
         <div className="operator">
           <OperatorSelect
             filterItem={filterItem}
-            extension={extension}
+            onOperatorChange={onOperatorChange}
             propertyType={type}
           />
         </div>

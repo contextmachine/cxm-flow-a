@@ -36,6 +36,7 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
   const [activeCategory, setActiveCategory] = useState<TagCategory | undefined>(
     undefined
   );
+  const [uniqueTags, setUniqueTags] = useState<Map<string, number>>(new Map());
 
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(menuAnchorEl);
@@ -54,11 +55,13 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
     );
     const b = tagService.$activeCategory.subscribe((c) => setActiveCategory(c));
     const ts = tagService.$tags.subscribe((tags) => setTags(tags));
+    const ut = tagService.$uniqueTags.subscribe((ut) => setUniqueTags(ut));
 
     return () => {
       a.unsubscribe();
       b.unsubscribe();
       ts.unsubscribe();
+      ut.unsubscribe();
     };
   }, []);
 
@@ -74,21 +77,10 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
 
   const [tags, setTags] = useState<Map<string, Tag>>(new Map());
 
-  const items = useMemo(() => {
-    const uniqueTags = new Map<string, number>();
-
-    tags.forEach((tag) => {
-      const label = tag.label;
-
-      if (uniqueTags.has(label)) {
-        uniqueTags.set(label, uniqueTags.get(label)! + 1);
-      } else {
-        uniqueTags.set(label, 1);
-      }
-    });
-
-    return Array.from(uniqueTags).map(([name, value]) => ({ name, value }));
-  }, [tags]);
+  const items = useMemo(
+    () => Array.from(uniqueTags).map(([name, value]) => ({ name, value })),
+    [uniqueTags]
+  );
 
   return (
     <WidgetPaper
@@ -116,40 +108,11 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
         </Box>
       }
     >
-      {/* TODO: Remove within the next version */}
-      {/* <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "3px",
-          width: "100%",
-        }}
-      >
-        {categories.map((c, index) => (
-          <Button
-            key={index}
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              width: "100%",
-              pointerEvents: "all",
-            }}
-            data-active={activeCategory?.name === c.name}
-            onClick={() => handleCategoryClick(c.name)}
-            color="secondary"
-            variant="contained"
-            size="large"
-          >
-            {c.name}
-          </Button>
-        ))}
-      </Box> */}
-
       <Filter
         activeCategory={activeCategory}
         categories={categories}
         handleCategoryClick={handleCategoryClick}
+        extension={tagService}
       />
 
       {activeCategory && (
@@ -177,73 +140,3 @@ function FallbackComponent({ error }: any) {
 }
 
 export default TagWidget;
-
-const Tabs = styled.div<{ $activeTab: number }>`
-  width: 100%;
-  display: grid;
-  grid-template-columns: 50% 50%;
-  background-color: var(--main-bg-color);
-  height: 30px;
-  border-radius: 9px;
-  padding: 3px;
-
-  .tab {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    cursor: pointer;
-  }
-  .tab.active {
-    background-color: var(--paper-bg-color);
-    border-radius: 6px;
-    box-shadow: 0px 0px 9px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const OutlinerSearch = styled.div`
-  width: 100%;
-  font-size: 12px;
-  display: flex;
-  min-height: 25px;
-  display: flex;
-  justify-content: start;
-  width: 100%;
-  border-radius: 9px;
-  padding: 2px;
-  background-color: var(--select-bg-color);
-  border: 1px solid var(--box-border-color);
-
-  input {
-    width: 100%;
-    border: 0px;
-    background-color: transparent;
-    &:focus-visible {
-      outline: -webkit-focus-ring-color auto 0px;
-    }
-  }
-  .search-icon {
-    margin-right: 3px;
-    align-self: center;
-    font-size: 14px;
-    fill: grey;
-  }
-
-  .clear-button {
-    margin-right: 3px;
-    * {
-      font-size: 14px;
-      fill: grey;
-    }
-  }
-`;
-
-const TreeContainer = styled.div`
-  width: 100%;
-  display: block;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 500px;
-  min-height: 150px;
-  overflow: auto;
-`;

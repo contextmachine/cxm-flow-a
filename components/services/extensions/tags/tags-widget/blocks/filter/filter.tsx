@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Box, Typography, IconButton, TextField, Chip } from "@mui/material";
-import { ExpandMore, FilterAlt } from "@mui/icons-material";
+import { Box } from "@mui/material";
+import { ExpandMore } from "@mui/icons-material";
 import SelectWithSearch from "@/components/ui/shared/select-with-search";
-import { TagCategory } from "../../tags-extension.types";
-import { set } from "lodash";
+import { TagCategory, TagCondition } from "../../tags-extension.types";
 import CheckIcon from "@mui/icons-material/Check";
+import TagsExtension from "../../tags-extension";
+import TagFilterCondition from "../filter-condition/filter-condition";
 
 // Styled components
 const FilterContainer = styled(Box)<{
@@ -48,15 +49,32 @@ const Filter = ({
   activeCategory,
   categories,
   handleCategoryClick,
+  extension,
 }: {
   activeCategory: TagCategory | undefined;
   categories: TagCategory[];
   handleCategoryClick: (category: string) => void;
+  extension: TagsExtension;
 }) => {
   const [attributeExpanded, setAttributeExpanded] = useState(false);
   const [filterExpanded, setFilterExpanded] = useState(false);
+  const [uniqueTags, setUniqueTags] = useState<Map<string, number>>(new Map());
+  const [subFilters, setSubFilters] = useState<TagCondition[]>([]);
+
+  useEffect(() => {
+    const ut = extension.$uniqueTags.subscribe((ut) => setUniqueTags(ut));
+    const sf = extension.$subFilters.subscribe((sf) => {
+      setSubFilters(sf);
+    });
+
+    return () => {
+      ut.unsubscribe();
+      sf.unsubscribe();
+    };
+  }, [extension]);
 
   const [attributeValue, setAttributeValue] = useState<string>("");
+  const [filterValue, setFilterValue] = useState<string>("");
 
   const toggleExpanded = (type: "attribute" | "filter") => {
     if (type === "attribute") {
@@ -155,45 +173,65 @@ const Filter = ({
       </FilterContainer>
 
       {/* TODO: Ilia Kuzmin. Either remove this section or enhance it */}
-      {/* <FilterContainer $active="inactive">
-        <SectionHeader onClick={() => toggleExpanded("filter")}>
-          <Box>
-            <b>Filter</b>
-          </Box>
+      {
+        <FilterContainer $active={subFilters.length ? "active" : "inactive"}>
+          <SectionHeader onClick={() => toggleExpanded("filter")}>
+            <Box>
+              <b>Filter</b>
+            </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              gap: "8px",
-              alignItems: "center",
-            }}
-          >
-            {activeCategory ? activeCategory.name : "All"}
-            <ExpandMore
+            <Box
               sx={{
-                transform: filterExpanded ? "rotate(-90deg)" : "rotate(0deg)",
-                transition: "transform 0.3s",
-                fontSize: "16px",
+                display: "flex",
+                gap: "8px",
+                alignItems: "center",
+              }}
+            >
+              {subFilters.length ? "Many" : "None"}
+              <ExpandMore
+                sx={{
+                  transform: filterExpanded ? "rotate(-90deg)" : "rotate(0deg)",
+                  transition: "transform 0.3s",
+                  fontSize: "16px",
+                }}
+              />
+            </Box>
+          </SectionHeader>
+          <FilterContent expanded={filterExpanded}>
+            {subFilters.map((condition, i) => (
+              <div key={i}>
+                <TagFilterCondition
+                  condition={condition}
+                  index={i}
+                  extension={extension}
+                />
+              </div>
+            ))}
+
+            <SelectWithSearch
+              options={Array.from(uniqueTags)
+                .filter(([name]) => {
+                  return !subFilters.some((sf) => sf.name === name);
+                })
+                .map(([name]) => ({
+                  value: name,
+                }))}
+              placeholder="Add new condition"
+              filterInput={filterValue}
+              onSelect={(e) => {
+                extension.addSubFilter({
+                  name: e.value,
+                  operator: "EQUAL",
+                  enabled: true,
+                });
+              }}
+              setFilterInput={(e) => {
+                setFilterValue(e);
               }}
             />
-          </Box>
-        </SectionHeader>
-        <FilterContent expanded={filterExpanded}>
-          {filterActive ? (
-            <>
-              <Chip label="Значение 1" onDelete={() => {}} />
-              <Chip label="Значение 2" onDelete={() => {}} />
-            </>
-          ) : (
-            <TextField
-              variant="outlined"
-              size="small"
-              placeholder="Добавить атрибут"
-              onBlur={applyFilter}
-            />
-          )}
-        </FilterContent>
-      </FilterContainer> */}
+          </FilterContent>
+        </FilterContainer>
+      }
     </Box>
   );
 };

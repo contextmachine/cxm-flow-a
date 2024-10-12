@@ -7,10 +7,11 @@ import ClearIcon from "@mui/icons-material/Clear";
 import DeleteIcon from "@/components/ui/icons/delete-icon";
 import PlusIcon from "@/components/ui/icons/plus-icon";
 import CheckedIcon from "@/components/ui/icons/checked-icon";
+import TagsExtension from "../../tags/tags-widget/tags-extension";
 
 interface MultipleValueInputProps {
   filterItem: FilterCondition;
-  extension: ViewFilterExtension;
+  extension: ViewFilterExtension | TagsExtension;
   valueOptions: string[];
   type: PropertyType;
 }
