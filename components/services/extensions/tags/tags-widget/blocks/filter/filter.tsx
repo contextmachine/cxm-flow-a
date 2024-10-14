@@ -23,7 +23,7 @@ const FilterContainer = styled(Box)<{
   ${({ $active }) =>
     $active === "active" &&
     `
-    background-color: #F3F3F3;
+    background-color: var(--main-bg-color);
     
   `}
 `;
@@ -85,16 +85,15 @@ const Filter = ({
   };
 
   const [attributeHistory, setAttributeHistory] = useState<TagCategory[]>([]);
+
   useEffect(() => {
-    if (activeCategory) {
-      const historyIncludes = attributeHistory.some(
-        (c) => c.name === activeCategory.name
-      );
-      if (!historyIncludes) {
-        setAttributeHistory([...attributeHistory, activeCategory]);
-      }
-    }
-  }, [activeCategory]);
+    // Step 1: Set top 3 categories by count
+    const topCategories = categories
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3);
+
+    setAttributeHistory(topCategories);
+  }, [categories, activeCategory]);
 
   useEffect(() => {
     setAttributeValue("");
@@ -136,7 +135,7 @@ const Filter = ({
           {attributeHistory.map((c) => (
             <Box
               sx={{
-                background: "#ffffff",
+                background: "var(--paper-bg-color)",
                 padding: "5px",
                 borderRadius: "9px",
                 display: "flex",

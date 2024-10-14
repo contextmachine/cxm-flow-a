@@ -96,12 +96,24 @@ class TagsExtension extends ExtensionEntity {
       }
     }
 
+    this._tags.forEach((tag) => {
+      if (tag.textSvg && tag.backgroundSvg) {
+        tag.textSvg.remove();
+        tag.backgroundSvg.remove();
+      }
+    });
+
     // get tall categories
     entities.forEach((entity) => {
       const props = entity.props;
       if (props) {
         Array.from(props.keys()).forEach((key) => {
-          this._categories.set(key, { name: key });
+          if (this._categories.has(key)) {
+            const category = this._categories.get(key)!;
+            category.count += 1;
+          } else {
+            this._categories.set(key, { name: key, count: 1 });
+          }
         });
       }
     });
@@ -111,10 +123,6 @@ class TagsExtension extends ExtensionEntity {
     this._tags.clear();
     this.$tags.next(new Map());
     this.$uniqueTags.next(new Map());
-
-    if (!keepSubFilters) {
-      this.$subFilters.next([]);
-    }
 
     // get all tags based on active category
     entities.forEach((entity) => {
@@ -158,6 +166,10 @@ class TagsExtension extends ExtensionEntity {
     this._getUniqueTags();
 
     this.renderAll();
+
+    if (!keepSubFilters) {
+      this.$subFilters.next([]);
+    }
   };
 
   public isTagValidForSubfilter = (tag: string): boolean => {
@@ -471,12 +483,32 @@ class TagsExtension extends ExtensionEntity {
   }
 
   private toScreenPosition(position: THREE.Vector3): { x: number; y: number } {
-    const width = this._tagSvg!.clientWidth;
-    const height = this._tagSvg!.clientHeight;
+    if (
+      !this._viewer ||
+      !this._viewer.camera ||
+      !this._viewer.camera.matrixWorldInverse
+    )
+      return { x: 0, y: 0 };
 
-    const vector = position.clone().project(this._viewer.camera);
-    const x = (vector.x * 0.5 + 0.5) * width;
-    const y = (-vector.y * 0.5 + 0.5) * height;
+    const width = this._tagSvg ? this._tagSvg.clientWidth : window.innerWidth;
+    const height = this._tagSvg
+      ? this._tagSvg.clientHeight
+      : window.innerHeight;
+
+    // Clone the position and apply model-view transformations
+    const vector = position.clone();
+
+    // Apply the model's world matrix for accurate transformations
+    vector.applyMatrix4(this._scene.matrixWorld); // Model's world matrix
+    vector.project(this._viewer.camera); // Project based on camera matrix
+
+    // Calculate screen position with clamping to prevent out-of-bounds flickering
+    const x = THREE.MathUtils.clamp((vector.x * 0.5 + 0.5) * width, 0, width);
+    const y = THREE.MathUtils.clamp(
+      (-vector.y * 0.5 + 0.5) * height,
+      0,
+      height
+    );
 
     return { x, y };
   }

@@ -29,4 +29,5 @@ export interface TagCondition {
 
 export interface TagCategory {
   name: string;
+  count: number;
 }
