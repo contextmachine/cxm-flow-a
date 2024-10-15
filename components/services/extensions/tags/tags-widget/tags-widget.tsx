@@ -124,6 +124,13 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
               legend: {
                 maxItems: 15,
               },
+              onLegendClick: (name) => {
+                extension.addSubFilter({
+                  name: name,
+                  operator: "EQUAL",
+                  enabled: true,
+                });
+              },
             }}
             content={tags.size}
             type="pie"
