@@ -7,6 +7,7 @@ import styled from "styled-components";
 
 const PieChart: React.FC<{
   items: { name: string; value: number }[];
+  activeItems?: string[];
   options?: {
     legend?: {
       maxItems?: number;
@@ -16,7 +17,7 @@ const PieChart: React.FC<{
   };
   type?: "pie" | "bar";
   content?: string | number;
-}> = ({ items, options, type, content }) => {
+}> = ({ items, activeItems, options, type, content }) => {
   const chartRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -116,6 +117,7 @@ const PieChart: React.FC<{
             minHeight: maxHeight,
             maxHeight: maxHeight,
             position: "absolute",
+            pointerEvents: "none",
           }}
           ref={containerRef}
         />
@@ -164,6 +166,7 @@ const PieChart: React.FC<{
                 gap: "8px",
                 cursor: "pointer",
               }}
+              data-active={activeItems?.includes(item.name)}
               onClick={() => options?.onLegendClick?.(item.name)}
             >
               <Box
@@ -179,6 +182,8 @@ const PieChart: React.FC<{
               />
 
               <Box sx={{}}>{item.name}</Box>
+              <Box sx={{ opacity: 0.5 }}>•</Box>
+              <Box sx={{ opacity: 0.5 }}>{item.value}</Box>
             </LegendItemWrapper>
           ))}
 
@@ -197,6 +202,10 @@ const LegendItemWrapper = styled(Box)`
   &:hover {
     background: var(--button-secondary-hover-color);
     cursor: pointer;
+  }
+
+  &[data-active="true"] {
+    background: var(--button-secondary-hover-color);
   }
 `;
 

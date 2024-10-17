@@ -64,9 +64,15 @@ class TagsExtension extends ExtensionEntity {
   private _subFilterControl$: Subscription | undefined;
   private _cameraControl$: Subscription | undefined;
   private _cameraGroupingControl$: Subscription | undefined;
+  private _configsControl$: Subscription | undefined;
 
   public labelsVisible$ = new BehaviorSubject<boolean>(true);
   public themingColorsApplied$ = new BehaviorSubject<boolean>(true);
+
+  private _testCircle: SVGCircleElement | undefined;
+
+  public applyMatrixWorld$ = new BehaviorSubject<boolean>(false);
+  public enableGrouping$ = new BehaviorSubject<boolean>(true);
 
   constructor(viewer: Viewer, productData: ProductsDto) {
     super(viewer);
@@ -192,7 +198,17 @@ class TagsExtension extends ExtensionEntity {
   };
 
   public addSubFilter = (condition: TagCondition) => {
-    this.$subFilters.next([...this.$subFilters.value, condition]);
+    const subFilters = this.$subFilters.value;
+
+    // Check if the same condition already exists
+    const exists = subFilters.some(
+      (filter) =>
+        filter.name === condition.name && filter.operator === condition.operator
+    );
+
+    if (!exists) {
+      this.$subFilters.next([...subFilters, condition]);
+    }
   };
 
   public removeSubFilter = (condition: TagCondition) => {
@@ -238,6 +254,10 @@ class TagsExtension extends ExtensionEntity {
    * This method will render the tags, apply grouping logic, and then render the groups.
    */
   private renderAll = () => {
+    if (this.applyMatrixWorld$.value) {
+      this._viewer.controls.camera.updateMatrixWorld();
+    }
+
     // Render tags as badges on the SVG canvas
     this.renderTags();
 
@@ -339,6 +359,11 @@ class TagsExtension extends ExtensionEntity {
 
   // Add the applyGrouping method to handle your custom grouping logic
   private calculateGroups = () => {
+    if (!this.enableGrouping$.value) {
+      this._tagGroups.clear();
+      return;
+    }
+
     const grouped: TagGroup[] = [];
     const tags = Array.from(this._tags.values());
 
@@ -498,17 +523,11 @@ class TagsExtension extends ExtensionEntity {
     // Clone the position and apply model-view transformations
     const vector = position.clone();
 
-    // Apply the model's world matrix for accurate transformations
-    vector.applyMatrix4(this._scene.matrixWorld); // Model's world matrix
-    vector.project(this._viewer.camera); // Project based on camera matrix
+    const projectedVector = vector.project(this._viewer.controls.camera);
 
-    // Calculate screen position with clamping to prevent out-of-bounds flickering
-    const x = THREE.MathUtils.clamp((vector.x * 0.5 + 0.5) * width, 0, width);
-    const y = THREE.MathUtils.clamp(
-      (-vector.y * 0.5 + 0.5) * height,
-      0,
-      height
-    );
+    // Convert the NDC (-1 to 1) to screen coordinates
+    const x = (projectedVector.x * 0.5 + 0.5) * width;
+    const y = (1 - (projectedVector.y * 0.5 + 0.5)) * height;
 
     return { x, y };
   }
@@ -530,6 +549,16 @@ class TagsExtension extends ExtensionEntity {
       this.updateTags(this._entityControl.entities, true);
     });
 
+    const configChanges$ = merge(
+      this.enableGrouping$,
+      this.applyMatrixWorld$,
+      this.labelsVisible$
+    );
+
+    this._configsControl$ = configChanges$.subscribe(() => {
+      this.renderAll();
+    });
+
     // Create an observable for control events
     const controlEvent$ = fromEvent(this._cameraControl.controls, "control");
 
@@ -546,6 +575,10 @@ class TagsExtension extends ExtensionEntity {
 
     // Subscribe to the immediate observable for rendering tags immediately
     this._cameraControl$ = immediateRender$.subscribe(() => {
+      if (this.applyMatrixWorld$.value) {
+        this._viewer.controls.camera.updateMatrixWorld();
+      }
+
       this.renderTags();
       this.renderGroups();
     });
@@ -587,6 +620,46 @@ class TagsExtension extends ExtensionEntity {
     console.log("Filter item updated", filterItem);
   };
 
+  // Add this method inside your TagsExtension class
+  public drawSingleProjectedCircle() {
+    // Define the 3D position to project
+    const position = new THREE.Vector3(0, 0, 0);
+
+    // Get the screen coordinates of the projected 3D point
+    const screenPosition = this.toScreenPosition(position);
+
+    if (!this._testCircle) {
+      // Create the circle element at the projected position
+      const circle = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "circle"
+      );
+
+      circle.setAttribute("cx", `${screenPosition.x}`);
+      circle.setAttribute("cy", `${screenPosition.y}`);
+      circle.setAttribute("r", "10"); // Set radius of the circle
+      circle.setAttribute("fill", "blue"); // Set color of the circle
+      circle.setAttribute("opacity", "0.8");
+
+      // Append the circle to the SVG container
+      this._tagSvg!.appendChild(circle);
+
+      this._testCircle = circle;
+    } else {
+      const circle = this._testCircle;
+      circle.setAttribute("cx", `${screenPosition.x}`);
+      circle.setAttribute("cy", `${screenPosition.y}`);
+    }
+  }
+
+  public setApplyMatrixWorld(apply: boolean) {
+    this.applyMatrixWorld$.next(apply);
+  }
+
+  public setGroupingEnabled(enabled: boolean) {
+    this.enableGrouping$.next(enabled);
+  }
+
   public async unload() {
     if (this._entityControl$) {
       this._entityControl$.unsubscribe();
@@ -608,6 +681,11 @@ class TagsExtension extends ExtensionEntity {
       this._subFilterControl$ = undefined;
     }
 
+    if (this._configsControl$) {
+      this._configsControl$.unsubscribe();
+      this._configsControl$ = undefined;
+    }
+
     this._tags.clear();
     this._tagGroups.clear();
     this._categories.clear();
@@ -621,6 +699,9 @@ class TagsExtension extends ExtensionEntity {
     this.$themingColorsEnabled.unsubscribe;
     this.labelsVisible$.unsubscribe();
     this.themingColorsApplied$.unsubscribe();
+
+    this.enableGrouping$.unsubscribe();
+    this.applyMatrixWorld$.unsubscribe();
   }
 }
 
