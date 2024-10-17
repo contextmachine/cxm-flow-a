@@ -314,8 +314,6 @@ class TagsExtension extends ExtensionEntity {
           `${textBox.height + 2 * padding}`
         );
       } else {
-        // Create new SVG elements if they don't exist
-
         // Create an SVG text element for the tag label
         const textElement = document.createElementNS(
           "http://www.w3.org/2000/svg",
