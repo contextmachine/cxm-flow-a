@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import TagExtension from "./tags-extension";
 import { useViewer } from "@/components/services/scene-service/scene-provider";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
-import { Tag, TagCategory } from "./tags-extension.types";
+import { Tag, TagCategory, TagCondition } from "./tags-extension.types";
 import { Box, Button, IconButton, Menu, MenuItem, Switch } from "@mui/material";
 import { display } from "html2canvas/dist/types/css/property-descriptors/display";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -12,6 +12,7 @@ import TagsExtension from "./tags-extension";
 import dynamic from "next/dynamic";
 import { ErrorBoundary } from "react-error-boundary";
 import Filter from "./blocks/filter/filter";
+import CheckIcon from "@mui/icons-material/Check";
 
 const PieChart = dynamic(
   () =>
@@ -33,12 +34,17 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
   const tagService = extension as TagsExtension;
 
   const [categories, setCategories] = useState<TagCategory[]>([]);
+  const [subFilters, setSubFilters] = useState<TagCondition[]>([]);
   const [activeCategory, setActiveCategory] = useState<TagCategory | undefined>(
     undefined
   );
+  const [uniqueTags, setUniqueTags] = useState<Map<string, number>>(new Map());
 
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(menuAnchorEl);
+
+  const [isGroupingEnabled, setIsGroupingEnabled] = useState(false);
+  const [isMatrixWorldEnabled, setIsMatrixWorldEnabled] = useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchorEl(event.currentTarget);
@@ -54,11 +60,21 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
     );
     const b = tagService.$activeCategory.subscribe((c) => setActiveCategory(c));
     const ts = tagService.$tags.subscribe((tags) => setTags(tags));
+    const ut = tagService.$uniqueTags.subscribe((ut) => setUniqueTags(ut));
+
+    const ge = tagService.enableGrouping$.subscribe(setIsGroupingEnabled);
+    const me = tagService.applyMatrixWorld$.subscribe(setIsMatrixWorldEnabled);
+
+    const sf = tagService.$subFilters.subscribe((sf) => setSubFilters(sf));
 
     return () => {
       a.unsubscribe();
       b.unsubscribe();
       ts.unsubscribe();
+      ut.unsubscribe();
+      ge.unsubscribe();
+      me.unsubscribe();
+      sf.unsubscribe();
     };
   }, []);
 
@@ -74,21 +90,20 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
 
   const [tags, setTags] = useState<Map<string, Tag>>(new Map());
 
-  const items = useMemo(() => {
-    const uniqueTags = new Map<string, number>();
+  const items = useMemo(
+    () => Array.from(uniqueTags).map(([name, value]) => ({ name, value })),
+    [uniqueTags]
+  );
 
-    tags.forEach((tag) => {
-      const label = tag.label;
+  const handleGroupingToggle = () => {
+    tagService.setGroupingEnabled(!isGroupingEnabled);
+    handleMenuClose();
+  };
 
-      if (uniqueTags.has(label)) {
-        uniqueTags.set(label, uniqueTags.get(label)! + 1);
-      } else {
-        uniqueTags.set(label, 1);
-      }
-    });
-
-    return Array.from(uniqueTags).map(([name, value]) => ({ name, value }));
-  }, [tags]);
+  const handleMatrixWorldToggle = () => {
+    tagService.setApplyMatrixWorld(!isMatrixWorldEnabled);
+    handleMenuClose();
+  };
 
   return (
     <WidgetPaper
@@ -110,56 +125,64 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
             open={isMenuOpen}
             onClose={handleMenuClose}
           >
-            <MenuItem onClick={handleMenuClose}>Option 1</MenuItem>
-            <MenuItem onClick={handleMenuClose}>Option 2</MenuItem>
+            <MenuItem onClick={handleMatrixWorldToggle}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Box sx={{ minWidth: "12px", minHeight: "12px" }}>
+                  {isMatrixWorldEnabled ? <CheckIcon /> : null}
+                </Box>
+                <Box>
+                  <strong>Apply Matrix World</strong>
+                  <div style={{ opacity: 0.5 }}>
+                    Improves accuracy but may affect performance.
+                  </div>
+                </Box>
+              </Box>
+            </MenuItem>
+            <MenuItem onClick={handleGroupingToggle}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Box sx={{ minWidth: "12px", minHeight: "12px" }}>
+                  {isGroupingEnabled ? <CheckIcon /> : null}
+                </Box>
+                <Box>
+                  <strong>Enable Grouping</strong>
+                  <div style={{ opacity: 0.5 }}>Toggle grouping of tags.</div>
+                </Box>
+              </Box>
+            </MenuItem>
           </Menu>
         </Box>
       }
     >
-      {/* TODO: Remove within the next version */}
-      {/* <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "3px",
-          width: "100%",
-        }}
-      >
-        {categories.map((c, index) => (
-          <Button
-            key={index}
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              width: "100%",
-              pointerEvents: "all",
-            }}
-            data-active={activeCategory?.name === c.name}
-            onClick={() => handleCategoryClick(c.name)}
-            color="secondary"
-            variant="contained"
-            size="large"
-          >
-            {c.name}
-          </Button>
-        ))}
-      </Box> */}
-
       <Filter
         activeCategory={activeCategory}
         categories={categories}
         handleCategoryClick={handleCategoryClick}
+        extension={tagService}
       />
 
       {activeCategory && (
         <ErrorBoundary FallbackComponent={FallbackComponent}>
           <PieChart
             items={items}
+            activeItems={subFilters.map((sf) => sf.name)}
             options={{
               maxHeight: "max-content",
               legend: {
                 maxItems: 15,
+              },
+              onLegendClick: (name) => {
+                const existingFilter = subFilters.find(
+                  (sf) => sf.name === name
+                );
+                if (!existingFilter) {
+                  extension.addSubFilter({
+                    name: name,
+                    operator: "EQUAL",
+                    enabled: true,
+                  });
+                } else {
+                  extension.removeSubFilter(existingFilter);
+                }
               },
             }}
             content={tags.size}
@@ -177,73 +200,3 @@ function FallbackComponent({ error }: any) {
 }
 
 export default TagWidget;
-
-const Tabs = styled.div<{ $activeTab: number }>`
-  width: 100%;
-  display: grid;
-  grid-template-columns: 50% 50%;
-  background-color: var(--main-bg-color);
-  height: 30px;
-  border-radius: 9px;
-  padding: 3px;
-
-  .tab {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    cursor: pointer;
-  }
-  .tab.active {
-    background-color: var(--paper-bg-color);
-    border-radius: 6px;
-    box-shadow: 0px 0px 9px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const OutlinerSearch = styled.div`
-  width: 100%;
-  font-size: 12px;
-  display: flex;
-  min-height: 25px;
-  display: flex;
-  justify-content: start;
-  width: 100%;
-  border-radius: 9px;
-  padding: 2px;
-  background-color: var(--select-bg-color);
-  border: 1px solid var(--box-border-color);
-
-  input {
-    width: 100%;
-    border: 0px;
-    background-color: transparent;
-    &:focus-visible {
-      outline: -webkit-focus-ring-color auto 0px;
-    }
-  }
-  .search-icon {
-    margin-right: 3px;
-    align-self: center;
-    font-size: 14px;
-    fill: grey;
-  }
-
-  .clear-button {
-    margin-right: 3px;
-    * {
-      font-size: 14px;
-      fill: grey;
-    }
-  }
-`;
-
-const TreeContainer = styled.div`
-  width: 100%;
-  display: block;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 500px;
-  min-height: 150px;
-  overflow: auto;
-`;

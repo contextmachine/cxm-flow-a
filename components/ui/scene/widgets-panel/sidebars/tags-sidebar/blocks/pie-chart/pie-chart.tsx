@@ -3,18 +3,21 @@ import { useEffect, useMemo, useRef } from "react";
 import stc from "string-to-color";
 import chroma from "chroma-js";
 import { Box } from "@mui/material";
+import styled from "styled-components";
 
 const PieChart: React.FC<{
   items: { name: string; value: number }[];
+  activeItems?: string[];
   options?: {
     legend?: {
       maxItems?: number;
     };
+    onLegendClick?: (name: string) => void;
     maxHeight?: string;
   };
   type?: "pie" | "bar";
   content?: string | number;
-}> = ({ items, options, type, content }) => {
+}> = ({ items, activeItems, options, type, content }) => {
   const chartRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -96,7 +99,6 @@ const PieChart: React.FC<{
         maxHeight: `${maxHeight}`,
         display: "flex",
         flexDirection: "column",
-        pointerEvents: "none",
       }}
     >
       <Box
@@ -115,6 +117,7 @@ const PieChart: React.FC<{
             minHeight: maxHeight,
             maxHeight: maxHeight,
             position: "absolute",
+            pointerEvents: "none",
           }}
           ref={containerRef}
         />
@@ -145,8 +148,8 @@ const PieChart: React.FC<{
         sx={{
           display: "flex",
           justifyContent: "center",
-          rowGap: "7px",
-          columnGap: "15px",
+          rowGap: "3px",
+          columnGap: "5px",
           flexWrap: "wrap",
           marginTop: "30px",
           marginBottom: "20px",
@@ -155,13 +158,16 @@ const PieChart: React.FC<{
         {items
           .filter((_, i) => !legendMaxItems || i < legendMaxItems)
           .map((item, index) => (
-            <Box
+            <LegendItemWrapper
               key={index}
               sx={{
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
+                cursor: "pointer",
               }}
+              data-active={activeItems?.includes(item.name)}
+              onClick={() => options?.onLegendClick?.(item.name)}
             >
               <Box
                 sx={{
@@ -176,7 +182,9 @@ const PieChart: React.FC<{
               />
 
               <Box sx={{}}>{item.name}</Box>
-            </Box>
+              <Box sx={{ opacity: 0.5 }}>•</Box>
+              <Box sx={{ opacity: 0.5 }}>{item.value}</Box>
+            </LegendItemWrapper>
           ))}
 
         {legendMaxItems && items.length > legendMaxItems && (
@@ -186,5 +194,19 @@ const PieChart: React.FC<{
     </Box>
   );
 };
+
+const LegendItemWrapper = styled(Box)`
+  border-radius: 5px;
+  padding: 2px 5px;
+
+  &:hover {
+    background: var(--button-secondary-hover-color);
+    cursor: pointer;
+  }
+
+  &[data-active="true"] {
+    background: var(--button-secondary-hover-color);
+  }
+`;
 
 export default PieChart;

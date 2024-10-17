@@ -72,6 +72,7 @@ const ViewFilterWidget: React.FC<ViewFilterWidgetProps> = ({
           key={0}
           index={0}
         />
+
         <FilterButton
           onClick={() => onEnable()}
           $isActive={preset !== undefined && preset.enabled}

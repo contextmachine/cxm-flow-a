@@ -7,14 +7,14 @@ import ViewFilterExtension, {
 } from "../view-filter-extension";
 import { PropertyType } from "./filter-condition";
 
-interface Option {
+export interface Option {
   value: ConditionOperator;
   label: string;
 }
 
 interface OperatorSelectProps {
   filterItem: FilterCondition;
-  extension: ViewFilterExtension;
+  onOperatorChange: (e: Option) => void;
   propertyType: PropertyType;
 }
 
@@ -28,7 +28,7 @@ const defaultOptions: Option[] = [
 const OperatorSelect: React.FC<OperatorSelectProps> = (
   props: OperatorSelectProps
 ) => {
-  const { filterItem, extension, propertyType } = props;
+  const { filterItem, propertyType, onOperatorChange } = props;
   const [isOpen, setIsOpen] = useState(false);
 
   const options = useMemo(() => {
@@ -48,11 +48,6 @@ const OperatorSelect: React.FC<OperatorSelectProps> = (
   useEffect(() => {
     setOperator(defaultOptions.find((x) => x.value === filterItem.operator)!);
   }, [filterItem.operator]);
-
-  const onOperatorChange = (e: Option) => {
-    filterItem.operator = e.value;
-    extension.updateFilterCondition(filterItem);
-  };
 
   const dropDownRef = useRef(null);
   useClickOutside(dropDownRef, () => setIsOpen(false));
