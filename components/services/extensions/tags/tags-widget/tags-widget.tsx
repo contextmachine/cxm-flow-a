@@ -105,6 +105,24 @@ const TagWidget: React.FC<TagWidgetProps> = ({ isPreview, extension }) => {
     handleMenuClose();
   };
 
+  const [tags, setTags] = useState<Map<string, Tag>>(new Map());
+
+  const items = useMemo(() => {
+    const uniqueTags = new Map<string, number>();
+
+    tags.forEach((tag) => {
+      const label = tag.label;
+
+      if (uniqueTags.has(label)) {
+        uniqueTags.set(label, uniqueTags.get(label)! + 1);
+      } else {
+        uniqueTags.set(label, 1);
+      }
+    });
+
+    return Array.from(uniqueTags).map(([name, value]) => ({ name, value }));
+  }, [tags]);
+
   return (
     <WidgetPaper
       isPreview={isPreview}

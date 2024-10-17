@@ -417,6 +417,7 @@ class TagsExtension extends ExtensionEntity {
     }
 
     // Render each group as an SVG element
+    // Render each group as an SVG element
     this._tagGroups.forEach((group) => {
       const { tags } = group;
       const firstTag = Array.from(tags)[0];

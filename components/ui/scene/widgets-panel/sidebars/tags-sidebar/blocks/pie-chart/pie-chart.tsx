@@ -99,6 +99,7 @@ const PieChart: React.FC<{
         maxHeight: `${maxHeight}`,
         display: "flex",
         flexDirection: "column",
+        pointerEvents: "none",
       }}
     >
       <Box
