@@ -33,7 +33,7 @@ const SelectWithSearch: React.FC<SelectWithFilterProps> = (
     setFilteredOptions(
       options.filter((x) => filterOption(filterInput, x.value))
     );
-  }, [filterInput]);
+  }, [filterInput, options]);
 
   const handleOptionClick = (option: any) => {
     setIsOpen(false);
@@ -81,10 +81,10 @@ const SelectWithSearchWrapper = styled.div`
   .input-field {
     width: 100%;
     height: 27px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--box-border-color);
     border-radius: 9px;
     padding: 0 10px;
-    background-color: white;
+    background-color: var(--select-bg-color);
 
     .end-icon {
       padding: 0px;
@@ -109,8 +109,8 @@ const DropdownList = styled.ul`
   left: 0;
   width: 100%;
   border-radius: 9px;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
+  background-color: var(--paper-bg-color);
+  border: 1px solid var(--box-border-color);
   list-style-type: none;
   padding: 0;
   max-height: 200px;
@@ -125,6 +125,6 @@ const DropdownItem = styled.li`
   cursor: pointer;
 
   &:hover {
-    background-color: #e0e0e0;
+    background-color: var(--icon-button-hover-color);
   }
 `;

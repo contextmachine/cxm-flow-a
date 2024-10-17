@@ -5,10 +5,10 @@ import Stats from "three/examples/jsm/libs/stats.module";
 
 import ComposerPipe from "./composer-pipe";
 import CameraControl from "./camera-control";
-import Loader from "./loader/loader";
+import Loader, { LoaderState } from "./loader/loader";
 import EntityControl from "./entity-control";
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
-import { appLogicError, assertDefined } from "@/utils";
+import { appLogicError, assertDefined, distinctByKeys } from "@/utils";
 import ProjectSettingsService from "../services/project-settings/project-settings-service";
 import SelectionControl from "./selection/selection-tool";
 import SceneService from "@/components/services/scene-service/scene-service";
@@ -20,7 +20,13 @@ export class Viewer {
   private _rootElement: HTMLDivElement | undefined;
   private _scene = new THREE.Scene();
 
+  private _tagCanvasElement: SVGSVGElement | undefined;
+  private _tagGroupCanvasElement: SVGSVGElement | undefined;
+
   private _sceneService: SceneService;
+
+  private _status: LoaderState = "idle";
+  private _statusSubject = new RX.Subject<LoaderState>();
 
   private _renderer: THREE.WebGLRenderer;
   private _stats: Stats;
@@ -61,7 +67,7 @@ export class Viewer {
 
     this._stats = new Stats();
 
-    this._projectSettingsService = new ProjectSettingsService();
+    this._projectSettingsService = new ProjectSettingsService(this);
     this._cameraService = new CameraControl(this);
     this._composerPerspective = new ComposerPipe(
       this._renderer,
@@ -73,9 +79,9 @@ export class Viewer {
     // this._taggingService = new TaggingService(this)
 
     // TODO: Needs to be discussed with Dima
-    /* this._scene.background = new THREE.Color(
+    this._scene.background = new THREE.Color(
       this._projectSettingsService.settings.background_color
-    ); */
+    );
     this._lights.forEach((x) => this._scene.add(x));
 
     this._entityControl = new EntityControl(this);
@@ -89,14 +95,29 @@ export class Viewer {
     this._subscriptions.push(
       RX.fromEvent(window, "resize").subscribe(() => this.resize())
     );
+
     this._subscriptions.push(
-      this._projectSettingsService.$settings.subscribe((settings) => {
-        // TODO: Needs to be discussed with Dima
-        //this._scene.background = new THREE.Color(settings.background_color);
+      distinctByKeys(this._projectSettingsService.$settings, [
+        "background_color",
+      ]).subscribe((settings) => {
+        this._scene.background = new THREE.Color(settings.background_color);
         this.updateViewer();
       })
     );
   }
+
+  // public get status(): LoaderState {
+  //   return this._status;
+  // }
+
+  // public get $status(): RX.Observable<LoaderState> {
+  //   return this._statusSubject;
+  // }
+
+  // public setStatus(status: LoaderState) {
+  //   this._status = status;
+  //   this._statusSubject.next(status);
+  // }
 
   public get scene(): THREE.Scene {
     return this._scene;
@@ -104,6 +125,14 @@ export class Viewer {
 
   public get canvas(): HTMLCanvasElement {
     return this._renderer.domElement;
+  }
+
+  public get tagCanvas(): SVGSVGElement | undefined {
+    return this._tagCanvasElement;
+  }
+
+  public get tagGroupCanvas(): SVGSVGElement | undefined {
+    return this._tagGroupCanvasElement;
   }
 
   public get sceneService(): SceneService {
@@ -169,6 +198,40 @@ export class Viewer {
     this.resize();
     rootElement.appendChild(this.canvas);
     this.canvas.tabIndex = 1;
+
+    // Create SVG Element
+    const svgElement = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg"
+    );
+    svgElement.setAttribute("id", "tags");
+    svgElement.setAttribute("width", "100%");
+    svgElement.setAttribute("height", "100%");
+    svgElement.style.position = "absolute";
+    svgElement.style.top = "0";
+    svgElement.style.left = "0";
+    svgElement.style.pointerEvents = "none"; // Disable events on SVG so they go through to the 3D canvas
+
+    // Append SVG to rootElement after WebGL canvas
+    this._tagCanvasElement = svgElement;
+    rootElement.appendChild(svgElement);
+
+    // Create SVG Element for tag groups
+    const svgGroupElement = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg"
+    );
+    svgGroupElement.setAttribute("id", "tag-groups");
+    svgGroupElement.setAttribute("width", "100%");
+    svgGroupElement.setAttribute("height", "100%");
+    svgGroupElement.style.position = "absolute";
+    svgGroupElement.style.top = "0";
+    svgGroupElement.style.left = "0";
+    svgGroupElement.style.pointerEvents = "none"; // Disable events on SVG so they go through to the 3D canvas
+
+    // Append SVG to rootElement after WebGL canvas
+    this._tagGroupCanvasElement = svgGroupElement;
+    rootElement.appendChild(svgGroupElement);
 
     // FPS stats element
     if (this._stats) {

@@ -30,12 +30,13 @@ import Viewer from "@/src/viewer/viewer";
 import { ControlsViewState } from "@/src/viewer/camera-control.types";
 import PointCloudExtensionDB from "./point-cloud-extension.db";
 import { debounce } from "lodash";
+import { ProductsDto } from "@/components/services/product-service/products.types";
 
 class PointCloudExtension
   extends ExtensionEntity
   implements ExtensionEntityInterface
 {
-  public id: string;
+  public id: number;
   public name: string;
 
   private _topViewEnabled = false;
@@ -73,10 +74,10 @@ class PointCloudExtension
   private _statistics: PCUserData | null = null;
   private _statistics$ = new BehaviorSubject<PCUserData | null>(null);
 
-  constructor(viewer: Viewer) {
+  constructor(viewer: Viewer, productData: ProductsDto) {
     super(viewer);
 
-    this.id = uuidv4();
+    this.id = productData.id;
     this.name = "pointcloud-handler";
 
     this._pointCloudExtentionDB = new PointCloudExtensionDB(this._viewer);

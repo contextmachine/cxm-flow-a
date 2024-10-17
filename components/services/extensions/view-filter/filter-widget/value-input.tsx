@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import ViewFilterExtension, { FilterCondition } from "../view-filter-extension";
 import { PropertyType } from "./filter-condition";
+import TagsExtension from "../../tags/tags-widget/tags-extension";
 
 interface ValueInputProps {
   filterItem: FilterCondition;
-  extension: ViewFilterExtension;
+  extension: ViewFilterExtension | TagsExtension;
   type: PropertyType;
 }
 

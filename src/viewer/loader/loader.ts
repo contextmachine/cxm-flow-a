@@ -17,17 +17,18 @@ THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
-export type LoaderStatus = "loading" | "idle";
+export type LoaderState = "compute" | "loading" | "idle";
+
 export type StatusHistoryEntry = {
-  status: LoaderStatus;
+  status: LoaderState;
   service: string;
 };
 
 class Loader {
   private _subscriptions: RX.Unsubscribable[] = [];
 
-  private _status: LoaderStatus = "idle";
-  private _statusSubject = new RX.Subject<LoaderStatus>();
+  private _status: LoaderState = "idle";
+  private _statusSubject = new RX.Subject<LoaderState>();
 
   private _queries: Set<ApiObject> = new Set();
   private _queriesSubject = new RX.Subject<ApiObject[]>();
@@ -44,28 +45,30 @@ class Loader {
     );
   }
 
-  private setStatus(status: LoaderStatus) {
+  private setStatus(status: LoaderState) {
+    // this._viewer.setStatus(status);
     this._status = status;
     this._statusSubject.next(status);
   }
 
-  public get status(): LoaderStatus {
+  public get status(): LoaderState {
     return this._status;
   }
 
-  public get $status(): RX.Observable<LoaderStatus> {
+  public get $status(): RX.Observable<LoaderState> {
     return this._statusSubject;
-  }
-
-  public get queries(): Set<ApiObject> {
-    return this._queries;
   }
 
   public get $queries(): RX.Observable<ApiObject[]> {
     return this._queriesSubject;
   }
 
+  public get queries() {
+    return this._queries;
+  }
+
   private updateApiObjects() {
+    console.log("update");
     this._queriesSubject.next([...this._queries.values()]);
   }
 
@@ -121,6 +124,22 @@ class Loader {
     this.setStatus("idle");
   }
 
+  public reloadApiObject(id: number) {
+    const list = [...this._queries.values()];
+
+    const existingQueriesMap = new Map(list.map((x) => [x.id, x]));
+
+    const apiObject = existingQueriesMap.get(id);
+
+    if (apiObject) {
+      this.setStatus("loading");
+      this.removeApiObject(apiObject);
+      this.loadApiObject(apiObject);
+      this.updateApiObjects();
+      this.setStatus("idle");
+    }
+  }
+
   private async removeApiObject(apiObject: ApiObject) {
     if (this._queries.has(apiObject)) {
       this._queries.delete(apiObject);
@@ -128,6 +147,10 @@ class Loader {
         this._viewer.entityControl.removeModel(apiObject.model);
       }
     }
+  }
+
+  public setLoaderStatus(status: LoaderState) {
+    this.setStatus(status);
   }
 
   public async loadApiObject(
@@ -155,16 +178,15 @@ class Loader {
     }
 
     const jsonObject = findThreeJSJSON(data);
-    const object3d = await parseJSON(jsonObject);
+    if (jsonObject) {
+      const object3d = await parseJSON(jsonObject);
 
-    const model = new ProjectModel(this._viewer, object3d, apiObject);
-    this._viewer.entityControl.addModel(model);
-
-    return model;
-  }
-
-  public get queries() {
-    return this._queries;
+      const model = new ProjectModel(this._viewer, object3d, apiObject);
+      this._viewer.entityControl.addModel(model);
+      return model;
+    } else {
+      return undefined;
+    }
   }
 
   public dispose() {

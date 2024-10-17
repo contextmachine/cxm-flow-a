@@ -1,18 +1,16 @@
 import * as THREE from "three";
 
+export const selectedColor = "#C0E8FF";
+export const lineSelectedColor = "#279EFF";
 
-export const selectedColor = '#C0E8FF'
-export const lineSelectedColor = "#279EFF"
+export const defaultMeshColor = "#888888";
 
-export const defaultMeshColor = '#888888'
+export const transparentColor = "#000000";
 
-export const transparentColor = "#000000"
-
-export const disabledColor = '#ffffff'
-export const lineDisabledColor = '#767676'
-export const selectedGroupBoxHelperColor = '#279EFF'
-export const activeGroupBoxHelperColor = 'orange'
-
+export const disabledColor = "#ffffff";
+export const lineDisabledColor = "#767676";
+export const selectedGroupBoxHelperColor = "#279EFF";
+export const activeGroupBoxHelperColor = "orange";
 
 export const wireframeMaterial = new THREE.MeshBasicMaterial({
   wireframe: true,
@@ -20,7 +18,6 @@ export const wireframeMaterial = new THREE.MeshBasicMaterial({
   transparent: true,
   opacity: 0.006,
 });
-
 
 export const selectedMaterial = new THREE.MeshStandardMaterial({
   color: selectedColor,
@@ -31,9 +28,19 @@ export const lineSelectedMaterial = new THREE.LineBasicMaterial({
   color: lineSelectedColor,
 } as any);
 
-
-
-
+export const createThemeMaterial = (
+  color: string,
+  themingColorOpacity: number
+) => {
+  if (themingColorOpacity === 0) {
+    return transparentMaterial;
+  } else {
+    return new THREE.MeshStandardMaterial({
+      color: color,
+      side: THREE.DoubleSide,
+    });
+  }
+};
 
 export const meshDefaultMaterial = new THREE.MeshBasicMaterial({
   color: defaultMeshColor,
@@ -44,8 +51,6 @@ export const lineDefaultMaterial = new THREE.LineBasicMaterial({
   color: 0x000000,
 } as any);
 
-
-
 export const disabledMaterial = new THREE.MeshStandardMaterial({
   color: disabledColor,
   side: THREE.DoubleSide,
@@ -54,9 +59,6 @@ export const disabledMaterial = new THREE.MeshStandardMaterial({
 export const lineDisabledMaterial = new THREE.LineBasicMaterial({
   color: lineDisabledColor,
 } as any);
-
-
-
 
 const vertexShader = /*glsl*/ `
   void main() {
@@ -83,10 +85,6 @@ export const transparentMaterial = new THREE.ShaderMaterial({
 //     color: lineSelectedColor,
 //     resolution: new THREE.Vector2(1, 1)
 // })
-
-
-
-
 
 // const lineVertexShader = /*glsl*/`
 // attribute vec3 center;
@@ -149,17 +147,13 @@ void main() {
 }
 `;
 
-
 export const testMaterial = new THREE.ShaderMaterial({
   fragmentShader: testfragmentShader,
   vertexShader: testVertexShader,
   side: THREE.DoubleSide,
-})
-
+});
 
 export const testMaterial2 = new THREE.MeshStandardMaterial({
   side: THREE.DoubleSide,
-  transparent: true
-
-
-})
+  transparent: true,
+});

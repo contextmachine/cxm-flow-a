@@ -13,6 +13,11 @@ export interface UserMetadata {
   } | null;
 }
 
+export interface Theme {
+  id: number;
+  name: string;
+}
+
 export type UserMetadataResponse = UserMetadata | null;
 
 export type FeatureType = "isDarkMode";

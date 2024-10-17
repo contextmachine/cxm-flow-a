@@ -44,6 +44,28 @@ export const useEnterEsc = (onPressed: () => void) => {
   });
 };
 
+export const useSelected = () => {
+  const viewer = useViewer();
+
+  const selected = useSubscribe(
+    viewer.selectionTool.$selected,
+    viewer.selectionTool.selected
+  );
+
+  return selected;
+};
+
+export const useCurrentGroup = () => {
+  const viewer = useViewer();
+
+  const currentGroup = useSubscribe(
+    viewer.selectionTool.picker.$currentGroup,
+    undefined
+  );
+
+  return currentGroup;
+};
+
 export const useEntities = () => {
   const viewer = useViewer();
 

@@ -5,8 +5,6 @@ import { useRouter } from "next/router";
 import { useWorkspace } from "../workspace-service/workspace-provider";
 import styled from "styled-components";
 import { Box } from "@mui/material";
-import Viewer from "@/src/viewer/viewer";
-import { Loading } from "../loading";
 
 interface SceneProviderProps {
   sceneService: SceneService;
@@ -17,11 +15,13 @@ const SceneContext = createContext<SceneProviderProps | null>(null);
 
 const CanvasWrapper = styled.div`
   canvas:focus {
-    border-top: 2px solid rgb(0, 153, 255);
+    border: 0px;
+    border-top: 1px solid rgb(0, 153, 255);
   }
 
   canvas {
-    border-top: 2px solid transparent;
+    border: 0px;
+    border-top: 1px solid transparent;
   }
 
   width: 100%;
@@ -74,7 +74,6 @@ export function SceneProvider({ children }: any) {
           </CanvasWrapper>
         </Box>
       </SceneContext.Provider>
-      ыы
     </div>
   );
 }
@@ -98,4 +97,11 @@ export function useViewer() {
   } else {
     throw new Error("useViewer must be used within a SceneContext");
   }
+}
+
+export function useViewerSoft() {
+  const { sceneService } = useScene();
+  const viewer = sceneService.viewer;
+
+  return viewer;
 }

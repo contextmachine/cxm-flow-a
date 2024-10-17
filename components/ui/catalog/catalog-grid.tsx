@@ -37,7 +37,7 @@ const Wrapper = styled.div`
 `;
 
 const Grid = styled.div`
-  margin: 18px 18px 0px 18px;
+  margin: 27px 18px 0px 18px;
   width: 100%;
 
   display: grid;

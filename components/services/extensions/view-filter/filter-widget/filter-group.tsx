@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import ViewFilterExtension, { FilterGroup } from "../view-filter-extension";
 import styled from "styled-components";
-import { IconButton, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import SelectWithSearch from "@/components/ui/shared/select-with-search";
 import { useEntities, useSubscribe } from "@/src/hooks";
 import FilterItemComponent from "./filter-item-component";
-import ClearIcon from "@mui/icons-material/Clear";
 import { getPropertyValues } from "./filter-condition";
 
 interface FilterGroupProps {
@@ -30,6 +28,10 @@ const FilterGroupComponent: React.FC<FilterGroupProps> = (
   const [options, setOptions] = useState(
     [...properties.keys()].map((x) => ({ value: x }))
   );
+
+  useEffect(() => {
+    setOptions([...properties.keys()].map((x) => ({ value: x })));
+  }, [properties]);
 
   const [filterInput, setFilterInput] = useState<string>("");
 

@@ -18,7 +18,12 @@ const Nav: React.FC<{
   );
 
   return (
-    <Box>
+    <Box
+      sx={{
+        display: "flex",
+        minWidth: "max-content",
+      }}
+    >
       {navSections.map(
         (section: { value: string; label: string }, i: number) => (
           <Box sx={{ width: "100%" }} key={i}>
@@ -27,6 +32,7 @@ const Nav: React.FC<{
                 width: "100%",
                 justifyContent: "flex-start",
                 textTransform: "none",
+                minWidth: "max-content",
               }}
               variant="contained"
               color="secondary"

@@ -1,17 +1,17 @@
 import { useClickOutside, useEnterEsc } from "@/src/hooks";
-import { use, useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import ViewFilterExtension, { FilterCondition } from "../view-filter-extension";
 import { PropertyType } from "./filter-condition";
 import ClearIcon from "@mui/icons-material/Clear";
-import { debounce, isEqual } from "lodash";
 import DeleteIcon from "@/components/ui/icons/delete-icon";
 import PlusIcon from "@/components/ui/icons/plus-icon";
 import CheckedIcon from "@/components/ui/icons/checked-icon";
+import TagsExtension from "../../tags/tags-widget/tags-extension";
 
 interface MultipleValueInputProps {
   filterItem: FilterCondition;
-  extension: ViewFilterExtension;
+  extension: ViewFilterExtension | TagsExtension;
   valueOptions: string[];
   type: PropertyType;
 }
@@ -111,7 +111,7 @@ const MultipleValueInput: React.FC<MultipleValueInputProps> = (
   };
 
   return (
-    <SelectWithSearchWrapper isExclude={operator === "NOT_EQUAL"}>
+    <SelectWithSearchWrapper $isExclude={operator === "NOT_EQUAL"}>
       <DropdownContainer ref={dropDownRef}>
         <div className="input-field">
           {values.map((x, i) => (
@@ -139,8 +139,8 @@ const MultipleValueInput: React.FC<MultipleValueInputProps> = (
               <DropdownItem
                 key={index}
                 onClick={() => onClick(option)}
-                isAdded={values.includes(option)}
-                isExclude={operator === "NOT_EQUAL"}
+                $isAdded={values.includes(option)}
+                $isExclude={operator === "NOT_EQUAL"}
               >
                 {values.includes(option) && operator === "NOT_EQUAL" && (
                   <DeleteIcon />
@@ -161,7 +161,7 @@ const MultipleValueInput: React.FC<MultipleValueInputProps> = (
 
 export default MultipleValueInput;
 
-const SelectWithSearchWrapper = styled.div<{ isExclude: boolean }>`
+const SelectWithSearchWrapper = styled.div<{ $isExclude: boolean }>`
   width: 100%;
   font-size: 12px;
   display: flex;
@@ -170,10 +170,10 @@ const SelectWithSearchWrapper = styled.div<{ isExclude: boolean }>`
     min-height: 25px;
     display: flex;
     justify-content: start;
-    background-color: white;
+    background-color: var(--select-bg-color);
+    border: 1px solid var(--box-border-color);
     width: 100%;
 
-    border: 1px solid #e0e0e0;
     border-radius: 9px;
     padding: 2px;
     flex-flow: row wrap;
@@ -181,10 +181,11 @@ const SelectWithSearchWrapper = styled.div<{ isExclude: boolean }>`
 
     .tag {
       display: flex;
-      background-color: #e0e0e0;
+      background-color: var(--main-bg-color);
       border-radius: 6px;
       padding: 2px;
-      color: ${({ isExclude }) => (isExclude ? "red" : "#2689FF")};
+      color: ${({ $isExclude }) =>
+        $isExclude ? "var(--button-secondary-danger-text-color)" : "#2689FF"};
 
       .delete-tag-button {
         border: 0px;
@@ -210,7 +211,7 @@ const SelectWithSearchWrapper = styled.div<{ isExclude: boolean }>`
       min-width: 100px;
       max-width: 100%;
       border: 0px;
-      background-color: white;
+      background-color: var(--select-bg-color);
       margin-left: 10px;
       &:focus-visible {
         outline: -webkit-focus-ring-color auto 0px;
@@ -240,28 +241,32 @@ const DropdownList = styled.ul`
   left: 0;
   width: 100%;
   border-radius: 9px;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
+  background-color: var(--paper-bg-color);
+  border: 1px solid var(--box-border-color);
   list-style-type: none;
   padding: 0;
   max-height: 200px;
   overflow: auto;
 `;
 
-const DropdownItem = styled.li<{ isAdded: boolean; isExclude: boolean }>`
+const DropdownItem = styled.li<{ $isAdded: boolean; $isExclude: boolean }>`
   padding: 10px;
   margin: 2px;
   border-radius: 7px;
   display: flex;
   gap: 7px;
   align-items: center;
-  color: ${({ isAdded, isExclude }) =>
-    isAdded ? (isExclude ? "red" : "#2689FF") : "black"};
+  color: ${({ $isAdded, $isExclude }) =>
+    $isAdded
+      ? $isExclude
+        ? "var(--button-secondary-danger-text-color)"
+        : "#2689FF"
+      : "var(--main-text-color)"};
 
   cursor: pointer;
 
   &:hover {
-    background-color: #e0e0e0;
+    background-color: var(--icon-button-hover-color);
   }
 `;
 
@@ -293,7 +298,7 @@ const useSingleAndDoubleClick = (
       singleClickTimer = setTimeout(() => {
         doSingleClickThing(curOption);
         setClicks(0);
-      }, 250);
+      }, DELAY);
     } else if (clicks === 2) {
       onDoubleClick(curOption);
       setClicks(0);

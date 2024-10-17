@@ -1,6 +1,6 @@
-import { Box } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { useStates } from "@/components/services/state-service/state-provider";
-import React from "react";
+import React, { use, useEffect, useState } from "react";
 
 import dynamic from "next/dynamic";
 import Properties from "./blocks/properties/properties";
@@ -22,6 +22,17 @@ const WidgetPanelGrid = () => {
 
   const { activeToolset, activePLogId } = useToolset();
 
+  const [pending, setPending] = useState(false);
+  useEffect(() => {
+    const a = toolsetService.pending$.subscribe((p) => {
+      setPending(p);
+    });
+
+    return () => {
+      a.unsubscribe();
+    };
+  }, []);
+
   return (
     <>
       {isEditWidgetsOpen && (
@@ -32,7 +43,8 @@ const WidgetPanelGrid = () => {
             backdropFilter: "blur(4px)",
             pointerEvents: "all !important",
             width: "100vw",
-            height: "100vh",
+            height: "fit-content",
+            maxHeight: "100vh",
             zIndex: 10,
             left: "-0px",
             top: "-0px",
@@ -59,27 +71,71 @@ const WidgetPanelGrid = () => {
             <Box
               data-type="widgets-panel"
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                rowGap: "9px",
-                overflowY: "scroll",
-                overflowX: "hidden",
-                borderRadius: "18px",
-                border: isEditWidgetsOpen
-                  ? "1px dashed #000"
-                  : "1px solid transparent",
+                height: "100%",
+                position: "relative",
               }}
             >
-              <Widget type="bar-widget" />
-              <Widget type="toolset-widget" />
+              {pending && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: "0",
+                    right: "0",
+                    zIndex: 10,
+                    width: "100%",
+                    height: "100%",
+                    background: "rgba(0, 0, 0, 0)",
+                    backdropFilter: "blur(2px)",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    padding: "9px",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: "20px",
+                      height: "20px",
+                    }}
+                  >
+                    <CircularProgress
+                      sx={{
+                        width: "20px",
+                        height: "20px",
+                      }}
+                      data-type="spinner"
+                      size={"small"}
+                    />
+                  </Box>
+                </Box>
+              )}
 
-              {sectionType === "widgets" && <InUseGrid key={activePLogId} />}
+              <Box
+                sx={{
+                  display: "flex",
+                  height: "100%",
+                  maxHeight: "100%",
+                  flexDirection: "column",
+                  rowGap: "9px",
+                  overflowY: "scroll",
+                  overflowX: "hidden",
+                  borderRadius: "18px",
+                  border: isEditWidgetsOpen
+                    ? "1px dashed #000"
+                    : "1px solid transparent",
+                }}
+              >
+                <Widget type="bar-widget" />
+                {/* <Widget type="toolset-widget" /> */}
+
+                {sectionType === "widgets" && <InUseGrid key={activePLogId} />}
+              </Box>
             </Box>
 
             {/* Edit Panel */}
             {isEditWidgetsOpen && <EditGrid key={activePLogId} />}
           </>
         )}
+
         <Properties />
       </Box>
     </>

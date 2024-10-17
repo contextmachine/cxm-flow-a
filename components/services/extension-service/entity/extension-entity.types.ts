@@ -1,7 +1,7 @@
 import Viewer from "@/src/viewer/viewer";
 
 export interface ExtensionEntityInterface {
-  id: string;
+  id: number;
   name: string;
 
   load(): void;
