@@ -39,8 +39,6 @@ export class ProjectModel {
     object3d.traverse((x) => x.updateMatrixWorld());
 
     this._entity = this.initModel(object3d);
-    console.log("result", this._entity);
-
     this._queryEntity.setModel(this);
   }
 
@@ -73,25 +71,72 @@ export class ProjectModel {
   }
 
   public initModel(object: THREE.Object3D): Entity {
+    const modelObjects: THREE.Object3D[] = [];
+    let entity: Entity;
+
+    // const bufferGeometries = new Map();
+
+    // object.traverse((x) => {
+    //   if (x instanceof THREE.Mesh) {
+    //     if (x.geometry) {
+    //       console.log("mesh with geom");
+
+    //       const buffer = x.geometry;
+    //       bufferGeometries.set(buffer.uuid, buffer);
+    //     }
+    //   }
+    // });
+
+    // console.log("geometries", bufferGeometries);
+
+    const timerLabel = `init union mesh ${object.name}}`;
+
+    console.time(timerLabel);
+
+    try {
+      const unionMesh = new UnionMesh(object, this);
+      unionMesh.objects.forEach((x) => modelObjects.push(x));
+
+      this._unionMesh = unionMesh;
+    } catch (e) {}
+
+    console.timeLog(timerLabel);
+
     if (object instanceof THREE.Group) {
-      console.log("init model", object);
-
-      try {
-        this._unionMesh = new UnionMesh(object, this);
-        this._objects = this._unionMesh.objects;
-        return new Group(object, this, undefined);
-      } catch (e) {
-        this._objects = [object];
-        return new Group(object, this, undefined);
-      }
+      entity = new Group(object, this, undefined);
     } else if (object instanceof THREE.Mesh) {
-      this._objects = [object];
-
-      return new Mesh(object, this, undefined);
+      entity = new Mesh(object, this, undefined);
     } else {
-      this._objects = [object];
-
-      return new DefaultObject(object, this, undefined);
+      entity = new DefaultObject(object, this, undefined);
     }
+
+    const notUnionOubjects = getNotUnionObjects(entity, this.unionMesh);
+    notUnionOubjects.forEach((x) => modelObjects.push(x));
+
+    this._objects = modelObjects;
+    return entity;
   }
 }
+
+const getNotUnionObjects = (
+  entity: Entity,
+  unionMesh: UnionMesh | undefined
+) => {
+  const objects: THREE.Object3D[] = [];
+
+  const traverseObject = (entity: Entity) => {
+    const objectPartOfUnion =
+      unionMesh && unionMesh.entitiesScope.has(entity.id);
+
+    if (!objectPartOfUnion && entity.objects) {
+      entity.objects.forEach((x) => objects.push(x));
+    }
+    if (entity.children) {
+      entity.children.forEach((x) => traverseObject(x));
+    }
+  };
+
+  traverseObject(entity);
+
+  return objects;
+};

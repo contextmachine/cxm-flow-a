@@ -1,5 +1,5 @@
 // ModalComponent.tsx
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Modal,
   Box,
@@ -14,28 +14,90 @@ import {
   AccordionSummary,
   AccordionDetails,
   Divider,
+  Paper,
 } from "@mui/material";
 import styled from "styled-components";
 import TabPanel from "./blocks/tab-panel";
 import OpenFolderIcon from "../../icons/open-folder-icon";
 import { ParamItem } from "../widgets-panel/widgets/pointcloud-handler-widget/blocks/overall-form copy";
+import ProductsSetupPanel from "../products-setup-panel/products-setup-panel";
+import TeamMembers from "../team-members/team-membets";
+import { useClickOutside } from "@/src/hooks";
+import useForm from "@/src/hooks/useForm";
+import { useViewer } from "@/components/services/scene-service/scene-provider";
+import ProjectSettings from "./project-settings";
 
-const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
-  open,
-  onClose,
-}) => {
+const SettingsModal: React.FC<{
+  open: boolean;
+  onClose: () => void;
+  sections?: ("Camera" | "Widgets" | "Access")[];
+}> = (props) => {
+  const { sections, open, onClose } = props;
+
   const [value, setValue] = useState(0);
   const [cameraAngle, setCameraAngle] = useState<number>(75);
   const [zoom, setZoom] = useState<number>(1);
   const [distance, setDistance] = useState<number>(100);
-  const [size, setSize] = useState<number[]>([100, 900]);
-  const [mean, setMean] = useState<number>(100);
-  const [deviation, setDeviation] = useState<number>(100);
+
+  // const viewer = useViewer();
+
+  // const formstate = useForm(viewer.projectSettingsService.settings);
+
+  // const [size, setSize] = useState<number[]>([100, 900]);
+  // const [mean, setMean] = useState<number>(100);
+  // const [deviation, setDeviation] = useState<number>(100);
   const [backgroundColor, setBackgroundColor] = useState<string>("#EEEEEE");
+
+  const onChangeSettings = () => {};
+
+  const onModalClose = () => {
+    if (isOpen) {
+      onClose();
+    }
+  };
+
+  const modalRef = useRef(null);
+  useClickOutside(modalRef, onModalClose);
+
+  const [isOpen, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(open);
+  }, [open]);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
+
+  const tabsConfigs = useMemo(() => {
+    const tabKeys = sections || ["Camera", "Widgets", "Access"];
+
+    const tabLabels = {
+      Camera: {
+        label: "Camera",
+        description: "View and angles",
+      },
+      Widgets: {
+        label: "Widgets",
+        description: "Available tools",
+      },
+      Access: {
+        label: "Access",
+        description: "Access Settings",
+      },
+    };
+
+    const indexesMap = tabKeys.reduce((acc, key, index) => {
+      acc[key] = index;
+      return acc;
+    }, {} as Record<"Camera" | "Widgets" | "Access", number>);
+
+    return {
+      tabKeys,
+      tabLabels,
+      indexesMap,
+    };
+  }, [sections]);
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -48,7 +110,7 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
           height: "100%",
         }}
       >
-        <ModalBox>
+        <ModalBox ref={modalRef}>
           <Box
             sx={{
               flexGrow: 1,
@@ -67,158 +129,89 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
                 aria-label="Vertical tabs example"
                 sx={{ borderRight: 1, borderColor: "divider" }}
               >
-                <Tab
-                  label={
-                    <Box
-                      data-type="tab-content"
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                      }}
-                    >
-                      <Box>Camera</Box>
-                      <Box>View and angles</Box>
-                    </Box>
-                  }
-                />
-                <Tab
-                  label={
-                    <Box
-                      data-type="tab-content"
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                      }}
-                    >
-                      <Box>Widgets</Box>
-                      <Box>Available tools</Box>
-                    </Box>
-                  }
-                />
-                <Tab
-                  label={
-                    <Box
-                      data-type="tab-content"
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                      }}
-                    >
-                      <Box>Access</Box>
-                      <Box>Access Settings</Box>
-                    </Box>
-                  }
-                />
+                {" "}
+                {tabsConfigs.tabKeys.map((tabKey) => {
+                  const label = tabsConfigs.tabLabels[tabKey];
+                  return (
+                    <Tab
+                      key={tabKey}
+                      label={
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignContent: "center",
+                            gap: "10px",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              minWidth: "27px",
+                              minHeight: "27px",
+                              borderRadius: "9px",
+                              backgroundColor: "#2689FF",
+                            }}
+                          />
+
+                          <Box
+                            data-type="tab-content"
+                            sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                            }}
+                          >
+                            <Box>{tabsConfigs.tabLabels[tabKey].label}</Box>
+                            <Box>
+                              {tabsConfigs.tabLabels[tabKey].description}
+                            </Box>
+                          </Box>
+                        </Box>
+                      }
+                    />
+                  );
+                })}
               </Tabs>
             </TabsBox>
 
             <Divider orientation="vertical" flexItem />
 
-            <TabPanel value={value} index={0}>
-              <AccordionBox>
-                <AccordionWrapper title={"Scene properties"}>
-                  <ParamItem data-type="overall">
-                    <Box>Background</Box>
-                    <Box>
-                      <TextField
-                        fullWidth
-                        value={backgroundColor}
-                        onChange={(e) => setBackgroundColor(e.target.value)}
-                      />
-                    </Box>
-                  </ParamItem>
-                </AccordionWrapper>
-
-                <AccordionWrapper title={"Camera properties"}>
-                  <ParamItem data-type="overall">
-                    <Box>Camera angle</Box>
-                    <Box>
-                      <TextField
-                        fullWidth
-                        value={backgroundColor}
-                        onChange={(e) => setBackgroundColor(e.target.value)}
-                      />
-                    </Box>
-                  </ParamItem>
-
-                  <ParamItem data-type="overall">
-                    <Box>Zoom</Box>
-                    <Box>
-                      <TextField
-                        fullWidth
-                        type="number"
-                        value={zoom}
-                        onChange={(e) => setZoom(Number(e.target.value))}
-                      />
-                    </Box>
-                  </ParamItem>
-
-                  <ParamItem data-type="overall">
-                    <Box>Distance</Box>
-                    <Box>
-                      <TextField
-                        fullWidth
-                        type="number"
-                        value={distance}
-                        onChange={(e) => setDistance(Number(e.target.value))}
-                      />
-                    </Box>
-                  </ParamItem>
-                </AccordionWrapper>
-
-                <AccordionWrapper title={"Label properties"}>
-                  <ParamItem data-type="overall">
-                    <Box>Size</Box>
-                    <Box>
-                      <Slider
-                        data-type="params"
-                        value={2}
-                        step={1}
-                        min={1}
-                        max={8}
-                        onChange={(e, value) => {}}
-                        size="small"
-                        valueLabelDisplay="auto"
-                      />
-                    </Box>
-                  </ParamItem>
-
-                  <ParamItem data-type="overall">
-                    <Box>Average</Box>
-                    <Box>
-                      <TextField
-                        fullWidth
-                        type="number"
-                        value={cameraAngle}
-                        onChange={(e) => setCameraAngle(Number(e.target.value))}
-                      />
-                    </Box>
-                  </ParamItem>
-
-                  <ParamItem data-type="overall">
-                    <Box>Deviation</Box>
-                    <Box>
-                      <TextField
-                        fullWidth
-                        type="number"
-                        value={cameraAngle}
-                        onChange={(e) => setCameraAngle(Number(e.target.value))}
-                      />
-                    </Box>
-                  </ParamItem>
-                </AccordionWrapper>
-
-                <Button
+            {tabsConfigs.tabKeys.includes("Camera") && (
+              <TabPanel value={value} index={tabsConfigs.indexesMap["Camera"]}>
+                <Paper
+                  data-type="sec"
                   sx={{
-                    margin: "10px",
+                    minWidth: "500px",
                   }}
-                  variant="contained"
-                  color="primary"
                 >
-                  Save
-                </Button>
-              </AccordionBox>
-            </TabPanel>
+                  <ProjectSettings />
+                </Paper>
+              </TabPanel>
+            )}
+
+            {tabsConfigs.tabKeys.includes("Widgets") && (
+              <TabPanel value={value} index={tabsConfigs.indexesMap["Widgets"]}>
+                <Paper
+                  data-type="sec"
+                  sx={{
+                    minWidth: "500px",
+                  }}
+                >
+                  <ProductsSetupPanel />
+                </Paper>
+              </TabPanel>
+            )}
+
+            {tabsConfigs.tabKeys.includes("Access") && (
+              <TabPanel value={value} index={tabsConfigs.indexesMap["Access"]}>
+                <Paper
+                  data-type="sec"
+                  sx={{
+                    minWidth: "500px",
+                  }}
+                >
+                  <TeamMembers />
+                </Paper>
+              </TabPanel>
+            )}
           </Box>
         </ModalBox>
       </Box>
@@ -226,7 +219,7 @@ const SettingsModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   );
 };
 
-const AccordionWrapper: React.FC<{
+export const AccordionWrapper: React.FC<{
   children: React.ReactNode;
   title: string;
 }> = ({ children, title }) => {
@@ -269,7 +262,7 @@ const AccordionWrapper: React.FC<{
   );
 };
 
-const TabsBox = styled(Box)`
+export const TabsBox = styled(Box)`
   && {
     & .MuiTabs-root {
       min-width: 180px;
@@ -312,10 +305,11 @@ const TabsBox = styled(Box)`
   }
 `;
 
-const AccordionBox = styled(Box)`
+export const AccordionBox = styled(Box)`
   background-color: var(--paper-bg-color);
 
-  min-width: 300px;
+  min-width: 400px;
+  width: 100%;
 
   display: flex;
   flex-direction: column;
@@ -326,7 +320,7 @@ const AccordionBox = styled(Box)`
   }
 `;
 
-const ModalBox = styled(Box)`
+export const ModalBox = styled(Box)`
   &::before {
     content: "";
     position: absolute;
@@ -339,6 +333,7 @@ const ModalBox = styled(Box)`
   }
 
   position: relative;
+  backdrop-filter: blur(10px);
 
   padding: 9px;
   border-radius: 27px;

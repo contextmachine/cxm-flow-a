@@ -11,12 +11,13 @@ import CameraViewsDbService, {
   ViewStateItem,
 } from "./camera-views-extension.db";
 import { BehaviorSubject, Subscription } from "rxjs";
+import { ProductsDto } from "../../product-service/products.types";
 
 class CameraViewsExtensions
   extends ExtensionEntity
   implements ExtensionEntityInterface
 {
-  public id: string;
+  public id: number;
   public name: string;
 
   private _totalPathLength: number; // Total distance between all view states
@@ -32,12 +33,12 @@ class CameraViewsExtensions
   private _isPlaying$ = new BehaviorSubject<boolean>(false);
   private _playingViewIndex$ = new BehaviorSubject<number | null>(null);
 
-  constructor(viewer: Viewer) {
+  constructor(viewer: Viewer, productData: ProductsDto) {
     super(viewer);
 
     this._dbService = new CameraViewsDbService(this, viewer);
 
-    this.id = uuidv4();
+    this.id = productData.id;
     this.name = "views";
 
     this._viewStates = [];

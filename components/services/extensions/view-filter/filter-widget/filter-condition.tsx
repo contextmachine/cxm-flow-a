@@ -6,7 +6,9 @@ import ViewFilterExtension, {
 import styled from "styled-components";
 import { IconButton } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
-import OperatorSelect from "@/components/services/extensions/view-filter/filter-widget/operator-select";
+import OperatorSelect, {
+  Option,
+} from "@/components/services/extensions/view-filter/filter-widget/operator-select";
 import ValueInput from "./value-input";
 import { Entity } from "@/src/objects/entities/entity";
 import { useEntities } from "@/src/hooks";
@@ -14,6 +16,7 @@ import MultipleValueInput from "./multiple-value-input";
 import { PlusIcon } from "@radix-ui/react-icons";
 import ParamsIcon from "@/components/ui/icons/params-icon";
 import CheckedIcon from "@/components/ui/icons/checked-icon";
+import TagsExtension from "../../tags/tags-widget/tags-extension";
 
 interface FilterConditionProps {
   index: number;
@@ -42,34 +45,86 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
     extension.updateFilterCondition(filterItem);
   };
 
+  const onOperatorChange = (e: Option) => {
+    filterItem.operator = e.value;
+    extension.updateFilterCondition(filterItem);
+  };
+
+  const handleDelete = () => {
+    onDelete(filterItem.id);
+  };
+
+  return (
+    <FilterConditionTmp
+      index={index}
+      paramsOpen={paramsOpen}
+      setParamsOpen={setParamsOpen}
+      onOperatorChange={onOperatorChange}
+      onEnable={onEnable}
+      onDelete={handleDelete}
+      filterItem={filterItem}
+      type={type}
+      values={values}
+      extension={extension}
+    />
+  );
+};
+
+// NOTE: This tmp component is used within the "chart widget"
+export const FilterConditionTmp: React.FC<{
+  index: number;
+  paramsOpen: boolean;
+  setParamsOpen: (value: boolean) => void;
+  onOperatorChange: (e: Option) => void;
+  onEnable: () => void;
+  onDelete: () => void;
+  filterItem: FilterCondition;
+  type: PropertyType;
+  values: string[];
+  extension: ViewFilterExtension | TagsExtension;
+  disabledParams?: boolean;
+  color?: string;
+}> = ({
+  index,
+  paramsOpen,
+  setParamsOpen,
+  onOperatorChange,
+  onEnable,
+  onDelete,
+  filterItem,
+  type,
+  values,
+  extension,
+  disabledParams,
+  color,
+}) => {
   return (
     <FilterConditionWrapper
-      color={pallete[index % pallete.length]}
-      paramsEnabled={true}
-      paramsOpen={paramsOpen}
+      $color={color || pallete[index % pallete.length]}
+      $paramsEnabled={true}
+      $paramsOpen={paramsOpen}
     >
       <div className="first-line">
         <div className="label">
           <div className="marker">
             <span className="marker-tag" />
-            <IconButton
-              className="delete-button"
-              onClick={() => onDelete(filterItem.id)}
-            >
+            <DeleteButton className="delete-button" onClick={onDelete}>
               <ClearIcon className="delete-icon" />
-            </IconButton>
+            </DeleteButton>
           </div>
           {filterItem.key}
         </div>
         <div className="button-block">
-          <button
-            className="params-button"
-            onClick={() => setParamsOpen(!paramsOpen)}
-          >
-            <ParamsIcon />
-          </button>
-          <EnableButton enabled={filterItem.enabled}>
-            <button className="enable-button" onClick={() => onEnable()}>
+          {!disabledParams && (
+            <button
+              className="params-button"
+              onClick={() => setParamsOpen(!paramsOpen)}
+            >
+              <ParamsIcon />
+            </button>
+          )}
+          <EnableButton $enabled={filterItem.enabled}>
+            <button className="enable-button" onClick={onEnable}>
               {!filterItem.enabled && <PlusIcon />}
               {filterItem.enabled && <CheckedIcon />}
             </button>
@@ -80,7 +135,7 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
         <div className="operator">
           <OperatorSelect
             filterItem={filterItem}
-            extension={extension}
+            onOperatorChange={onOperatorChange}
             propertyType={type}
           />
         </div>
@@ -106,29 +161,39 @@ const FilterConditionComponent: React.FC<FilterConditionProps> = (
 
 export default FilterConditionComponent;
 
-const EnableButton = styled.div<{ enabled: boolean }>`
+const EnableButton = styled.div<{ $enabled: boolean }>`
   button {
     border: 0px;
     display: flex;
     justify-content: center;
-    background-color: #f3f3f3;
+    width: 75px;
+    color: ${({ $enabled }) =>
+      $enabled ? "#FFFFFF" : "var(--main-text-color)"};
+    background-color: ${({ $enabled }) =>
+      $enabled
+        ? "var(--button-primary-color)"
+        : "var(--button-secondary-active-bg-color)"};
     height: 27px;
     border-radius: 9px;
     padding: 5px;
     align-items: center;
     gap: 5px;
-    color: ${({ enabled }) => (enabled ? "#2689FF" : "black")};
 
     &:after {
-      content: ${({ enabled }) => (enabled ? `"Enabled"` : `"Enable"`)};
+      content: ${({ $enabled }) => ($enabled ? `"Enabled"` : `"Enable"`)};
     }
   }
 `;
 
+const DeleteButton = styled.button`
+  background-color: transparent;
+  border: 0px;
+`;
+
 const FilterConditionWrapper = styled.div<{
-  color: string;
-  paramsEnabled: boolean;
-  paramsOpen: boolean;
+  $color: string;
+  $paramsEnabled: boolean;
+  $paramsOpen: boolean;
 }>`
   display: flex;
   justify-content: start;
@@ -137,11 +202,20 @@ const FilterConditionWrapper = styled.div<{
   gap: 5px;
   border-radius: 9px;
   padding: 3px;
-  background-color: ${({ paramsOpen }) =>
-    paramsOpen ? "#f3f3f3" : "transparent"};
+  background-color: ${({ $paramsOpen }) =>
+    $paramsOpen ? "var(--main-bg-color)" : "transparent"};
 
   button {
     cursor: pointer;
+  }
+
+  &:hover .delete-button {
+    display: flex;
+  }
+
+  .delete-button {
+    display: none;
+    height: 27px;
   }
 
   .first-line {
@@ -164,7 +238,7 @@ const FilterConditionWrapper = styled.div<{
         margin-right: 2px;
 
         .marker-tag {
-          background: ${({ color }) => color};
+          background: ${({ $color }) => $color};
           border-radius: 3px;
           height: 6px;
           width: 6px;
@@ -174,17 +248,8 @@ const FilterConditionWrapper = styled.div<{
   }
 
   .second-line {
-    display: ${({ paramsOpen }) => (paramsOpen ? "flex" : "none")};
+    display: ${({ $paramsOpen }) => ($paramsOpen ? "flex" : "none")};
     flex-direction: row;
-  }
-
-  &:hover .delete-button {
-    display: block;
-  }
-
-  .delete-button {
-    display: none;
-    height: 27px;
   }
 
   .button-block {
@@ -200,11 +265,9 @@ const FilterConditionWrapper = styled.div<{
     justify-content: center;
     align-items: center;
     svg path {
-      stroke: ${({ paramsEnabled }) => (paramsEnabled ? "#2689FF" : "#333333")};
+      stroke: ${({ $paramsEnabled }) =>
+        $paramsEnabled ? "#2689FF" : "#333333"};
     }
-  }
-
-  .enable-button {
   }
 
   .delete-icon {

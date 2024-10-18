@@ -80,7 +80,6 @@ class Picker {
   }
 
   private setCurrentGroup(group: Group | undefined) {
-    console.log("current group: ", group, group?.children);
     this._selectionControl.clearSelection();
 
     const currentGroup = this._currentGroup;

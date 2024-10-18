@@ -1,194 +1,215 @@
 import { ProjectModel } from "../project-model";
 import * as THREE from "three";
-import { Entity, ProjectObjectProps, ViewerObjectType, initEntity } from "./entity";
-import { meshDefaultMaterial, selectedGroupBoxHelperColor, } from "../materials/object-materials";
-
+import {
+  Entity,
+  ProjectObjectProps,
+  ViewerObjectType,
+  initEntity,
+} from "./entity";
+import {
+  meshDefaultMaterial,
+  selectedGroupBoxHelperColor,
+} from "../materials/object-materials";
 
 export class Group implements Entity {
-	private _id: string
-	private _model: ProjectModel;
-	private _object3d: THREE.Group
+  private _id: string;
+  private _model: ProjectModel;
+  private _object3d: THREE.Group;
 
-	private _center = new THREE.Vector3();
-	private _type: ViewerObjectType = 'group'
+  private _center = new THREE.Vector3();
+  private _type: ViewerObjectType = "group";
 
-	private _name: string;
+  private _name: string;
 
-	private _isInteractive = true;
+  private _isInteractive = true;
 
-	private _bbox = new THREE.Box3Helper(
-		new THREE.Box3(),
-		new THREE.Color()
-	);
+  private _bbox = new THREE.Box3Helper(new THREE.Box3(), new THREE.Color());
 
-	private _visibility = true;
-	private _bboxVisibility = false;
-	private _linesVisibility = false;
+  private _objects = undefined;
 
-	private _selectable = true;
-	private _selected = false;
-	private _parentSelected = false
-	private _disable = false
+  private _visibility = true;
+  private _bboxVisibility = false;
+  private _linesVisibility = false;
 
-	private _children: Entity[] = [];
-	private _parent: Entity | undefined
+  private _selectable = true;
+  private _selected = false;
+  private _parentSelected = false;
+  private _disable = false;
 
-	private _props: ProjectObjectProps | undefined;
+  private _children: Entity[] = [];
+  private _parent: Entity | undefined;
 
-	private _defaultMaterial: THREE.Material = meshDefaultMaterial;
-	private _overrideMaterial: THREE.Material | undefined;
+  private _props: ProjectObjectProps | undefined;
 
+  private _defaultMaterial: THREE.Material = meshDefaultMaterial;
+  private _overrideMaterial: THREE.Material | undefined;
 
-	constructor(object: THREE.Group, model: ProjectModel, parent: Entity | undefined) {
+  constructor(
+    object: THREE.Group,
+    model: ProjectModel,
+    parent: Entity | undefined
+  ) {
+    this._id = object.uuid;
+    this._model = model;
+    this._object3d = object;
+    this._parent = parent;
 
-		this._id = object.uuid
-		this._model = model;
-		this._object3d = object
-		this._parent = parent
+    this._name = object.name;
 
-		this._name = object.name;
+    this.initChildren(object);
+    this.initProperties();
+    this.initBoundingBox();
+  }
 
-		this.initChildren(object)
-		this.initProperties();
-		this.initBoundingBox();
+  private initChildren(object: THREE.Object3D) {
+    object.children.forEach((x) => {
+      const entity = initEntity(x, this._model, this);
+      this._children.push(entity);
+    });
+  }
 
-	}
+  public get id(): string {
+    return this._id;
+  }
 
-	private initChildren(object: THREE.Object3D) {
+  public get objects() {
+    return undefined;
+  }
 
-		object.children.forEach(x => {
-			const entity = initEntity(x, this._model, this)
-			this._children.push(entity)
-		})
+  public get isProjectObject(): boolean {
+    return true;
+  }
 
+  public get name(): string {
+    return this._name;
+  }
 
-	}
+  public get model(): ProjectModel {
+    return this._model;
+  }
 
-	public get id(): string {
-		return this._id;
-	}
+  public get bbox(): THREE.Box3Helper {
+    return this._bbox;
+  }
 
-	public get isProjectObject(): boolean {
-		return true
-	}
+  public get type(): ViewerObjectType {
+    return this._type;
+  }
 
-	public get name(): string {
-		return this._name;
-	}
+  public get defaultMaterial(): THREE.Material {
+    return this._defaultMaterial;
+  }
 
-	public get model(): ProjectModel {
-		return this._model;
-	}
+  public get parent() {
+    return this._parent;
+  }
 
-	public get bbox(): THREE.Box3Helper {
-		return this._bbox;
-	}
+  public get children(): Entity[] {
+    return this._children;
+  }
 
-	public get type(): ViewerObjectType {
-		return this._type;
-	}
+  public get visibility(): boolean {
+    return this._visibility;
+  }
 
-	public get defaultMaterial(): THREE.Material {
-		return this._defaultMaterial;
-	}
+  public get isSelectable(): boolean {
+    return this._selectable;
+  }
 
-	public get parent() {
-		return this._parent;
-	}
+  public get props(): ProjectObjectProps | undefined {
+    return this._props;
+  }
 
-	public get children(): Entity[] {
-		return this._children;
-	}
+  public get center(): THREE.Vector3 {
+    return this._center;
+  }
 
-	public get visibility(): boolean {
-		return this._visibility;
-	}
+  private initProperties() {
+    if (this._object3d.userData.properties) {
+      this._props = new Map(
+        Object.entries(this._object3d.userData.properties) as [string, any][]
+      ) as ProjectObjectProps;
+    }
+  }
 
-	public get isSelectable(): boolean {
-		return this._selectable;
-	}
+  public initBoundingBox() {
+    const bbox = new THREE.Box3().expandByObject(this._object3d);
+    bbox.getCenter(this._center);
+    this._bbox.box = bbox;
+    // this._bbox.applyMatrix4(this._object3d.matrixWorld);
+  }
 
-	public get props(): ProjectObjectProps | undefined {
-		return this._props;
-	}
+  public updateMaterial() {
+    this.children.forEach((x) => x.updateMaterial());
+  }
 
-	public get center(): THREE.Vector3 {
-		return this._center;
-	}
+  public setVisibility(visible: boolean) {
+    this._visibility = visible;
+    this.updateBbox();
+    this.updateMaterial();
+  }
 
-	private initProperties() {
-		if (this._object3d.userData.properties) {
-			this._props = new Map(
-				Object.entries(this._object3d.userData.properties) as [string, any][]
-			) as ProjectObjectProps;
-		}
-	}
+  private updateBbox() {
+    if (this._visibility && this._bboxVisibility) {
+      this._model.viewer.addToScene(this._bbox);
+    } else {
+      this._model.viewer.removeFromScene(this._bbox);
+    }
+  }
 
-	public initBoundingBox() {
-		const bbox = new THREE.Box3().expandByObject(this._object3d);
-		bbox.getCenter(this._center);
-		this._bbox.box = bbox;
-		// this._bbox.applyMatrix4(this._object3d.matrixWorld);
-	}
+  public showLineEdges(show: boolean) {
+    this._linesVisibility = show;
+  }
 
-	public setVisibility(visible: boolean) {
-		this._visibility = visible;
-		this.updateBbox()
-	}
+  public setBboxVisibilty(show: boolean, color?: string) {
+    if (color) {
+      (this._bbox.material as THREE.LineBasicMaterial).color = new THREE.Color(
+        color
+      );
+    }
+    this._bboxVisibility = show;
+    this.updateBbox();
+  }
 
-	private updateBbox() {
-		if (this._visibility && this._bboxVisibility) {
-			this._model.viewer.addToScene(this._bbox)
-		} else {
-			this._model.viewer.removeFromScene(this._bbox)
-		}
-	}
+  public applyThemingColor(color: string) {
+    // TODO: apply color to group
+    return;
+  }
 
-	public showLineEdges(show: boolean) {
-		this._linesVisibility = show;
-	}
+  public clearThemingColor() {
+    // TODO: clear color from group
+    return;
+  }
 
-	public setBboxVisibilty(show: boolean, color?: string) {
-		if (color) {
-			(this._bbox.material as THREE.LineBasicMaterial).color = new THREE.Color(color)
-		}
-		this._bboxVisibility = show;
-		this.updateBbox()
-	}
+  public onSelect() {
+    this._selected = true;
+    this.setBboxVisibilty(true, selectedGroupBoxHelperColor);
+    this._children.forEach((x) => x.onParentSelect());
+  }
 
-	public onSelect() {
-		this._selected = true;
-		this.setBboxVisibilty(true, selectedGroupBoxHelperColor);
-		this._children.forEach(x => x.onParentSelect())
-	}
+  public onDeselect() {
+    this._selected = false;
+    this.setBboxVisibilty(false);
+    this._children.forEach((x) => x.onParentDeselect());
+  }
 
-	public onDeselect() {
-		this._selected = false;
-		this.setBboxVisibilty(false);
-		this._children.forEach(x => x.onParentDeselect())
-	}
+  public onParentSelect() {
+    this._parentSelected = true;
+    this._children.forEach((x) => x.onParentSelect());
+  }
 
-	public onParentSelect() {
-		this._parentSelected = true;
-		this._children.forEach(x => x.onParentSelect())
-	}
+  public onParentDeselect() {
+    this._parentSelected = false;
+    this._children.forEach((x) => x.onParentDeselect());
+  }
 
-	public onParentDeselect() {
-		this._parentSelected = false;
-		this._children.forEach(x => x.onParentDeselect())
-	}
+  public onDisable() {
+    this._disable = true;
+    this._children.forEach((x) => x.onDisable());
+  }
 
-	public onDisable() {
-		this._disable = true;
-		this._children.forEach(x => x.onDisable())
-	}
-
-	public onEnable() {
-		this._disable = false;
-		this._children.forEach(x => x.onEnable())
-	}
-
+  public onEnable() {
+    this._disable = false;
+    this._children.forEach((x) => x.onEnable());
+  }
 }
-
-
-

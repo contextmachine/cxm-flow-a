@@ -5,6 +5,7 @@ import * as THREE from "three";
 import Viewer from "./viewer";
 import { ControlsViewState, ViewState } from "./camera-control.types";
 import TWEEN from "@tweenjs/tween.js";
+import { distinctByKeys } from "../utils";
 
 class CameraControl {
   private _subscriptions: RX.Unsubscribable[] = [];
@@ -58,15 +59,20 @@ class CameraControl {
         })
     );
 
+    // this._subscriptions.push(
+    //   this._viewer.projectSettingsService.$settings.subscribe((settings) => {})
+    // );
+
     this._subscriptions.push(
-      this._viewer.projectSettingsService.$settings.subscribe(() => {
-        this.camera.near =
-          this._viewer.projectSettingsService.settings.camera_near;
-        this.camera.far =
-          this._viewer.projectSettingsService.settings.camera_far;
+      distinctByKeys(this._viewer.projectSettingsService.$settings, [
+        "camera_near",
+        "camera_far",
+        "camera_fov",
+      ]).subscribe((settings) => {
+        this.camera.near = settings.camera_near;
+        this.camera.far = settings.camera_far;
         if (this.camera instanceof THREE.PerspectiveCamera) {
-          this.camera.fov =
-            this._viewer.projectSettingsService.settings.camera_fov;
+          this.camera.fov = settings.camera_fov;
         }
         this._controls.camera.updateProjectionMatrix();
         this._viewer.updateViewer();
@@ -97,6 +103,16 @@ class CameraControl {
     this._viewer.updateViewer();
   }
 
+  public fitObjects() {
+    const selected = this._viewer.selectionTool.selected;
+
+    if (selected.length > 0) {
+      this.fitToObjects(selected.map((x) => x.bbox.box));
+    } else {
+      this.fitToScene();
+    }
+  }
+
   public fitToScene() {
     this.fitToObjects(
       [...this._viewer.entityControl.projectModels.values()].map(
@@ -107,13 +123,9 @@ class CameraControl {
   }
 
   public fitToBox(box: THREE.Box3) {
-    this._controls.fitToBox(box, true, {
-      cover: false,
-      paddingLeft: 0.1,
-      paddingRight: 0.1,
-      paddingBottom: 0.1,
-      paddingTop: 0.1,
-    });
+    const x = box.getBoundingSphere(new THREE.Sphere());
+
+    this._controls.fitToSphere(x, false);
 
     // Compute the box's size and adjust the camera's far value
     const size = new THREE.Vector3();

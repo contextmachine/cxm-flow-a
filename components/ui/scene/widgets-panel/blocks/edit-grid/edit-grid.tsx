@@ -2,11 +2,13 @@ import { useDragAndDrop } from "@formkit/drag-and-drop/react";
 import { animations } from "@formkit/drag-and-drop";
 
 import { WidgetType } from "../../widgets/widget.types";
-import { Box, IconButton, InputBase, Paper } from "@mui/material";
+import { Box, Button, IconButton, InputBase, Paper } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import WidgetEditPaper from "../widget-edit-paper/widget-edit-paper";
 import { useToolset } from "@/components/services/toolset-service/toolset-provider";
 import { useMemo } from "react";
+import ToolsetItem from "../toolset-item/toolset-item";
+import { ToolsetDto } from "@/components/services/toolset-service/toolset-service.types";
 
 const EditGrid = () => {
   const { restProducts } = useToolset();
@@ -27,6 +29,11 @@ const EditGrid = () => {
       dragHandle: ".kanban-handle",
     }
   );
+
+  const { toolsets, activeToolset, toolsetService } = useToolset();
+  const handleToolsetClick = (toolset: ToolsetDto) => {
+    toolsetService.setActiveToolset(toolset.id);
+  };
 
   return (
     <>
@@ -65,11 +72,14 @@ const EditGrid = () => {
       <Box
         sx={{
           width: "100%",
-          maxWidth: "180px",
+          maxWidth: "240px",
           pointerEvents: "none ! important",
+          gap: "10px",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <Paper
+        {/* <Paper
           component="form"
           sx={{
             p: "2px 4px",
@@ -87,6 +97,32 @@ const EditGrid = () => {
             placeholder="Search"
             inputProps={{ "aria-label": "search google maps" }}
           />
+        </Paper> */}
+
+        <Paper
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            pointerEvents: "all",
+          }}
+        >
+          {toolsets.map((_, i) => (
+            <ToolsetItem
+              toolset={_}
+              active={activeToolset?.id === _.id}
+              key={i}
+              onClick={handleToolsetClick}
+            />
+          ))}
+
+          <Button
+            sx={{}}
+            color="primary"
+            variant="contained"
+            onClick={() => toolsetService.addToolset()}
+          >
+            + Add toolset
+          </Button>
         </Paper>
       </Box>
     </>

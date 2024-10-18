@@ -47,7 +47,6 @@ export function ToolsetProvider({ children }: any) {
 
   useEffect(() => {
     const ts_sub = toolsetService.toolsets$.subscribe((toolsets) => {
-      console.log("Subscription was init");
       setToolsets(toolsets);
     });
     const at_sub = toolsetService.activeToolset$.subscribe((toolset) => {

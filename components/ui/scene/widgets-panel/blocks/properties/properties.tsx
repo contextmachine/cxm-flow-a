@@ -8,10 +8,14 @@ import Sidebar from "../../sidebars/sidebar";
 const Properties = () => {
   const { activeProducts, toolsetService } = useToolset();
 
+  const { isEditWidgetsOpen } = useStates();
+
   const productNames: string[] = useMemo(
     () => activeProducts.map((product) => product.name),
     [activeProducts]
   );
+
+  if (isEditWidgetsOpen) return null;
 
   return (
     <Box

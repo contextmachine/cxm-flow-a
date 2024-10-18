@@ -101,6 +101,7 @@ const LeftBar = () => {
                   </AccordionSummary>
                   <AccordionDetails>
                     <WorkspacesList
+                      collection={collection}
                       workspaces={collection.collection_workspaces.map(
                         ({ workspace }) => workspace
                       )}

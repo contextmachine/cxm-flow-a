@@ -3,6 +3,7 @@ import { WidgetType } from "../widgets/widget.types";
 import { useViewer } from "@/components/services/scene-service/scene-provider";
 import { ExtensionEntityInterface } from "@/components/services/extension-service/entity/extension-entity.types";
 import PointCloudHandlerSidebar from "./pointcloud-handler-sidebar/pointcloud-handler-sidebar";
+import TagsSidebar from "./tags-sidebar/tags-sidebar";
 
 const Sidebar: React.FC<{
   type: WidgetType;

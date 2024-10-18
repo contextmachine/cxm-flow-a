@@ -26,10 +26,18 @@ const WorkspaceItem: React.FC<{
   activeWorkspace: MinifiedWorkspaceDto | null;
   workspaceService: WorkspaceService;
   collections: CollectionDto[];
-}> = ({ item, activeWorkspace, workspaceService, collections }) => {
+  parentCollection?: CollectionDto;
+}> = ({
+  item,
+  activeWorkspace,
+  workspaceService,
+  collections,
+  parentCollection,
+}) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [moveAnchorEl, setMoveAnchorEl] = useState(null);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState("");
 
   const handleClick = (event: any) => {
@@ -57,7 +65,19 @@ const WorkspaceItem: React.FC<{
   };
 
   const handleDelete = () => {
-    workspaceService.deleteWorkspace(item.id);
+    const isTrash = parentCollection?.tmp_type === "Trash";
+
+    if (isTrash) {
+      setConfirmDialogOpen(true);
+    } else {
+      workspaceService.moveWorkspaceToTrash(item.id);
+      handleClose();
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    await workspaceService.deleteWorkspace(item.id);
+    setConfirmDialogOpen(false);
     handleClose();
   };
 
@@ -235,6 +255,21 @@ const WorkspaceItem: React.FC<{
         <DialogActions>
           <Button onClick={handleRenameClose}>Cancel</Button>
           <Button onClick={handleRenameSave}>Save</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this workspace? This action cannot be
+          undone.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleConfirmDelete}>Delete</Button>
         </DialogActions>
       </Dialog>
     </>

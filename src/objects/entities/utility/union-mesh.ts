@@ -5,7 +5,8 @@ import {
   lineDefaultMaterial,
 } from "../../materials/object-materials";
 import { ProjectModel } from "../../project-model";
-import { Entity } from "../entity";
+import { Time } from "@antv/g2/lib/scale";
+import { timeInterval } from "rxjs";
 
 class UnionMesh {
   private _model: ProjectModel;
@@ -15,14 +16,13 @@ class UnionMesh {
   private _collisionMesh: THREE.Mesh | undefined;
   private _meshIdMap = new Map<number, string>();
 
-  private _children: Entity[] = [];
   private _indiciesMap: Map<string, number>;
 
   constructor(object: THREE.Object3D, model: ProjectModel) {
     this._model = model;
 
     const { singleMesh, lineSegments, indiciesMap } =
-      this.initUnionMesh(object);
+      this.initUnionMesh2(object);
 
     this._unionMesh = singleMesh;
     this._meshLines = lineSegments;
@@ -31,6 +31,10 @@ class UnionMesh {
 
   public get objects(): THREE.Object3D[] {
     return [this._unionMesh, this._meshLines];
+  }
+
+  public get entitiesScope(): Set<string> {
+    return new Set([...this._indiciesMap.keys()]);
   }
 
   public get collisionMesh() {
@@ -49,9 +53,10 @@ class UnionMesh {
   ) {
     const index = this._indiciesMap.get(entityId);
 
-    if (index) {
+    if (index !== undefined) {
       (this._unionMesh.material as THREE.Material[])[index] = meshMaterial;
     }
+    this._model.viewer.updateViewer();
   }
 
   public setLineMaterialToFragment(
@@ -60,7 +65,7 @@ class UnionMesh {
   ) {
     const index = this._indiciesMap.get(entityId);
 
-    if (index) {
+    if (index !== undefined) {
       (this._meshLines.material as THREE.Material[])[index] = lineMaterial;
     }
   }
@@ -84,8 +89,20 @@ class UnionMesh {
 
     normalizeAttribute(object3d);
 
+    // let timeLabel = "collect buffer geo";
+    // console.time(timeLabel);
+
+    // const linecreating = "line creating";
+    // console.time(linecreating);
+
+    // let time = 0;
+    // let meshCount = 0;
+    // const times: number[] = [];
+
     object3d.traverse((child) => {
       if (child instanceof THREE.Mesh) {
+        // meshCount++;
+
         const mesh = child as THREE.Mesh;
 
         const buffer = mesh.geometry
@@ -100,7 +117,17 @@ class UnionMesh {
           materialIndex: i,
         };
 
+        // const time1 = new Date();
+
         const linesBuffer = new THREE.EdgesGeometry(buffer.clone(), 50);
+
+        // const time2 = new Date();
+
+        // const delta = time2.valueOf() - time1.valueOf();
+        // times.push(delta);
+
+        // time += delta;
+
         const linesLen = linesBuffer.getAttribute("position").count;
         const lineGroup = {
           start: linesCounter,
@@ -124,22 +151,235 @@ class UnionMesh {
       }
     });
 
+    // const sorted = times.sort((a, b) => a - b);
+
+    // console.log("time for line edging", time);
+    // console.log("mesh count", meshCount);
+    // console.log("delta list", sorted);
+    // console.log(
+    //   "avegage time",
+    //   times.reduce((a, c) => a + c, 0) / times.length
+    // );
+
+    // // const max = times[times.length - 1];
+    // // const min = times[0];
+    // const min = 3;
+    // const max = 20;
+
+    // console.log("min, max", min, max);
+
+    // console.timeLog(timeLabel);
+
+    // const minColor = new THREE.Color("lightblue");
+    // const maxColor = new THREE.Color("red");
+
+    // times.forEach((time, i) => {
+    //   const color = minColor.lerp(maxColor, (time - min) / (max - min));
+
+    //   this._testMaterials.push(new THREE.MeshBasicMaterial({ color: color }));
+    // });
+
     if (meshBuffers.length > 0) {
+      // timeLabel = "merge mesh buffer geometries";
+      // console.time(timeLabel);
+
       const union = BufferGeometryUtils.mergeGeometries(meshBuffers);
+
+      // console.timeLog(timeLabel);
+
       meshGroups.forEach((x) =>
         union.addGroup(x.start, x.count, x.materialIndex)
       );
       const singleMesh = new THREE.Mesh(union, meshMaterials);
+
+      // timeLabel = "merge line buffer geometies";
+      // console.time(timeLabel);
 
       const linesUnion = BufferGeometryUtils.mergeGeometries(edgesGeometry);
       lineGroups.forEach((x) =>
         linesUnion.addGroup(x.start, x.count, x.materialIndex)
       );
 
+      // console.timeLog(timeLabel);
+
       const lineSegments = new THREE.LineSegments(linesUnion, lineMaterials);
       lineSegments.renderOrder = 100;
 
+      // timeLabel = "compute bvh";
+      // console.time(timeLabel);
+
       this.computeBVH(object3d);
+
+      // console.timeLog(timeLabel);
+
+      singleMesh.geometry.computeVertexNormals();
+
+      return {
+        singleMesh,
+        lineSegments,
+        indiciesMap,
+      };
+    } else {
+      throw new Error("error while generating UnionMesh for model");
+    }
+  }
+
+  public initUnionMesh2(object3d: THREE.Object3D) {
+    const indiciesMap = new Map<string, number>();
+
+    let meshBuffers: THREE.BufferGeometry[] = [];
+    let meshGroups: { start: number; count: number; materialIndex: number }[] =
+      [];
+    let meshMaterials: THREE.Material[] = [];
+
+    let edgesGeometry: THREE.BufferGeometry[] = [];
+    let lineGroups: { start: number; count: number; materialIndex: number }[] =
+      [];
+    let lineMaterials: THREE.Material[] = [];
+
+    let meshCoutner = 0;
+    let linesCounter = 0;
+    let i = 0;
+
+    const uniqueBuffers = new Map<
+      string,
+      { meshBuffer: THREE.BufferGeometry; lineBuffer: THREE.BufferGeometry }
+    >();
+
+    normalizeAttribute(object3d);
+
+    // let timeLabel = "collect buffer geo";
+    // console.time(timeLabel);
+
+    // const linecreating = "line creating";
+    // console.time(linecreating);
+
+    // let time = 0;
+    // let meshCount = 0;
+    // const times: number[] = [];
+
+    object3d.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        // meshCount++;
+
+        const mesh = child as THREE.Mesh;
+
+        let uniqueBuffer;
+
+        if (!uniqueBuffers.has(mesh.geometry.uuid)) {
+          const meshBuffer = mesh.geometry.clone().toNonIndexed();
+          const lineBuffer = new THREE.EdgesGeometry(meshBuffer, 50);
+          uniqueBuffers.set(mesh.geometry.uuid, { meshBuffer, lineBuffer });
+        }
+        const buffers = uniqueBuffers.get(mesh.geometry.uuid)!;
+
+        const buffer = buffers.meshBuffer
+          .clone()
+          .applyMatrix4(mesh.matrixWorld);
+
+        const meshLen = buffer.getAttribute("position").count;
+        const meshGroup = {
+          start: meshCoutner,
+          count: meshLen,
+          materialIndex: i,
+        };
+
+        // const time1 = new Date();
+
+        const linesBuffer = buffers.lineBuffer
+          .clone()
+          .applyMatrix4(mesh.matrixWorld);
+
+        // const time2 = new Date();
+
+        // const delta = time2.valueOf() - time1.valueOf();
+        // times.push(delta);
+
+        // time += delta;
+
+        const linesLen = linesBuffer.getAttribute("position").count;
+        const lineGroup = {
+          start: linesCounter,
+          count: linesLen,
+          materialIndex: i,
+        };
+
+        meshBuffers.push(buffer);
+        meshMaterials.push(meshDefaultMaterial);
+        meshGroups.push(meshGroup);
+
+        edgesGeometry.push(linesBuffer);
+        lineMaterials.push(lineDefaultMaterial);
+        lineGroups.push(lineGroup);
+
+        indiciesMap.set(child.uuid, i);
+
+        meshCoutner = meshCoutner += meshLen;
+        linesCounter = linesCounter += linesLen;
+        i += 1;
+      }
+    });
+
+    // const sorted = times.sort((a, b) => a - b);
+
+    // console.log("time for line edging", time);
+    // console.log("mesh count", meshCount);
+    // console.log("delta list", sorted);
+    // console.log(
+    //   "avegage time",
+    //   times.reduce((a, c) => a + c, 0) / times.length
+    // );
+
+    // // const max = times[times.length - 1];
+    // // const min = times[0];
+    // const min = 3;
+    // const max = 20;
+
+    // console.log("min, max", min, max);
+
+    // console.timeLog(timeLabel);
+
+    // const minColor = new THREE.Color("lightblue");
+    // const maxColor = new THREE.Color("red");
+
+    // times.forEach((time, i) => {
+    //   const color = minColor.lerp(maxColor, (time - min) / (max - min));
+
+    //   this._testMaterials.push(new THREE.MeshBasicMaterial({ color: color }));
+    // });
+
+    if (meshBuffers.length > 0) {
+      // timeLabel = "merge mesh buffer geometries";
+      // console.time(timeLabel);
+
+      const union = BufferGeometryUtils.mergeGeometries(meshBuffers);
+
+      // console.timeLog(timeLabel);
+
+      meshGroups.forEach((x) =>
+        union.addGroup(x.start, x.count, x.materialIndex)
+      );
+      const singleMesh = new THREE.Mesh(union, meshMaterials);
+
+      // timeLabel = "merge line buffer geometies";
+      // console.time(timeLabel);
+
+      const linesUnion = BufferGeometryUtils.mergeGeometries(edgesGeometry);
+      lineGroups.forEach((x) =>
+        linesUnion.addGroup(x.start, x.count, x.materialIndex)
+      );
+
+      // console.timeLog(timeLabel);
+
+      const lineSegments = new THREE.LineSegments(linesUnion, lineMaterials);
+      lineSegments.renderOrder = 100;
+
+      // timeLabel = "compute bvh";
+      // console.time(timeLabel);
+
+      this.computeBVH(object3d);
+
+      // console.timeLog(timeLabel);
 
       singleMesh.geometry.computeVertexNormals();
 
@@ -202,9 +442,6 @@ class UnionMesh {
       geometry.computeBoundingBox();
 
       this._collisionMesh = unionMesh;
-
-      this._collisionMesh;
-
       buffers.forEach((x) => x.dispose());
     }
   }

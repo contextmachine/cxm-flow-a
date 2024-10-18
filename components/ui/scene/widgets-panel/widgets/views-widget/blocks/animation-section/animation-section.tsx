@@ -2,7 +2,7 @@ import { Box, Button } from "@mui/material";
 import { useViewsWidget } from "../../views-widget";
 import { useEffect, useState } from "react";
 import { ViewStateItem } from "@/components/services/extensions/camera-views-extension/camera-views-extension.db";
-import { useDragAndDrop } from "@formkit/drag-and-drop/react/index.cjs";
+import { useDragAndDrop } from "@formkit/drag-and-drop/react";
 import ViewItem from "../view-item/view-item";
 import NoViews from "../no-views/no-views";
 import TransferSection from "../transfer-section/transfer-section";

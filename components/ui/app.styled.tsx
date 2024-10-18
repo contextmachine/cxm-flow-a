@@ -39,7 +39,7 @@ const GlobalStyle = createGlobalStyle<{
     --box-border-color: ${(props) =>
       props.darkMode ? "#444444" : "rgba(0, 0, 0, 0.12)"};
 
-    --select-bg-color: ${(props) => (props.darkMode ? "#444444" : "#F3F3F3")};
+    --select-bg-color: ${(props) => (props.darkMode ? "#444444" : "#FFFFFF")};
   }
 
   body {

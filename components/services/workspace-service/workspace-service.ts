@@ -3,6 +3,7 @@ import AuthService from "../auth-service/auth-service";
 import client from "@/components/graphql/client/client";
 import {
   CollectionDto,
+  RoleTypes,
   SceneDto,
   WorkspaceDto,
   WorkspaceUserDto,
@@ -95,6 +96,7 @@ class WorkspaceService {
                 name
                 tmp_type
                 collection_workspaces {
+                  workspace_id
                   workspace {
                     id
                     name
@@ -231,7 +233,9 @@ class WorkspaceService {
 
     const restWorkspaces = Array.from(workspaces.keys()).filter((id) => {
       return !collections.some((c) => {
-        return c.collection_workspaces.some((cw) => cw.workspace.id === id);
+        return c.collection_workspaces.some((cw) => {
+          return cw.workspace.id === id;
+        });
       });
     });
 
@@ -246,7 +250,14 @@ class WorkspaceService {
       __typename: "appv3_collection",
     };
 
-    return [defaultCollection, ...collections];
+    // we need to sort collection in that way, that trash is always in the end
+    const sortedCollections = [...collections]?.sort((a, b) => {
+      if (a?.tmp_type === "Trash") return 1;
+      if (b?.tmp_type === "Trash") return -1;
+      return 0;
+    });
+
+    return [defaultCollection, ...sortedCollections];
   }
 
   public updateWorkspaces() {
@@ -337,6 +348,128 @@ class WorkspaceService {
         mutation,
         variables: {
           collection_id: collectionId,
+        },
+      });
+
+      this.fetchWorkspaces();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  public async deleteToolsets(toolsetIds: number[]) {
+    const mutation = gql`
+      mutation DeleteToolsets($toolsetIds: [Int!]!) {
+        delete_appv3_toolset_product(
+          where: { toolset_id: { _in: $toolsetIds } }
+        ) {
+          affected_rows
+        }
+
+        delete_appv3_toolset(where: { id: { _in: $toolsetIds } }) {
+          affected_rows
+        }
+      }
+    `;
+
+    try {
+      const data = await client.mutate({
+        mutation,
+        variables: {
+          toolsetIds,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  public async deleteScene(
+    sceneId: number,
+    options?: {
+      disableUserRoleCheck?: boolean;
+    }
+  ) {
+    // check the current role of user
+    const userRole = this.getUserRoleWithinWorkspace(
+      this._authService.userMetadata?.id || -1,
+      this._activeWorkspace?.id || -1
+    );
+
+    const disableUserRoleCheck = options?.disableUserRoleCheck || false;
+
+    if (!disableUserRoleCheck) {
+      if (!userRole || userRole.id !== RoleTypes.ADMIN) {
+        this.$setError("You are not allowed to delete scene.");
+        return;
+      }
+    }
+
+    // first get all toolsets for scene
+    const query = gql`
+      query GetToolsets($scene_id: Int!) {
+        appv3_toolset(where: { scene_id: { _eq: $scene_id } }) {
+          id
+        }
+      }
+    `;
+
+    const response = await client.query({
+      query,
+      variables: {
+        scene_id: sceneId,
+      },
+    });
+
+    const toolsetIds = response?.data?.appv3_toolset.map((t: any) => t.id);
+
+    if (toolsetIds.length > 0) {
+      await this.deleteToolsets(toolsetIds);
+    }
+
+    const mutation = gql`
+      mutation DeleteScene($id: Int!) {
+        delete_appv3_scene(where: { id: { _eq: $id } }) {
+          affected_rows
+        }
+      }
+    `;
+
+    try {
+      const data = await client.mutate({
+        mutation,
+        variables: {
+          id: sceneId,
+        },
+      });
+
+      this.fetchWorkspaces();
+
+      this.$setError("Scene deleted successfully.");
+    } catch (error) {
+      console.error(error);
+
+      this.$setError("Error deleting scene.");
+    }
+  }
+
+  public async moveSceneToWorkspace(sceneId: number, workspaceId: number) {
+    const mutation = gql`
+      mutation MoveSceneToWorkspace($id: Int!, $workspace_id: Int!) {
+        update_appv3_scene_by_pk(
+          pk_columns: { id: $id }
+          _set: { workspace_id: $workspace_id }
+        ) {
+          id
+        }
+      }
+    `;
+    try {
+      const data = await client.mutate({
+        mutation,
+        variables: {
+          id: sceneId,
+          workspace_id: workspaceId,
         },
       });
 
@@ -521,8 +654,70 @@ class WorkspaceService {
     }
   }
 
+  public async moveWorkspaceToTrash(workspaceId: number) {
+    const trashCollection = this._collections$.value.find(
+      (c) => c.tmp_type === "Trash"
+    );
+
+    if (!trashCollection) {
+      this.$setError("Trash collection not found.");
+      console.error("Trash collection not found.");
+      return;
+    }
+
+    await this.moveWorkspaceToCollection(workspaceId, trashCollection.id);
+  }
+
+  public async deleteScenesFromWorkspace(workspaceId: number) {
+    const mutate = gql`
+      mutation DeleteScenesFromWorkspace($workspace_id: Int!) {
+        delete_appv3_scene(where: { workspace_id: { _eq: $workspace_id } }) {
+          affected_rows
+        }
+
+        delete_appv3_toolset(where: { workspace_id: { _eq: $workspace_id } }) {
+          affected_rows
+        }
+      }
+    `;
+
+    try {
+      const data = await client.mutate({
+        mutation: mutate,
+        variables: {
+          workspace_id: workspaceId,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   public async deleteWorkspace(id?: number) {
     const workspaceId = typeof id === "number" ? id : this._activeWorkspace?.id;
+    if (typeof workspaceId !== "number")
+      return this.$setError("No workspace found.");
+
+    // check the current role of user
+    const userRole = this.getUserRoleWithinWorkspace(
+      this._authService.userMetadata?.id || -1,
+      workspaceId
+    );
+
+    if (!userRole || userRole.id !== RoleTypes.ADMIN) {
+      this.$setError("You are not allowed to delete workspace.");
+      return;
+    }
+
+    // delete all scenes from workspace
+    const scenes = this._workspaces.get(workspaceId)?.scenes || [];
+    const sceneIds = Array.from(scenes.keys());
+
+    for (const sceneId of sceneIds) {
+      await this.deleteScene(sceneId, {
+        disableUserRoleCheck: true,
+      });
+    }
 
     const mutation = gql`
       mutation DeleteWorkspace($id: Int!) {
@@ -534,8 +729,18 @@ class WorkspaceService {
           affected_rows
         }
 
-        delete_appv3_scene(where: { workspace_id: { _eq: $id } }) {
+        delete_appv3_toolset(where: { workspace_id: { _eq: $id } }) {
           affected_rows
+        }
+
+        delete_appv3_collection_workspace(
+          where: { workspace_id: { _eq: $id } }
+        ) {
+          affected_rows
+        }
+
+        delete_appv3_workspace_by_pk(id: $id) {
+          id
         }
       }
     `;
@@ -615,6 +820,10 @@ class WorkspaceService {
     this.$setError = states.setError;
     this.$setWorkspaceLogId = states.setWorkspaceLogId;
     this.$setIsDataFetched = states.setIsDataFetched;
+  }
+
+  public get workspaces() {
+    return this._workspaces;
   }
 
   public get setError() {

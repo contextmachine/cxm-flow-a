@@ -36,6 +36,10 @@ class EntityControl {
     return this._projectModelsObservable;
   }
 
+  public get viewer(): Viewer {
+    return this._viewer;
+  }
+
   private updateProjectObjects() {
     this._entitiesObservable.next(this._entities);
   }

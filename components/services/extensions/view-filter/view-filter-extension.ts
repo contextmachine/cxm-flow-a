@@ -6,6 +6,7 @@ import { Entity } from "@/src/objects/entities/entity";
 import { assertDefined } from "@/src/utils";
 import { v4 } from "uuid";
 import ViewFilterDbService from "./view-filter-db-service";
+import { ProductsDto } from "../../product-service/products.types";
 
 export interface FilterPreset {
   id: number;
@@ -43,8 +44,6 @@ export interface FilterCondition {
 }
 
 class ViewFilterExtension extends ExtensionEntity {
-  private _subscriptions: RX.Unsubscribable[] = [];
-
   private _properties = new Map<string, Entity[]>();
   private _$properties = new RX.Subject<Map<string, Entity[]>>();
 
@@ -56,11 +55,15 @@ class ViewFilterExtension extends ExtensionEntity {
 
   private _dbService: ViewFilterDbService;
 
-  constructor(viewer: Viewer) {
+  private _filteredObjects: Entity[] = [];
+
+  constructor(viewer: Viewer, productData: ProductsDto) {
     super(viewer);
     this.name = "view-filter";
+    this.id = productData.id;
 
     this._dbService = new ViewFilterDbService(this, this._viewer);
+    this.isInitialized = true;
   }
 
   public get properties() {
@@ -84,6 +87,18 @@ class ViewFilterExtension extends ExtensionEntity {
   }
   public get $childrenCount() {
     return this._$childrenCount;
+  }
+
+  public get filteredObjects() {
+    return this._filteredObjects;
+  }
+
+  protected onEnable() {
+    this.executeFiltering();
+  }
+
+  protected onDisable() {
+    this.executeFiltering();
   }
 
   public async load() {
@@ -129,7 +144,10 @@ class ViewFilterExtension extends ExtensionEntity {
   }
 
   private executeFiltering() {
-    if (this._filterPreset && this._filterPreset.enabled) {
+    if (!this.isInitialized) {
+      return;
+    }
+    if (this._enabled && this._filterPreset && this._filterPreset.enabled) {
       const filterPreset = this._filterPreset;
 
       const objects = this._viewer.selectionTool.picker.objectsOnCurrentLevel;
@@ -173,13 +191,16 @@ class ViewFilterExtension extends ExtensionEntity {
 
       this._$currentScopeCount.next(filteredObjects.length);
       this._$childrenCount.next(fittingChildrens.length);
+      this._filteredObjects = filteredObjects;
     } else {
       this._viewer.selectionTool.picker.setCustomEntityScope(undefined);
       this._viewer.selectionTool.picker.objectsOnCurrentLevel.forEach((x) =>
         x.onEnable()
       );
+
       this._$currentScopeCount.next(0);
       this._$childrenCount.next(0);
+      this._filteredObjects = [];
     }
 
     this._viewer.updateViewer();
@@ -281,7 +302,8 @@ class ViewFilterExtension extends ExtensionEntity {
       }
     });
 
-    this._$properties.next(this._properties);
+    const newProps = new Map(this._properties.entries());
+    this._$properties.next(newProps);
   }
 
   public unload(): void {
@@ -330,7 +352,9 @@ function filterEntity(entity: Entity, filterItem: FilterItem): boolean {
         case "EQUAL":
           return values.includes(entityValue);
         case "NOT_EQUAL":
-          return values.every((x) => x !== entityValue);
+          return values.every(
+            (x) => entityValue !== undefined && x !== entityValue
+          );
         default:
           return false;
       }
