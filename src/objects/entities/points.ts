@@ -6,6 +6,7 @@ import {
   meshDefaultMaterial,
   transparentMaterial,
   selectedColor,
+  selectedGroupBoxHelperColor,
 } from "../materials/object-materials";
 import { Group } from "./group";
 import CollisionMesh from "./utility/collision-mesh";
@@ -205,7 +206,7 @@ export class Points implements Entity {
     this._linesVisibility = show;
   }
 
-  public setBboxVisibilty(show: boolean) {
+  public setBboxVisibilty(show: boolean, color?: string) {
     this._bboxVisibility = show;
     this.updateBbox();
   }
@@ -253,13 +254,14 @@ export class Points implements Entity {
 
   public onSelect() {
     this._selected = true;
+    this.setBboxVisibilty(true, selectedGroupBoxHelperColor);
 
     this.updateMaterials();
   }
 
   public onDeselect() {
     this._selected = false;
-
+    this.setBboxVisibilty(false);
     this.updateMaterials();
   }
 

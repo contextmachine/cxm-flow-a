@@ -104,37 +104,6 @@ export class ProjectModel {
       entity = new Mesh(object, this, undefined);
     } else if (object instanceof THREE.Points) {
       entity = new Points(object, this, undefined);
-
-      // console.log("here");
-
-      // const meshIdMap = new Map<number, string>();
-
-      // meshIdMap.set(0, object.uuid);
-
-      // const indices = [];
-      // const bvhGeometry = object.geometry.clone();
-
-      // bvhGeometry.applyMatrix4(object.matrixWorld);
-
-      // let verticesLength = bvhGeometry.attributes.position.count;
-      // for (let i = 0, l = verticesLength; i < l; i++) {
-      //   indices.push(i, i, i);
-      // }
-
-      // bvhGeometry.setIndex(indices);
-      // const bvhMesh = new THREE.Mesh(bvhGeometry);
-
-      // bvhMesh.geometry.computeBoundsTree();
-
-      // const collisionMesh = new CollisionMesh(bvhMesh, meshIdMap);
-
-      // const helper = new MeshBVHHelper(bvhMesh, 3);
-      // helper.name = "bvh-helper";
-
-      // console.log("----> helper", helper);
-      // this._viewer.addToScene(helper);
-
-      // this._collisionMeshes.push(collisionMesh);
     } else {
       entity = new DefaultObject(object, this, undefined);
     }

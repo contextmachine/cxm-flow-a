@@ -162,7 +162,6 @@ export class Group implements Entity {
   }
 
   public setBboxVisibilty(show: boolean, color?: string) {
-    console.log("bbox visibility", show);
     if (color) {
       (this._bbox.material as THREE.LineBasicMaterial).color = new THREE.Color(
         color
