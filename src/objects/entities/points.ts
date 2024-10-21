@@ -145,7 +145,7 @@ export class Points implements Entity {
   }
 
   public initBVH() {
-    console.log("here");
+    // console.log("here");
 
     const meshIdMap = new Map<number, string>();
     const object = this._object3d;

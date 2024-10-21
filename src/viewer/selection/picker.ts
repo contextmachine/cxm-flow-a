@@ -68,7 +68,7 @@ class Picker {
         this._collisionMeshes = [...e.values()].flatMap(
           (x) => x.collisionMeshes
         );
-        console.log("!!!!", this._collisionMeshes);
+        // console.log("!!!!", this._collisionMeshes);
       })
     );
   }
@@ -172,7 +172,7 @@ class Picker {
       }
     });
 
-    console.log("here have to be my intersection please", intersections);
+    // console.log("here have to be my intersection please", intersections);
 
     if (intersections.length > 0) {
       // сортируем пересечения по дистанции, и выбираем объект из тех, что находятся на текущем уровне
@@ -181,7 +181,7 @@ class Picker {
 
       const entity = this.findObjectOnCurrentLevel(meshUuid);
 
-      console.log("entity", entity);
+      // console.log("entity", entity);
 
       return entity;
     } else {

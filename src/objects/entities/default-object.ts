@@ -43,16 +43,14 @@ export class DefaultObject implements Entity {
 
     this.initBoundingBox();
 
-    console.log(Object.keys(this._defaultMaterial));
+    //   const o1 = Object(this._defaultMaterial);
+    //   const o2 = Object(new THREE.PointsMaterial());
 
-    const o1 = Object(this._defaultMaterial);
-    const o2 = Object(new THREE.PointsMaterial());
-
-    for (let key of Object.keys(this._defaultMaterial)) {
-      if (o1[key] !== o2[key]) {
-        console.log(key, o1[key], o2[key]);
-      }
-    }
+    //   for (let key of Object.keys(this._defaultMaterial)) {
+    //     if (o1[key] !== o2[key]) {
+    //       console.log(key, o1[key], o2[key]);
+    //     }
+    //   }
   }
 
   public get id(): string {
