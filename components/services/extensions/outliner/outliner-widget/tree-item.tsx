@@ -69,6 +69,7 @@ const TreeItem: React.FC<TreeItemProps> = (props: TreeItemProps) => {
   }, [item.isGroupActive]);
 
   const onItemClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     setItemClicked(true);
     extension.onItemClick(e, item.entity);
   };

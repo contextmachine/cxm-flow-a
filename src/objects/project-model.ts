@@ -6,6 +6,9 @@ import { Entity, initEntity } from "./entities/entity";
 import { Group } from "./entities/group";
 import { Mesh } from "./entities/mesh";
 import { DefaultObject } from "./entities/default-object";
+import { Points } from "./entities/points";
+import CollisionMesh from "./entities/utility/collision-mesh";
+import { MeshBVHHelper } from "three-mesh-bvh";
 
 function isGroupMeshOnly(grp: THREE.Group): boolean {
   let result = true;
@@ -25,6 +28,8 @@ export class ProjectModel {
   private _entity: Entity;
   private _unionMesh: UnionMesh | undefined;
   private _objects: THREE.Object3D[] = [];
+
+  private _collisionMeshes: CollisionMesh[] = [];
 
   private _viewer: Viewer;
 
@@ -50,8 +55,8 @@ export class ProjectModel {
     return this._objects;
   }
 
-  public get collisionMesh() {
-    return this._unionMesh?.collisionMesh;
+  public get collisionMeshes(): CollisionMesh[] {
+    return this._collisionMeshes;
   }
 
   public get viewer(): Viewer {
@@ -70,42 +75,35 @@ export class ProjectModel {
     return this._entity;
   }
 
+  public get queryId(): number {
+    return this._queryEntity.id;
+  }
+
+  public get endPoint(): ApiObject {
+    return this._queryEntity;
+  }
+
   public initModel(object: THREE.Object3D): Entity {
     const modelObjects: THREE.Object3D[] = [];
     let entity: Entity;
-
-    // const bufferGeometries = new Map();
-
-    // object.traverse((x) => {
-    //   if (x instanceof THREE.Mesh) {
-    //     if (x.geometry) {
-    //       console.log("mesh with geom");
-
-    //       const buffer = x.geometry;
-    //       bufferGeometries.set(buffer.uuid, buffer);
-    //     }
-    //   }
-    // });
-
-    // console.log("geometries", bufferGeometries);
-
-    const timerLabel = `init union mesh ${object.name}}`;
-
-    console.time(timerLabel);
 
     try {
       const unionMesh = new UnionMesh(object, this);
       unionMesh.objects.forEach((x) => modelObjects.push(x));
 
       this._unionMesh = unionMesh;
-    } catch (e) {}
 
-    console.timeLog(timerLabel);
+      if (unionMesh.collisionMesh) {
+        this._collisionMeshes.push(unionMesh.collisionMesh);
+      }
+    } catch (e) {}
 
     if (object instanceof THREE.Group) {
       entity = new Group(object, this, undefined);
     } else if (object instanceof THREE.Mesh) {
       entity = new Mesh(object, this, undefined);
+    } else if (object instanceof THREE.Points) {
+      entity = new Points(object, this, undefined);
     } else {
       entity = new DefaultObject(object, this, undefined);
     }

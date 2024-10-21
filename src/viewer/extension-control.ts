@@ -5,6 +5,7 @@ import { assertDefined } from "../utils";
 import Viewer from "./viewer";
 import ViewFilterExtension from "@/components/services/extensions/view-filter/view-filter-extension";
 import OutlinerExtension from "@/components/services/extensions/outliner/outliner-extension";
+import SelectionPropsExtension from "@/components/services/extensions/selection-props/selection-props-extension";
 import PointCloudExtension from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension";
 import TagsExtension from "@/components/services/extensions/tags/tags-widget/tags-extension";
 import { ProductsDto } from "@/components/services/product-service/products.types";
@@ -89,6 +90,8 @@ class ExtensionControl {
         return new CameraViewsExtensions(this._viewer, productData);
       case "pointcloud-handler":
         return new PointCloudExtension(this._viewer, productData);
+      case "selection-props":
+        return new SelectionPropsExtension(this._viewer, productData);
       case "view-filter":
         return new ViewFilterExtension(this._viewer, productData);
       case "outliner":

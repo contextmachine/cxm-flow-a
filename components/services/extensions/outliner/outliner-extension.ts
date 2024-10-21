@@ -44,6 +44,9 @@ class OutlinerExtension extends ExtensionEntity {
   }
 
   public onItemClick(e: React.MouseEvent, item: Entity) {
+    if (e.shiftKey) {
+      e.preventDefault();
+    }
     if (!e.shiftKey) {
       this._viewer.selectionTool.clearSelection();
     }
