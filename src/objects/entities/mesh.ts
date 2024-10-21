@@ -46,6 +46,9 @@ export class Mesh implements Entity {
   private _defaultMaterial: THREE.Material = meshDefaultMaterial;
   private _overrideMaterial: THREE.Material | undefined;
 
+  private _themingColor: string | undefined; // hex color
+  private _themingColorOpacity: number = 1;
+
   constructor(object: THREE.Mesh, model: ProjectModel, parent?: Group) {
     this._id = object.uuid;
     this._model = model;
@@ -273,6 +276,22 @@ export class Mesh implements Entity {
   public onDeselect() {
     this._selected = false;
 
+    this.updateMaterials();
+  }
+
+  /**
+   * Apply theming color to the mesh
+   * @param color hex color
+   */
+  public applyThemingColor(color: string, isTransparent = false) {
+    this._themingColor = color;
+    this._themingColorOpacity = isTransparent ? 0 : 1;
+
+    this.updateMaterials();
+  }
+
+  public clearThemingColor() {
+    this._themingColor = undefined;
     this.updateMaterials();
   }
 

@@ -172,6 +172,16 @@ export class DefaultObject implements Entity {
     this._disable = true;
   }
 
+  public applyThemingColor(color: string) {
+    // TODO: apply color to group
+    return;
+  }
+
+  public clearThemingColor() {
+    // TODO: clear color from group
+    return;
+  }
+
   public onEnable() {
     this._disable = false;
   }

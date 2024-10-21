@@ -21,6 +21,9 @@ export class Viewer {
   private _rootElement: HTMLDivElement | undefined;
   private _scene = new THREE.Scene();
 
+  private _tagCanvasElement: SVGSVGElement | undefined;
+  private _tagGroupCanvasElement: SVGSVGElement | undefined;
+
   private _sceneService: SceneService;
 
   private _status: LoaderState = "idle";
@@ -135,6 +138,14 @@ export class Viewer {
     return this._$message;
   }
 
+  public get tagCanvas(): SVGSVGElement | undefined {
+    return this._tagCanvasElement;
+  }
+
+  public get tagGroupCanvas(): SVGSVGElement | undefined {
+    return this._tagGroupCanvasElement;
+  }
+
   public get sceneService(): SceneService {
     return this._sceneService;
   }
@@ -207,6 +218,40 @@ export class Viewer {
     this.resize();
     rootElement.appendChild(this.canvas);
     this.canvas.tabIndex = 1;
+
+    // Create SVG Element
+    const svgElement = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg"
+    );
+    svgElement.setAttribute("id", "tags");
+    svgElement.setAttribute("width", "100%");
+    svgElement.setAttribute("height", "100%");
+    svgElement.style.position = "absolute";
+    svgElement.style.top = "0";
+    svgElement.style.left = "0";
+    svgElement.style.pointerEvents = "none"; // Disable events on SVG so they go through to the 3D canvas
+
+    // Append SVG to rootElement after WebGL canvas
+    this._tagCanvasElement = svgElement;
+    rootElement.appendChild(svgElement);
+
+    // Create SVG Element for tag groups
+    const svgGroupElement = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg"
+    );
+    svgGroupElement.setAttribute("id", "tag-groups");
+    svgGroupElement.setAttribute("width", "100%");
+    svgGroupElement.setAttribute("height", "100%");
+    svgGroupElement.style.position = "absolute";
+    svgGroupElement.style.top = "0";
+    svgGroupElement.style.left = "0";
+    svgGroupElement.style.pointerEvents = "none"; // Disable events on SVG so they go through to the 3D canvas
+
+    // Append SVG to rootElement after WebGL canvas
+    this._tagGroupCanvasElement = svgGroupElement;
+    rootElement.appendChild(svgGroupElement);
 
     // FPS stats element
     if (this._stats) {

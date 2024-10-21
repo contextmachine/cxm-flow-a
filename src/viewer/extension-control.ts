@@ -8,6 +8,7 @@ import OutlinerExtension from "@/components/services/extensions/outliner/outline
 import PointCloudExtension from "@/components/services/extension-service/extensions/point-cloud-extension/point-cloud-extension";
 import { ProductsDto } from "@/components/services/product-service/products.types";
 import SelectionPropsExtension from "@/components/services/extensions/selection-props/selection-props-extension";
+import TagsExtension from "@/components/services/extensions/tags/tags-widget/tags-extension";
 
 class ExtensionControl {
   private _viewer: Viewer;
@@ -95,6 +96,8 @@ class ExtensionControl {
         return new OutlinerExtension(this._viewer, productData);
       case "selection-props":
         return new SelectionPropsExtension(this._viewer, productData);
+      case "tags-widget":
+        return new TagsExtension(this._viewer, productData);
       default:
         return undefined;
     }

@@ -34,6 +34,8 @@ export interface Entity {
   showLineEdges: (show: boolean) => void;
   setBboxVisibilty: (show: boolean) => void;
   updateMaterial: () => void;
+  applyThemingColor: (color: string, isTransparent?: boolean) => void;
+  clearThemingColor: () => void;
 
   onSelect: () => void;
   onDeselect: () => void;

@@ -284,6 +284,16 @@ export class Points implements Entity {
     this.updateMaterials();
   }
 
+  public applyThemingColor(color: string) {
+    // TODO: apply color to group
+    return;
+  }
+
+  public clearThemingColor() {
+    // TODO: clear color from group
+    return;
+  }
+
   public onEnable() {
     this._disable = false;
     this._selectable = true;
