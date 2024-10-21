@@ -13,6 +13,7 @@ import ProjectSettingsService from "../services/project-settings/project-setting
 import SelectionControl from "./selection/selection-tool";
 import SceneService from "@/components/services/scene-service/scene-service";
 import ExtensionControl from "./extension-control";
+import { Message, MessageType } from "@/components/ui/scene/message/message";
 
 CameraControls.install({ THREE: THREE });
 
@@ -39,6 +40,8 @@ export class Viewer {
 
   private _subscriptions: RX.Unsubscribable[] = [];
   private _clock = new THREE.Clock();
+
+  private _$message = new RX.Subject<MessageType>();
 
   // SERVICES
   private _projectSettingsService: ProjectSettingsService;
@@ -106,18 +109,13 @@ export class Viewer {
     );
   }
 
-  // public get status(): LoaderState {
-  //   return this._status;
-  // }
+  public setMessage(message: Message) {
+    this._$message.next(message);
+  }
 
-  // public get $status(): RX.Observable<LoaderState> {
-  //   return this._statusSubject;
-  // }
-
-  // public setStatus(status: LoaderState) {
-  //   this._status = status;
-  //   this._statusSubject.next(status);
-  // }
+  public get $message() {
+    return this._$message;
+  }
 
   public get scene(): THREE.Scene {
     return this._scene;
@@ -189,6 +187,15 @@ export class Viewer {
 
     const width = window.innerWidth;
     const height = window.innerHeight;
+
+    // для предотвращения выделения текста на страницах с нажатием Shift
+    ["keyup", "keydown"].forEach((event: any) => {
+      window.addEventListener(event, (e: any) => {
+        document.onselectstart = function () {
+          return !(e.key == "Shift" && e.shiftKey);
+        };
+      });
+    });
 
     this._renderer.setSize(width, height);
     this._renderer.setPixelRatio(window.devicePixelRatio);

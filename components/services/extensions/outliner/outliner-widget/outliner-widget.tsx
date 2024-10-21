@@ -10,7 +10,6 @@ import SearchIcon from "@mui/icons-material/Search";
 import CodeIcon from "@/components/ui/icons/code-icon";
 import StackIcon from "@/components/ui/icons/stack-icon";
 import QueriesComponent from "./queries/queries";
-import { Tabs } from "@/components/ui/scene/primitives/tabs/tabs";
 
 interface OutlinerWidgetProps {
   isPreview?: boolean;
@@ -88,6 +87,28 @@ const OutlinerWidget: React.FC<OutlinerWidgetProps> = ({
 };
 
 export default OutlinerWidget;
+
+const Tabs = styled.div<{ $activeTab: number }>`
+  width: 100%;
+  display: grid;
+  grid-template-columns: 50% 50%;
+  background-color: var(--main-bg-color);
+  height: 30px;
+  border-radius: 9px;
+  padding: 3px;
+  .tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+  .tab.active {
+    background-color: var(--paper-bg-color);
+    border-radius: 6px;
+    box-shadow: 0px 0px 9px rgba(0, 0, 0, 0.1);
+  }
+`;
 
 const OutlinerSearch = styled.div`
   width: 100%;

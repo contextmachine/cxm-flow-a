@@ -1,6 +1,10 @@
 import * as THREE from "three";
 import * as RX from "rxjs";
-import { getMeshUuidByPointIndex2, getPointer } from "./utils";
+import {
+  getMeshUuidByPointIndex2,
+  getPointer,
+  pointCloudCollision,
+} from "./utils";
 import SelectionControl from "./selection-tool";
 import Viewer from "../viewer";
 import { Entity, isGroup } from "@/src/objects/entities/entity";
@@ -9,6 +13,7 @@ import { assertDefined } from "@/src/utils";
 import EntityControl from "../entity-control";
 import { Group } from "@/src/objects/entities/group";
 import { activeGroupBoxHelperColor } from "@/src/objects/materials/object-materials";
+import CollisionMesh from "@/src/objects/entities/utility/collision-mesh";
 
 class Picker {
   private _subscriptions: RX.Unsubscribable[] = [];
@@ -17,7 +22,7 @@ class Picker {
 
   private _raycaster: THREE.Raycaster;
   private _camera: THREE.Camera;
-  private _unionMeshes: UnionMesh[];
+  private _collisionMeshes: CollisionMesh[];
 
   private _currentGroup: Group | undefined;
   private _$currentGroup = new RX.Subject<Group | undefined>();
@@ -40,9 +45,9 @@ class Picker {
     this._raycaster = new THREE.Raycaster();
 
     this._raycaster.firstHitOnly = false;
-    this._unionMeshes = [...this._viewer.entityControl.projectModels.values()]
-      .map((x) => x.unionMesh)
-      .filter((x) => x !== undefined) as UnionMesh[];
+    this._collisionMeshes = [
+      ...this._viewer.entityControl.projectModels.values(),
+    ].flatMap((x) => x.collisionMeshes);
 
     this._subscriptions.push(
       RX.fromEvent<MouseEvent>(this._domElement, "mousedown")
@@ -60,9 +65,9 @@ class Picker {
     );
     this._subscriptions.push(
       this._viewer.entityControl.$projectModels.subscribe((e) => {
-        this._unionMeshes = [...e.values()]
-          .map((x) => x.unionMesh)
-          .filter((x) => x !== undefined) as UnionMesh[];
+        this._collisionMeshes = [...e.values()].flatMap(
+          (x) => x.collisionMeshes
+        );
       })
     );
   }
@@ -111,35 +116,59 @@ class Picker {
     this._camera.updateMatrixWorld();
     raycaster.setFromCamera(pointer, this._camera);
 
+    raycaster.params.Points.threshold = 0.05;
+
     const intersections: { uuid: string; distance: number }[] = [];
 
-    this._unionMeshes.forEach((model) => {
+    this._collisionMeshes.forEach((collisionMesh) => {
       // рейкастим по всем unionMeshes в сцене
 
-      const collisionMesh = model.collisionMesh!;
-      const modelInt = raycaster.intersectObject(collisionMesh, true);
+      const mesh = collisionMesh.collisionMesh!;
 
-      modelInt.forEach((intersection) => {
-        // проходимся по всем пересечениям, и фильтурем по тем, которые доступны для выделения
-        // отфильтрованные объекты попадают в массив intersections
-        if (intersection.face) {
-          const i = intersection.face.a;
-          const meshUuid = getMeshUuidByPointIndex2(
-            collisionMesh,
-            i,
-            model.meshIdMap
-          );
+      if (collisionMesh.type === "points") {
+        const { distance, hit } = pointCloudCollision(
+          collisionMesh.collisionMesh,
+          raycaster
+        );
 
-          const po = this._viewer.entityControl.entities.get(meshUuid);
+        if (hit) {
+          const ouuid = collisionMesh.meshIdMap.get(0);
 
-          if (po && po.visibility && po.isSelectable) {
-            intersections.push({
-              uuid: meshUuid,
-              distance: modelInt[0].distance,
-            });
+          if (ouuid) {
+            const po = this._viewer.entityControl.entities.get(ouuid);
+
+            if (po && po.visibility && po.isSelectable) {
+              intersections.push({
+                uuid: ouuid,
+                distance: distance,
+              });
+            }
           }
         }
-      });
+      } else if (collisionMesh.type === "mesh") {
+        const modelInt = raycaster.intersectObject(mesh, true);
+        modelInt.forEach((intersection) => {
+          // проходимся по всем пересечениям, и фильтурем по тем, которые доступны для выделения
+          // отфильтрованные объекты попадают в массив intersections
+          if (intersection.face) {
+            const i = intersection.face.a;
+            const meshUuid = getMeshUuidByPointIndex2(
+              mesh,
+              i,
+              collisionMesh.meshIdMap
+            );
+
+            const po = this._viewer.entityControl.entities.get(meshUuid);
+
+            if (po && po.visibility && po.isSelectable) {
+              intersections.push({
+                uuid: meshUuid,
+                distance: modelInt[0].distance,
+              });
+            }
+          }
+        });
+      }
     });
 
     if (intersections.length > 0) {
