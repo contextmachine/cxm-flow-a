@@ -24,16 +24,13 @@ export function useStatus() {
   useEffect(() => {
     if (viewer) {
       const subscription = viewer.loader.$status.subscribe((e) => {
-        // console.log("status changed, this from subscription", e);
         setState(e.toString());
       });
       return () => subscription.unsubscribe();
     }
   }, [viewer]);
 
-  useEffect(() => {
-    // console.log("this from useEfffect", state);
-  }, [state]);
+  useEffect(() => {}, [state]);
 
   return state;
 }

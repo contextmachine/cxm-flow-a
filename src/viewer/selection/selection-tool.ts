@@ -1,10 +1,7 @@
-import * as THREE from "three";
 import * as RX from "rxjs";
 import Viewer from "../viewer";
 import { Entity } from "@/src/objects/entities/entity";
 import Picker from "./picker";
-import { Group } from "@/src/objects/entities/group";
-import { activeGroupBoxHelperColor } from "@/src/objects/materials/object-materials";
 
 class SelectionControl {
   private _subscriptions: RX.Subscription[] = [];
@@ -34,6 +31,7 @@ class SelectionControl {
       this._viewer.entityControl.$entities.subscribe((objects) => {
         this._entitiesMap = objects;
         if (this._needsReloadSelection) {
+          console.log("restore");
           const ids = this._needsReloadSelection.filter((x) =>
             this._entitiesMap.has(x)
           );
@@ -60,7 +58,7 @@ class SelectionControl {
     return this._updateSelectionSubject;
   }
 
-  public set needsReloadSelection(e: string[] | undefined) {
+  public set needsRestoreSelection(e: string[] | undefined) {
     this._needsReloadSelection = e;
   }
 
@@ -121,6 +119,7 @@ class SelectionControl {
       .map((x) => this._entitiesMap.get(x))
       .filter((x) => x !== undefined) as Entity[];
     this._selectedSubject.next(this._selected);
+    console.log(this._selected);
   }
 
   public dispose() {

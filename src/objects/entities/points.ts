@@ -4,24 +4,21 @@ import { Entity, ProjectObjectProps, ViewerObjectType } from "./entity";
 
 import {
   meshDefaultMaterial,
-  lineDefaultMaterial,
-  lineSelectedMaterial,
-  selectedMaterial,
   transparentMaterial,
-  lineDisabledMaterial,
+  selectedColor,
+  selectedGroupBoxHelperColor,
 } from "../materials/object-materials";
 import { Group } from "./group";
-import { escape } from "lodash";
+import CollisionMesh from "./utility/collision-mesh";
+import { MeshBVHHelper } from "three-mesh-bvh";
 
-type MeshType = "bvhFragment" | "common";
-
-export class Mesh implements Entity {
+export class Points implements Entity {
   private _id: string;
   private _model: ProjectModel;
-  private _object3d: THREE.Mesh;
+  private _object3d: THREE.Points;
 
   private _center = new THREE.Vector3();
-  private _type: ViewerObjectType = "mesh";
+  private _type: ViewerObjectType = "points";
 
   private _name: string;
 
@@ -41,29 +38,22 @@ export class Mesh implements Entity {
 
   private _props: ProjectObjectProps | undefined;
 
-  private _meshType: MeshType;
-
   private _defaultMaterial: THREE.Material = meshDefaultMaterial;
   private _overrideMaterial: THREE.Material | undefined;
+  private _selectedMaterial: THREE.Material = meshDefaultMaterial;
 
-  private _themingColor: string | undefined; // hex color
-  private _themingColorOpacity: number = 1;
-
-  constructor(object: THREE.Mesh, model: ProjectModel, parent?: Group) {
+  constructor(object: THREE.Points, model: ProjectModel, parent?: Group) {
     this._id = object.uuid;
     this._model = model;
     this._object3d = object;
     this._parent = parent;
-
-    this._meshType = model.unionMesh?.entitiesScope.has(this._id)
-      ? "bvhFragment"
-      : "common";
 
     this._name = object.name;
 
     this.initProperties();
     this.initBoundingBox();
     this.initMaterial();
+    this.initBVH();
   }
 
   public get id(): string {
@@ -143,22 +133,46 @@ export class Mesh implements Entity {
   }
 
   private initMaterial() {
-    const mesh = this._object3d;
+    const points = this._object3d;
 
-    if (mesh.material) {
-      const material = mesh.material;
+    this._defaultMaterial = points.material as THREE.PointsMaterial;
+    this._defaultMaterial.depthFunc = 3;
 
-      if (material instanceof THREE.MeshStandardMaterial) {
-        material.flatShading = true;
-      }
+    this._selectedMaterial = this._defaultMaterial.clone();
+    (this._selectedMaterial as THREE.PointsMaterial).color = new THREE.Color(
+      selectedColor
+    );
+  }
 
-      this._defaultMaterial = material as THREE.Material;
+  public initBVH() {
+    // console.log("here");
 
-      this._model.unionMesh?.setMeshMaterialToFragment(
-        this._id,
-        this._defaultMaterial
-      );
+    const meshIdMap = new Map<number, string>();
+    const object = this._object3d;
+
+    meshIdMap.set(0, this._id);
+
+    const indices = [];
+    const bvhGeometry = object.geometry.clone();
+
+    bvhGeometry.applyMatrix4(object.matrixWorld);
+
+    let verticesLength = bvhGeometry.attributes.position.count;
+    for (let i = 0, l = verticesLength; i < l; i++) {
+      indices.push(i, i, i);
     }
+
+    bvhGeometry.setIndex(indices);
+    const bvhMesh = new THREE.Mesh(bvhGeometry);
+
+    bvhMesh.geometry.computeBoundsTree();
+
+    const collisionMesh = new CollisionMesh(bvhMesh, meshIdMap, "points");
+
+    const helper = new MeshBVHHelper(bvhMesh, 3);
+    helper.name = "bvh-helper";
+
+    this._model.collisionMeshes.push(collisionMesh);
   }
 
   public initBoundingBox() {
@@ -166,6 +180,8 @@ export class Mesh implements Entity {
     bbox.getCenter(this._center);
     this._bbox.box = bbox;
     this._bbox.applyMatrix4(this._object3d.matrixWorld);
+
+    // this._model.viewer.addToScene(this._bbox.clone());
   }
 
   private updateBbox() {
@@ -184,20 +200,18 @@ export class Mesh implements Entity {
   private updateVisibility() {
     this.updateBbox();
     this.updateMaterial();
-    this.updateLineMaterial();
   }
 
   public showLineEdges(show: boolean) {
     this._linesVisibility = show;
-    this.updateLineMaterial();
   }
 
-  public setBboxVisibilty(show: boolean) {
+  public setBboxVisibilty(show: boolean, color?: string) {
     this._bboxVisibility = show;
     this.updateBbox();
   }
 
-  private updateMeshMaterial() {
+  private updatePointsMaterial() {
     const visible = this._visibility && this._parentVisible;
     const selected = this._selected || this._parentSelected;
 
@@ -208,34 +222,14 @@ export class Mesh implements Entity {
     } else if (this._disable) {
       newMaterial = transparentMaterial;
     } else if (selected) {
-      newMaterial = selectedMaterial;
+      newMaterial = this._selectedMaterial;
     } else if (this._overrideMaterial) {
       newMaterial = this._overrideMaterial;
     } else {
       newMaterial = this._defaultMaterial;
     }
 
-    this.setMeshMaterial(newMaterial);
-  }
-
-  private updateLineMaterial(material?: THREE.LineBasicMaterial) {
-    let newMaterial: THREE.Material;
-
-    const visible =
-      this._visibility && this._linesVisibility && this._parentVisible;
-    const selected = this._selected || this._parentSelected;
-
-    if (!visible && !selected) {
-      newMaterial = transparentMaterial;
-    } else if (this._disable) {
-      newMaterial = lineDisabledMaterial;
-    } else if (selected) {
-      newMaterial = lineSelectedMaterial;
-    } else {
-      newMaterial = lineDefaultMaterial;
-    }
-
-    this.setLineMaterial(newMaterial);
+    this.setMaterial(newMaterial);
   }
 
   public updateMaterial(material?: THREE.Material) {
@@ -248,50 +242,26 @@ export class Mesh implements Entity {
     this.updateMaterials();
   }
 
-  private setMeshMaterial(material: THREE.Material) {
-    if (this.model.unionMesh) {
-      this.model.unionMesh.setMeshMaterialToFragment(this.id, material);
-    }
-  }
-
-  private setLineMaterial(material: THREE.Material) {
-    if (this.model.unionMesh) {
-      this.model.unionMesh.setLineMaterialToFragment(this.id, material);
-    }
+  private setMaterial(material: THREE.Material) {
+    this._object3d.material = material;
   }
 
   private updateMaterials() {
     this._parentVisible = getParentVisibility(this);
 
-    this.updateLineMaterial();
-    this.updateMeshMaterial();
+    this.updatePointsMaterial();
   }
 
   public onSelect() {
     this._selected = true;
+    this.setBboxVisibilty(true, selectedGroupBoxHelperColor);
 
     this.updateMaterials();
   }
 
   public onDeselect() {
     this._selected = false;
-
-    this.updateMaterials();
-  }
-
-  /**
-   * Apply theming color to the mesh
-   * @param color hex color
-   */
-  public applyThemingColor(color: string, isTransparent = false) {
-    this._themingColor = color;
-    this._themingColorOpacity = isTransparent ? 0 : 1;
-
-    this.updateMaterials();
-  }
-
-  public clearThemingColor() {
-    this._themingColor = undefined;
+    this.setBboxVisibilty(false);
     this.updateMaterials();
   }
 
@@ -312,6 +282,16 @@ export class Mesh implements Entity {
     this._selectable = false;
 
     this.updateMaterials();
+  }
+
+  public applyThemingColor(color: string) {
+    // TODO: apply color to group
+    return;
+  }
+
+  public clearThemingColor() {
+    // TODO: clear color from group
+    return;
   }
 
   public onEnable() {

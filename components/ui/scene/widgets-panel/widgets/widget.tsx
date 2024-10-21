@@ -69,10 +69,10 @@ const Widget: React.FC<WidgetProps> = ({ type, isPreview }) => {
       return <StatisticsWidget isPreview={isPreview} extension={extension} />;
     case "bar-widget":
       return <BarChartWidget isPreview={isPreview} extension={extension} />;
-    case "toolset-widget":
-      return <ToolsetWidget isPreview={isPreview} extension={extension} />;
     case "tags-widget":
       return <TagWidget isPreview={isPreview} extension={extension!} />;
+    case "toolset-widget":
+      return <ToolsetWidget isPreview={isPreview} extension={extension} />;
     default:
       return null;
   }

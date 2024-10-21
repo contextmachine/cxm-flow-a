@@ -6,6 +6,7 @@ import Viewer from "./viewer";
 import { ControlsViewState, ViewState } from "./camera-control.types";
 import TWEEN from "@tweenjs/tween.js";
 import { distinctByKeys } from "../utils";
+import { MeshBVHHelper } from "three-mesh-bvh";
 
 class CameraControl {
   private _subscriptions: RX.Unsubscribable[] = [];
@@ -114,11 +115,26 @@ class CameraControl {
   }
 
   public fitToScene() {
+    const helper = this._viewer.scene.getObjectByName("bvh-helper");
+
+    console.log(this._viewer.scene);
+
     this.fitToObjects(
       [...this._viewer.entityControl.projectModels.values()].map(
         (x) => x.entity.bbox.box
       )
     );
+    if (helper) {
+      console.log("here");
+      const x = helper as MeshBVHHelper;
+
+      const box = new THREE.Box3();
+
+      box.expandByObject(x);
+
+      this.fitToObjects([box]);
+    }
+
     this._viewer.updateViewer();
   }
 

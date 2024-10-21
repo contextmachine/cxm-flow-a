@@ -37,10 +37,20 @@ export class DefaultObject implements Entity {
     if (Object.hasOwn(object, "material")) {
       //@ts-ignore
       this._defaultMaterial = object.material;
+      this._defaultMaterial.depthFunc = 3;
     }
     this._name = object.name;
 
     this.initBoundingBox();
+
+    //   const o1 = Object(this._defaultMaterial);
+    //   const o2 = Object(new THREE.PointsMaterial());
+
+    //   for (let key of Object.keys(this._defaultMaterial)) {
+    //     if (o1[key] !== o2[key]) {
+    //       console.log(key, o1[key], o2[key]);
+    //     }
+    //   }
   }
 
   public get id(): string {
@@ -140,15 +150,6 @@ export class DefaultObject implements Entity {
     this.updateBbox();
   }
 
-  public applyThemingColor(color: string) {
-    // TODO: apply theming color
-    return;
-  }
-
-  public clearThemingColor() {
-    return;
-  }
-
   public onSelect() {
     this.setBboxVisibilty(true);
     this._selected = true;
@@ -169,6 +170,16 @@ export class DefaultObject implements Entity {
 
   public onDisable() {
     this._disable = true;
+  }
+
+  public applyThemingColor(color: string) {
+    // TODO: apply color to group
+    return;
+  }
+
+  public clearThemingColor() {
+    // TODO: clear color from group
+    return;
   }
 
   public onEnable() {

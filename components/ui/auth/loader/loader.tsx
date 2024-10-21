@@ -23,13 +23,14 @@ const StyledSpinnerWrapper = styled.div`
   z-index: 9999;
 
   display: flex;
-  background-color: white;
+  background-color: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  height: 100vh;
-  width: 100vw;
+
+  top: 50vh;
+  left: 50vw;
 `;
 
 export default Loader;
