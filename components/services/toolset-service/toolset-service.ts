@@ -232,6 +232,8 @@ class ToolsetService {
   }
 
   public updateActiveToolsetProducts(widgetProducts: ProductsDto[]) {
+    const alwaysActiveWidgets = ["selection-props"];
+
     const activeToolset = this._activeToolset;
     if (!activeToolset) {
       this._activeProducts$.next([]);
@@ -240,7 +242,11 @@ class ToolsetService {
       return;
     }
 
-    const activeProducts = activeToolset.toolset_products
+    const productsToEnableAnyway = widgetProducts.filter((x) =>
+      alwaysActiveWidgets.includes(x.name)
+    );
+
+    const activeProductsInToolset = activeToolset.toolset_products
       .map((toolsetProduct) => {
         return widgetProducts.find(
           (product) => product.id === toolsetProduct.product_id
@@ -253,6 +259,10 @@ class ToolsetService {
         (toolsetProduct) => toolsetProduct.product_id === product.id
       );
     });
+
+    const activeProducts = [
+      ...new Set(activeProductsInToolset.concat(productsToEnableAnyway)),
+    ];
 
     this._activeProducts$.next([...activeProducts]);
     this._restProducts$.next([...restProducts]);

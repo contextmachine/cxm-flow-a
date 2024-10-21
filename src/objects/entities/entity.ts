@@ -3,10 +3,11 @@ import { ProjectModel } from "../project-model";
 import { Mesh } from "./mesh";
 import { Group } from "./group";
 import { DefaultObject } from "./default-object";
+import { Points } from "./points";
 
 export type ProjectObjectProps = Map<string, any>;
 
-export type ViewerObjectType = "default" | "group" | "mesh";
+export type ViewerObjectType = "default" | "group" | "mesh" | "points";
 
 export interface Entity {
   id: string;
@@ -66,6 +67,8 @@ export const initEntity = (
     return new Group(object, model, parent);
   } else if (object instanceof THREE.Mesh) {
     return new Mesh(object, model, parent);
+  } else if (object instanceof THREE.Points) {
+    return new Points(object, model, parent);
   } else {
     return new DefaultObject(object, model, parent);
   }

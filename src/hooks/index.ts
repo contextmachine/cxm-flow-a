@@ -1,7 +1,12 @@
 import * as RX from "rxjs";
 import { useEffect, useState } from "react";
 import React from "react";
-import { useViewer } from "@/components/services/scene-service/scene-provider";
+import {
+  useScene,
+  useViewer,
+  useViewerSoft,
+} from "@/components/services/scene-service/scene-provider";
+import { MessageType } from "@/components/ui/scene/message/message";
 
 export const useSubscribe = <T>(
   observable: RX.Observable<T>,
@@ -12,6 +17,26 @@ export const useSubscribe = <T>(
     const subscription = observable.subscribe(setState);
     return () => subscription.unsubscribe();
   }, [observable]);
+  return state;
+};
+
+export const useMessage = () => {
+  const [state, setState] = useState<MessageType>();
+
+  const { sceneService } = useScene();
+  const viewer = sceneService.viewer;
+
+  useEffect(() => {
+    if (viewer) {
+      const subscription = viewer.$message.subscribe((e) => {
+        setState(e);
+      });
+      return () => subscription.unsubscribe();
+    }
+  }, [viewer]);
+
+  useEffect(() => {}, [state]);
+
   return state;
 };
 
