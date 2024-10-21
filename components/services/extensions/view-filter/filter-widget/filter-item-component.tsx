@@ -18,6 +18,7 @@ const FilterItemComponent: React.FC<FilterItemComponentProps> = (
   props: FilterItemComponentProps
 ) => {
   const { filterItem, parentGroup } = props;
+
   return (
     <FilterItemWrapper>
       {filterItem.type === "group" && (
@@ -27,6 +28,7 @@ const FilterItemComponent: React.FC<FilterItemComponentProps> = (
           parentGroup={parentGroup}
         ></FilterGroupComponent>
       )}
+
       {filterItem.type === "condition" && (
         <FilterConditionComponent
           index={props.index}
