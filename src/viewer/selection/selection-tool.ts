@@ -1,10 +1,7 @@
-import * as THREE from "three";
 import * as RX from "rxjs";
 import Viewer from "../viewer";
 import { Entity } from "@/src/objects/entities/entity";
 import Picker from "./picker";
-import { Group } from "@/src/objects/entities/group";
-import { activeGroupBoxHelperColor } from "@/src/objects/materials/object-materials";
 
 class SelectionControl {
   private _subscriptions: RX.Subscription[] = [];

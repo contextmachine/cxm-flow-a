@@ -6,6 +6,9 @@ import { Entity, initEntity } from "./entities/entity";
 import { Group } from "./entities/group";
 import { Mesh } from "./entities/mesh";
 import { DefaultObject } from "./entities/default-object";
+import { Points } from "./entities/points";
+import CollisionMesh from "./entities/utility/collision-mesh";
+import { MeshBVHHelper } from "three-mesh-bvh";
 
 function isGroupMeshOnly(grp: THREE.Group): boolean {
   let result = true;
@@ -25,6 +28,8 @@ export class ProjectModel {
   private _entity: Entity;
   private _unionMesh: UnionMesh | undefined;
   private _objects: THREE.Object3D[] = [];
+
+  private _collisionMeshes: CollisionMesh[] = [];
 
   private _viewer: Viewer;
 
@@ -50,8 +55,8 @@ export class ProjectModel {
     return this._objects;
   }
 
-  public get collisionMesh() {
-    return this._unionMesh?.collisionMesh;
+  public get collisionMeshes(): CollisionMesh[] {
+    return this._collisionMeshes;
   }
 
   public get viewer(): Viewer {
@@ -82,40 +87,54 @@ export class ProjectModel {
     const modelObjects: THREE.Object3D[] = [];
     let entity: Entity;
 
-    // const bufferGeometries = new Map();
-
-    // object.traverse((x) => {
-    //   if (x instanceof THREE.Mesh) {
-    //     if (x.geometry) {
-    //       console.log("mesh with geom");
-
-    //       const buffer = x.geometry;
-    //       bufferGeometries.set(buffer.uuid, buffer);
-    //     }
-    //   }
-    // });
-
-    // console.log("geometries", bufferGeometries);
-
-    const timerLabel = `init union mesh ${object.name}}`;
-
-    console.time(timerLabel);
-
     try {
       const unionMesh = new UnionMesh(object, this);
       unionMesh.objects.forEach((x) => modelObjects.push(x));
 
       this._unionMesh = unionMesh;
+
+      if (unionMesh.collisionMesh) {
+        this._collisionMeshes.push(unionMesh.collisionMesh);
+      }
     } catch (e) {}
-
-    console.timeLog(timerLabel);
-
-    console.log(this._unionMesh);
 
     if (object instanceof THREE.Group) {
       entity = new Group(object, this, undefined);
     } else if (object instanceof THREE.Mesh) {
       entity = new Mesh(object, this, undefined);
+    } else if (object instanceof THREE.Points) {
+      entity = new Points(object, this, undefined);
+
+      // console.log("here");
+
+      // const meshIdMap = new Map<number, string>();
+
+      // meshIdMap.set(0, object.uuid);
+
+      // const indices = [];
+      // const bvhGeometry = object.geometry.clone();
+
+      // bvhGeometry.applyMatrix4(object.matrixWorld);
+
+      // let verticesLength = bvhGeometry.attributes.position.count;
+      // for (let i = 0, l = verticesLength; i < l; i++) {
+      //   indices.push(i, i, i);
+      // }
+
+      // bvhGeometry.setIndex(indices);
+      // const bvhMesh = new THREE.Mesh(bvhGeometry);
+
+      // bvhMesh.geometry.computeBoundsTree();
+
+      // const collisionMesh = new CollisionMesh(bvhMesh, meshIdMap);
+
+      // const helper = new MeshBVHHelper(bvhMesh, 3);
+      // helper.name = "bvh-helper";
+
+      // console.log("----> helper", helper);
+      // this._viewer.addToScene(helper);
+
+      // this._collisionMeshes.push(collisionMesh);
     } else {
       entity = new DefaultObject(object, this, undefined);
     }
